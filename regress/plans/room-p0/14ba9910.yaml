@@ -1,0 +1,42 @@
+# 房间管理 · Web 端 / 加入房间 / 邀请链接落地页 / 异常场景
+# 前置：打开链接；角色：新成员；入口：密码输入区
+# 操作：尝试输入字母、符号，以及超过 6 位的数字
+# 预期 1：输入框 ｜ 非数字字符无法输入
+# 预期 2：输入框 ｜ 超过 6 位的数字无法继续输入
+case: 14ba9910-705f-49b6-a144-8b1ce1a86858
+title: 加入时的密码输入限制
+sourceHash: 6a8471bde114aa64
+mode: auto
+actors:
+  - owner
+  - guest
+setup:
+  - actor: owner
+    flow: createRoom
+    save: room
+  - actor: owner
+    flow: setPasswordProtection
+    with:
+      room: "{{room.name}}"
+      enabled: "true"
+  - actor: owner
+    flow: copyInvite
+    with:
+      room: "{{room.name}}"
+    save: invite
+steps:
+  - actor: guest
+    flow: openInviteLink
+    with:
+      link: "{{invite.link}}"
+  - actor: guest
+    act: "在密码输入框中逐个键入 a b # 1 2"
+  - actor: guest
+    n: 1
+    assert: 密码输入框中只有数字 12，字母和符号没有被输入
+    waitMs: 60000
+  - actor: guest
+    act: 清空密码输入框，键入 12345678
+  - actor: guest
+    n: 2
+    assert: 密码输入框中只有 6 位数字 123456，超出部分没有被输入

@@ -1,0 +1,39 @@
+# 房间管理 · Web 端 / 加入房间 / 邀请链接落地页 / 异常场景
+# 前置：打开链接；角色：新成员；入口：密码输入区
+# 操作：不输入密码或只输入空格
+# 预期 1：按钮状态 ｜ 加入按钮保持置灰不可点击
+case: 54c232dc-ab91-44bd-845b-a03cf16f4436
+title: 密码为空或只有空格
+sourceHash: 7fc58315642b66d0
+mode: auto
+actors:
+  - owner
+  - guest
+setup:
+  - actor: owner
+    flow: createRoom
+    save: room
+  - actor: owner
+    flow: setPasswordProtection
+    with:
+      room: "{{room.name}}"
+      enabled: "true"
+  - actor: owner
+    flow: copyInvite
+    with:
+      room: "{{room.name}}"
+    save: invite
+steps:
+  - actor: guest
+    flow: openInviteLink
+    with:
+      link: "{{invite.link}}"
+  - actor: guest
+    n: 1
+    assert: 密码输入框为空时，加入 Room 按钮置灰不可点击
+    waitMs: 60000
+  - actor: guest
+    act: 在密码输入框中输入三个空格
+  - actor: guest
+    n: 1
+    assert: 只输入空格时，加入 Room 按钮仍置灰不可点击

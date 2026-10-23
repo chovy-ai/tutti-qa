@@ -1,0 +1,71 @@
+{
+  "path": "/Users/zhengweibin/Desktop/workspace/tutti-qa/baseline/Tutti新框架_20261021.pos",
+  "sha256": "a81b509f10bffd59f916fbb95b264efb33e0541e3ecd9e4b0cf9c9b1b74516ef",
+  "node": {
+    "parent": "root",
+    "callout": [],
+    "id": "066e822e-9498-4ec4-99eb-f6a17c81de69",
+    "collapsed": false,
+    "title": "📌 基准 Commit（diff 起点，由 tutti-diff-testcase 维护）",
+    "children": [
+      {
+        "parent": "066e822e-9498-4ec4-99eb-f6a17c81de69",
+        "callout": [],
+        "children": [],
+        "id": "74748bd3-7761-4082-b5f4-e9a5fcbd218a",
+        "title": "说明：每行一个仓库，格式「owner/repo ｜ 完整 SHA ｜ 分支 ｜ 更新日期」。下次生成用例从这里记录的 SHA 开始对比 main"
+      },
+      {
+        "parent": "066e822e-9498-4ec4-99eb-f6a17c81de69",
+        "callout": [],
+        "children": [],
+        "id": "bfad107d-c608-45a6-b807-15f4360f273e",
+        "title": "tutti-lab/tsh-web ｜ 40f111b3dc560808ae5d9f448e24b1ee07604cde ｜ main ｜ 更新于 2026-10-23"
+      },
+      {
+        "parent": "066e822e-9498-4ec4-99eb-f6a17c81de69",
+        "callout": [],
+        "children": [],
+        "id": "ed661312-86bb-402d-a655-5015f4a04bef",
+        "title": "tutti-lab/tutti ｜ 073e06fc68c9ed1c0e6500bd3cdf9dc4f10fb3fe ｜ main ｜ 更新于 2026-10-23"
+      },
+      {
+        "parent": "066e822e-9498-4ec4-99eb-f6a17c81de69",
+        "callout": [],
+        "children": [],
+        "id": "1dc2ce9c-6d51-4676-98c0-9e70027d231d",
+        "title": "tutti-lab/tutti-server ｜ f876eb0cfbc4abc72eccf2109a4fc5041b9bd999 ｜ main ｜ 更新于 2026-10-23"
+      },
+      {
+        "parent": "066e822e-9498-4ec4-99eb-f6a17c81de69",
+        "callout": [],
+        "children": [
+          {
+            "parent": "b97bb993-25e7-45ac-9b7c-0fe4ea3b8b04",
+            "callout": [],
+            "children": [],
+            "id": "989b82b1-1dae-46fa-8baa-fd62c0edbb39",
+            "title": "2026-10-23 ｜ tutti-server 新增 f876eb0cfb ｜ 新增仓库 tutti-server，基准取当前最新 main，Sun"
+          },
+          {
+            "parent": "b97bb993-25e7-45ac-9b7c-0fe4ea3b8b04",
+            "callout": [],
+            "children": [],
+            "id": "e1f1ec59-271b-4561-9cc2-1baeba78e2f6",
+            "title": "2026-10-23 ｜ tutti 101d460997 → 073e06fc68；tsh-web a07f22d9c6 → 40f111b3dc ｜ 按 QA 指示将基准对齐到当前最新 main，Sun"
+          },
+          {
+            "parent": "b97bb993-25e7-45ac-9b7c-0fe4ea3b8b04",
+            "callout": [],
+            "children": [],
+            "id": "b738e2d9-3e78-4417-8227-3b89805fa2e5",
+            "title": "2026-10-23 ｜ tutti 新增 101d460997；tsh-web 新增 a07f22d9c6 ｜ 初始化：对齐 1021 版用例库（main 上 2026-10-21 24:00 北京时间前最后一个提交），Sun"
+          }
+        ],
+        "id": "b97bb993-25e7-45ac-9b7c-0fe4ea3b8b04",
+        "title": "更新记录",
+        "collapsed": true
+      }
+    ]
+  }
+}

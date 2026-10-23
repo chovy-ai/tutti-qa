@@ -1,0 +1,110 @@
+{
+  "附件最新版": {
+    "source": "/Users/zhengweibin/Desktop/workspace/tutti-qa/output/20261023-2/.merge-candidates/附件宿主_保留原基准.pos",
+    "output": "/Users/zhengweibin/Desktop/workspace/tutti-qa/output/20261023-2/.merge-candidates/附件最新版_合并候选.pos",
+    "before": {
+      "节点": 33209,
+      "图标": 2788,
+      "用例": 4990,
+      "P0": 2056,
+      "P1": 1774,
+      "P2": 1157,
+      "未定级": 3
+    },
+    "after": {
+      "节点": 33692,
+      "图标": 2788,
+      "用例": 5089,
+      "P0": 2076,
+      "P1": 1821,
+      "P2": 1189,
+      "未定级": 3
+    },
+    "logs": [
+      {
+        "command": [
+          "python3",
+          "/Users/zhengweibin/Desktop/workspace/tutti-qa/.claude/skills/tutti-diff-testcase/scripts/pos_tool.py",
+          "merge",
+          "/Users/zhengweibin/Desktop/workspace/tutti-qa/output/20261023-2/.merge-candidates/附件宿主_保留原基准.pos",
+          "/Users/zhengweibin/Desktop/workspace/tutti-qa/output/20261023-2/spec.confirmed.json",
+          "-o",
+          "/Users/zhengweibin/Desktop/workspace/tutti-qa/output/20261023-2/.merge-candidates/附件最新版_合并候选.pos"
+        ],
+        "exitCode": 0,
+        "stdout": "已写入 /Users/zhengweibin/Desktop/workspace/tutti-qa/output/20261023-2/.merge-candidates/附件最新版_合并候选.pos：新增节点 483，更新 0，删除子树 0（0 个节点），移动 0，基准 未变\n"
+      },
+      {
+        "command": [
+          "python3",
+          "/Users/zhengweibin/Desktop/workspace/tutti-qa/.claude/skills/tutti-diff-testcase/scripts/pos_tool.py",
+          "validate",
+          "/Users/zhengweibin/Desktop/workspace/tutti-qa/output/20261023-2/.merge-candidates/附件宿主_保留原基准.pos",
+          "/Users/zhengweibin/Desktop/workspace/tutti-qa/output/20261023-2/.merge-candidates/附件最新版_合并候选.pos",
+          "--ops",
+          "/Users/zhengweibin/Desktop/workspace/tutti-qa/output/20261023-2/.merge-candidates/附件最新版_合并候选.pos.ops.json"
+        ],
+        "exitCode": 0,
+        "stdout": "{\n  \"总量前后\": {\n    \"节点\": [\n      33209,\n      33692\n    ],\n    \"用例\": [\n      4990,\n      5089\n    ],\n    \"图标\": [\n      2788,\n      2788\n    ],\n    \"P0\": [\n      2056,\n      2076\n    ],\n    \"P1\": [\n      1774,\n      1821\n    ],\n    \"P2\": [\n      1157,\n      1189\n    ]\n  },\n  \"新增节点数\": 483,\n  \"新增用例数\": 99,\n  \"重复ID\": [],\n  \"parent错\": [],\n  \"空标题\": [],\n  \"原节点丢失\": [],\n  \"原节点丢失(已授权)\": [],\n  \"原节点标题被改\": [],\n  \"原节点标题被改(已授权)\": [],\n  \"被重新挂载的原节点\": [],\n  \"新引入的重名\": [],\n  \"A记法问题\": [],\n  \"新用例缺优先级\": [],\n  \"新节点残留待确认字样\": []\n}\n"
+      }
+    ],
+    "allOriginalFieldsPreserved": true,
+    "originalChildOrderPreserved": true,
+    "baselineSubtreePreserved": true,
+    "sha256": "6f37d281faeef5afa88b03e376d104a42a82d98e06d8a930927126447fa4a7a7"
+  },
+  "本地baseline": {
+    "source": "/Users/zhengweibin/Desktop/workspace/tutti-qa/baseline/Tutti新框架_20261021.pos",
+    "output": "/Users/zhengweibin/Desktop/workspace/tutti-qa/output/20261023-2/.merge-candidates/本地baseline_合并候选.pos",
+    "before": {
+      "节点": 22209,
+      "图标": 2584,
+      "用例": 3417,
+      "P0": 1438,
+      "P1": 1221,
+      "P2": 755,
+      "未定级": 3
+    },
+    "after": {
+      "节点": 22692,
+      "图标": 2584,
+      "用例": 3516,
+      "P0": 1458,
+      "P1": 1268,
+      "P2": 787,
+      "未定级": 3
+    },
+    "logs": [
+      {
+        "command": [
+          "python3",
+          "/Users/zhengweibin/Desktop/workspace/tutti-qa/.claude/skills/tutti-diff-testcase/scripts/pos_tool.py",
+          "merge",
+          "/Users/zhengweibin/Desktop/workspace/tutti-qa/baseline/Tutti新框架_20261021.pos",
+          "/Users/zhengweibin/Desktop/workspace/tutti-qa/output/20261023-2/spec.confirmed.json",
+          "-o",
+          "/Users/zhengweibin/Desktop/workspace/tutti-qa/output/20261023-2/.merge-candidates/本地baseline_合并候选.pos"
+        ],
+        "exitCode": 0,
+        "stdout": "已写入 /Users/zhengweibin/Desktop/workspace/tutti-qa/output/20261023-2/.merge-candidates/本地baseline_合并候选.pos：新增节点 483，更新 0，删除子树 0（0 个节点），移动 0，基准 未变\n"
+      },
+      {
+        "command": [
+          "python3",
+          "/Users/zhengweibin/Desktop/workspace/tutti-qa/.claude/skills/tutti-diff-testcase/scripts/pos_tool.py",
+          "validate",
+          "/Users/zhengweibin/Desktop/workspace/tutti-qa/baseline/Tutti新框架_20261021.pos",
+          "/Users/zhengweibin/Desktop/workspace/tutti-qa/output/20261023-2/.merge-candidates/本地baseline_合并候选.pos",
+          "--ops",
+          "/Users/zhengweibin/Desktop/workspace/tutti-qa/output/20261023-2/.merge-candidates/本地baseline_合并候选.pos.ops.json"
+        ],
+        "exitCode": 0,
+        "stdout": "{\n  \"总量前后\": {\n    \"节点\": [\n      22209,\n      22692\n    ],\n    \"用例\": [\n      3417,\n      3516\n    ],\n    \"图标\": [\n      2584,\n      2584\n    ],\n    \"P0\": [\n      1438,\n      1458\n    ],\n    \"P1\": [\n      1221,\n      1268\n    ],\n    \"P2\": [\n      755,\n      787\n    ]\n  },\n  \"新增节点数\": 483,\n  \"新增用例数\": 99,\n  \"重复ID\": [],\n  \"parent错\": [],\n  \"空标题\": [],\n  \"原节点丢失\": [],\n  \"原节点丢失(已授权)\": [],\n  \"原节点标题被改\": [],\n  \"原节点标题被改(已授权)\": [],\n  \"被重新挂载的原节点\": [],\n  \"新引入的重名\": [],\n  \"A记法问题\": [],\n  \"新用例缺优先级\": [],\n  \"新节点残留待确认字样\": []\n}\n"
+      }
+    ],
+    "allOriginalFieldsPreserved": true,
+    "originalChildOrderPreserved": true,
+    "baselineSubtreePreserved": true,
+    "sha256": "3a898abc78b90e91610aebadd8024734cff9460fe88be4ca3170d19e48d5c106"
+  }
+}

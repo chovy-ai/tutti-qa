@@ -1,0 +1,31 @@
+# 房间管理 · Web 端 / 房间信息编辑 / 房间头像支持自定义 / 异常场景
+# 前置：用户已加入其他用户创建的房间；角色：非房主成员；入口：头像上传入口
+# 操作：尝试点击头像上传入口
+# 预期 1：上传入口不可点击或不展示，无法打开文件选择器
+case: b48abc4c-c61c-4ef5-806c-5851b74b3dc1
+title: 非房主无法上传头像照片
+sourceHash: 2cff56c9a53b7a5a
+mode: auto
+actors:
+  - owner
+  - member
+setup:
+  - actor: owner
+    flow: createRoom
+    save: room
+  - actor: owner
+    flow: copyInvite
+    with:
+      room: "{{room.name}}"
+    save: invite
+  - actor: member
+    flow: joinWithInvite
+    with:
+      invite: "{{invite.invite}}"
+      room: "{{room.name}}"
+steps:
+  - actor: member
+    act: 尝试打开房间信息编辑：点击房间左上角的房间头像，寻找上传头像入口
+  - actor: member
+    n: 1
+    assert: 成员看不到可用的上传头像入口（入口不展示或不可点击），页面上没有打开文件选择的迹象

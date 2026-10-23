@@ -1,0 +1,30 @@
+# 房间管理 · Web 端 / 房间支持公告功能 / 正常场景
+# 前置：编辑公告弹窗已打开；角色：房间成员；入口：公告编辑区域
+# 操作：输入公告内容并点击“发布”
+# 预期 1：公告发布成功，展示格式为“发布者名称：公告内容”，公告内容以悬浮菜单形式展示
+case: fc6edd26-8820-4bae-8b6e-9f6c0b882e5f
+title: 房间成员发布公告
+sourceHash: 47403c943f5f5553
+mode: auto
+actors:
+  - owner
+setup:
+  - actor: owner
+    flow: createRoom
+    save: room
+  - actor: owner
+    flow: openRoom
+    with:
+      room: "{{room.name}}"
+steps:
+  - actor: owner
+    act: 点击房间公告入口，在编辑公告弹窗中输入「{{runId}} 第一条公告」，点击发布
+  - actor: owner
+    n: 1
+    assert: 公告发布成功，展示为「{{owner.displayName}}：{{runId}} 第一条公告」
+    waitMs: 60000
+  - actor: owner
+    act: 把鼠标悬停在公告上
+  - actor: owner
+    n: 1
+    assert: 公告内容以悬浮菜单的形式展示

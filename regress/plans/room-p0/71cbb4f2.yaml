@@ -1,0 +1,57 @@
+# 房间管理 · Web 端 / 房间信息面板 · 邀请与准入 / 移除成员 / 正常场景
+# 前置：房间信息面板已打开；角色：房主；入口：人类分类下悬浮成员名称
+# 操作：点击移除按钮
+# 预期 1：弹二次确认弹窗
+# 预期 2：点击取消关闭弹窗，点击移除成员，成员从该房间移除
+# 预期 3：成员侧显示房间访问权限已移除，你在此房间的成员资格已被撤销，点击知道了关闭弹窗
+case: 71cbb4f2-ddc1-4f57-9fac-938f155ba1a3
+title: 点击移除按钮
+sourceHash: ce97521155564d8c
+mode: auto
+actors:
+  - owner
+  - member
+setup:
+  - actor: owner
+    flow: createRoom
+    save: room
+  - actor: owner
+    flow: copyInvite
+    with:
+      room: "{{room.name}}"
+    save: invite
+  - actor: member
+    flow: joinWithInvite
+    with:
+      invite: "{{invite.invite}}"
+      room: "{{room.name}}"
+  - actor: owner
+    flow: openRoomInfoPanel
+    with:
+      room: "{{room.name}}"
+steps:
+  - actor: owner
+    act: 在人类成员分类下悬停成员「{{member.displayName}}」，点击出现的移除按钮
+  - actor: owner
+    n: 1
+    assert: 弹出了移除成员的二次确认弹窗
+  - actor: owner
+    act: 点击确认弹窗中的取消
+  - actor: owner
+    n: 2
+    assert: 弹窗已关闭，成员「{{member.displayName}}」仍在成员列表中
+  - actor: owner
+    act: 再次悬停成员「{{member.displayName}}」并点击移除按钮，在确认弹窗中点击移除成员
+  - actor: owner
+    n: 2
+    assert: 成员「{{member.displayName}}」已不在成员列表中
+    waitMs: 60000
+  - actor: member
+    n: 3
+    assert: 成员页面弹出提示，说明房间访问权限已移除、成员资格已被撤销，并有知道了按钮
+    waitMs: 60000
+  - actor: member
+    act: 点击提示中的知道了按钮
+  - actor: member
+    n: 3
+    assert: 提示弹窗已关闭

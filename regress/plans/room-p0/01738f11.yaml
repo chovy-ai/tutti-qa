@@ -1,0 +1,24 @@
+# 房间管理 · Web 端 / 房间支持公告功能 / 正常场景
+# 前置：房间当前没有公告；角色：房间成员；入口：房间公告入口
+# 操作：点击公告
+# 预期 1：打开“编辑公告”弹窗，展示空白编辑区域和“写一条给所有房间成员看的公告...”提示语
+case: 01738f11-a575-4881-a158-71fd6404372d
+title: 打开公告编辑弹窗
+sourceHash: a59b04c88b7a8bd4
+mode: auto
+actors:
+  - owner
+setup:
+  - actor: owner
+    flow: createRoom
+    save: room
+  - actor: owner
+    flow: openRoom
+    with:
+      room: "{{room.name}}"
+steps:
+  - actor: owner
+    act: 点击房间公告入口
+  - actor: owner
+    n: 1
+    assert: 打开了编辑公告弹窗，编辑区为空，并显示“写一条给所有房间成员看的公告...”提示语

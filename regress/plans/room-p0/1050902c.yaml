@@ -1,0 +1,50 @@
+# 房间管理 · Web 端 / 删除房间 / 删除房间 / 正常场景
+# 前置：删除确认弹窗已弹出且列表中还有其他房间；角色：房主；入口：删除按钮
+# 操作：点击删除房间
+# 预期 1：列表展示 ｜ 房间从列表移除，界面切换到列表中的下一个房间
+# 预期 2：权限授权 ｜ 房间内其他成员侧该房间同步消失，无法再进入
+case: 1050902c-92fd-45e7-92f8-1806139616c5
+title: 确认删除
+sourceHash: bc8e98271b419dd3
+mode: auto
+actors:
+  - owner
+  - member
+setup:
+  - actor: owner
+    flow: createRoom
+    save: other
+  - actor: owner
+    flow: createRoom
+    save: room
+  - actor: owner
+    flow: copyInvite
+    with:
+      room: "{{room.name}}"
+    save: invite
+  - actor: member
+    flow: joinWithInvite
+    with:
+      invite: "{{invite.invite}}"
+      room: "{{room.name}}"
+  - actor: owner
+    flow: openRoom
+    with:
+      room: "{{room.name}}"
+  - actor: owner
+    flow: openRoomMenu
+    with:
+      room: "{{room.name}}"
+  - actor: owner
+    act: 点击菜单中的删除（Delete）
+steps:
+  - actor: owner
+    act: 在确认弹窗中点击删除房间
+  - actor: owner
+    n: 1
+    assert: 左侧房间列表中不再有「{{room.name}}」，界面切换到了列表中的房间「{{other.name}}」
+    waitMs: 60000
+  - actor: member
+    n: 2
+    assert: 左侧房间列表中不再有房间「{{room.name}}」
+    waitMs: 60000

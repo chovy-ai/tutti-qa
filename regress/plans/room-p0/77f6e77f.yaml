@@ -1,0 +1,29 @@
+# 房间管理 · Web 端 / 房间信息编辑 / 编辑入口 / 正常场景
+# 前置：左侧已有多个房间且当前用户是其中一个的房主；角色：房主；入口：左侧房间列表
+# 操作：悬停在自己创建的房间上，点击出现的更多按钮
+# 预期 1：视觉展示 ｜ 悬停时房间条目右侧出现更多按钮
+# 预期 2：菜单展示 ｜ 点击后弹出菜单，房主可见编辑与删除两项，删除项为红色危险样式
+case: 77f6e77f-1299-428e-bbad-726577e2a339
+title: 悬停房间呼出操作菜单
+sourceHash: 634fa6c18af1e031
+mode: auto
+actors:
+  - owner
+setup:
+  - actor: owner
+    flow: createRoom
+    save: other
+  - actor: owner
+    flow: createRoom
+    save: room
+steps:
+  - actor: owner
+    act: 把鼠标悬停在左侧房间列表中的房间「{{room.name}}」上
+  - actor: owner
+    n: 1
+    assert: 房间「{{room.name}}」的条目右侧出现了更多按钮
+  - actor: owner
+    act: 点击房间「{{room.name}}」条目右侧的更多按钮
+  - actor: owner
+    n: 2
+    assert: 弹出了菜单，包含编辑与删除两项，删除项是红色的危险样式

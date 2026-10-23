@@ -1,0 +1,26 @@
+# 房间管理 · Web 端 / 房间支持公告功能 / 异常场景
+# 前置：房间已有一条公告；角色：房间成员；入口：房间公告入口
+# 操作：尝试新建另一条公告
+# 预期 1：不允许创建第二条公告，只能在旧公告上编辑
+case: 61953a98-d1a8-41fd-a9aa-63d4461d0e08
+title: 已有公告时新建第二条公告
+sourceHash: f3547ed70496343e
+mode: auto
+actors:
+  - owner
+setup:
+  - actor: owner
+    flow: createRoom
+    save: room
+  - actor: owner
+    flow: openRoom
+    with:
+      room: "{{room.name}}"
+  - actor: owner
+    act: 点击房间公告入口，在编辑公告弹窗中输入「{{runId}} 唯一公告」，点击发布
+steps:
+  - actor: owner
+    act: 尝试新建另一条公告：点击房间公告入口，寻找新建公告的入口
+  - actor: owner
+    n: 1
+    assert: 没有新建第二条公告的入口，只能在已有公告「{{runId}} 唯一公告」上编辑

@@ -1,0 +1,24 @@
+# 房间管理 · Web 端 / 房间信息编辑 / 房间头像支持自定义 / 正常场景
+# 前置：用户已进入自己创建的房间；角色：房间所有者；入口：房间信息区域
+# 操作：点击编辑房间信息
+# 预期 1：成功打开编辑房间信息弹窗，展示头像图案和配色设置
+case: b40cf749-ba79-4a52-ba6c-dc79f6713f1c
+title: 房主打开房间信息编辑弹窗
+sourceHash: b90eca89a69129c9
+mode: auto
+actors:
+  - owner
+setup:
+  - actor: owner
+    flow: createRoom
+    save: room
+  - actor: owner
+    flow: openRoom
+    with:
+      room: "{{room.name}}"
+steps:
+  - actor: owner
+    act: 通过房间信息区域打开编辑房间信息（例如点击左上角房间头像或名称，再点击编辑）
+  - actor: owner
+    n: 1
+    assert: 打开了编辑房间信息弹窗，弹窗中展示头像图案和配色设置

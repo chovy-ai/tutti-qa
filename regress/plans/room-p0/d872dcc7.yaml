@@ -1,0 +1,39 @@
+# 房间管理 · Web 端 / 房间信息面板 · 邀请与准入 / 房间链接与密码 / 正常场景
+# 前置：房间信息面板已打开；角色：房主；入口：房间密码区
+# 操作：打开密码保护开关查看密码展示
+# 预期 1：视觉展示 ｜ 密码为随机生成的 6 位数字，默认以掩码隐藏展示
+# 预期 2：按钮状态 ｜ 提供查看与编辑入口
+case: d872dcc7-2a8d-47eb-99ac-d52368cd6956
+title: 打开密码保护开关
+sourceHash: 72b0870fc7f60a24
+mode: auto
+actors:
+  - owner
+setup:
+  - actor: owner
+    flow: createRoom
+    save: room
+  - actor: owner
+    flow: openRoomInfoPanel
+    with:
+      room: "{{room.name}}"
+steps:
+  - actor: owner
+    act: 打开房间信息面板中的密码保护开关
+  - actor: owner
+    n: 1
+    assert: 房间密码以掩码形式隐藏展示
+    waitMs: 60000
+  - actor: owner
+    n: 2
+    assert: 密码区提供查看（显示密码）与编辑两个入口
+  - actor: owner
+    act: 点击房间信息面板中的复制邀请信息按钮
+  - actor: owner
+    flow: readClipboard
+    save: invite
+  - n: 1
+    check:
+      op: matches
+      left: "{{invite.password}}"
+      right: ^\d{6}$

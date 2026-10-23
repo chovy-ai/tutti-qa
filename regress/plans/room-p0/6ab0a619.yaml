@@ -1,0 +1,41 @@
+# 房间管理 · Web 端 / 加入房间 / 加入房间弹窗 / 正常场景
+# 前置：只复制了房间链接；角色：新成员；入口：加入房间弹窗
+# 操作：只粘贴链接后点击确认
+# 预期 1：输入框 ｜ 进入密码校验环节，提示补充房间密码
+# 预期 2：会话状态 ｜ 补入正确密码后成功加入
+case: 6ab0a619-2ad8-4f17-a5a1-bd7411bcfd50
+title: 需要密码的链接，只粘贴链接不含密码
+sourceHash: 73e00ee3aad3f87b
+mode: auto
+actors:
+  - owner
+  - guest
+setup:
+  - actor: owner
+    flow: createRoom
+    save: room
+  - actor: owner
+    flow: setPasswordProtection
+    with:
+      room: "{{room.name}}"
+      enabled: "true"
+  - actor: owner
+    flow: copyInvite
+    with:
+      room: "{{room.name}}"
+    save: invite
+steps:
+  - actor: guest
+    flow: joinWithInvite
+    with:
+      invite: "{{invite.link}}"
+  - actor: guest
+    n: 1
+    assert: 进入了密码校验环节，页面提示需要补充房间密码
+    waitMs: 60000
+  - actor: guest
+    act: 输入密码 {{invite.password}} 并确认
+  - actor: guest
+    n: 2
+    assert: 补入正确密码后成功进入了房间「{{room.name}}」
+    waitMs: 60000

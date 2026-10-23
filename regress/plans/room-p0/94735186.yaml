@@ -1,0 +1,42 @@
+# 房间管理 · Web 端 / 房间信息面板 · 邀请与准入 / 允许新成员加入开关 / 正常场景
+# 前置：房间准入开关已关闭；角色：新成员；入口：加入房间弹窗
+# 操作：用正确的链接与密码尝试加入
+# 预期 1：权限授权 ｜ 无法加入并给出明确提示
+# 预期 2：副作用 ｜ 不占用席位
+case: 94735186-294d-4767-8bdd-228ae72069a6
+title: 关闭后新成员无法加入
+sourceHash: 7f21999c4d294f37
+mode: auto
+actors:
+  - owner
+  - guest
+setup:
+  - actor: owner
+    flow: createRoom
+    save: room
+  - actor: owner
+    flow: copyInvite
+    with:
+      room: "{{room.name}}"
+    save: invite
+  - actor: owner
+    flow: setAdmission
+    with:
+      room: "{{room.name}}"
+      enabled: "false"
+steps:
+  - actor: guest
+    flow: joinWithInvite
+    with:
+      invite: "{{invite.invite}}"
+  - actor: guest
+    n: 1
+    assert: 加入失败，页面给出了明确的提示（例如房间不允许新成员加入），左侧房间列表中没有「{{room.name}}」
+    waitMs: 60000
+  - actor: owner
+    reload: true
+  - actor: owner
+    act: 如果房间信息面板未打开，点击右上角成员头像组打开它
+  - actor: owner
+    n: 2
+    assert: 房间信息面板显示只有房主一名成员，已占席位为 1

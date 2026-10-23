@@ -1,0 +1,22 @@
+# 房间管理 · Web 端 / 房间信息面板 · 邀请与准入 / 允许新成员加入开关 / 正常场景
+# 前置：新创建的房间；角色：房主；入口：房间信息面板
+# 操作：查看允许新成员加入开关
+# 预期 1：按钮状态 ｜ 开关默认为打开态
+case: 576b835a-e02b-48a4-9360-2cdb842b2262
+title: 开关默认打开
+sourceHash: 335193d526162bfe
+mode: auto
+actors:
+  - owner
+setup:
+  - actor: owner
+    flow: createRoom
+    save: room
+  - actor: owner
+    flow: openRoomInfoPanel
+    with:
+      room: "{{room.name}}"
+steps:
+  - actor: owner
+    n: 1
+    assert: 房间信息面板中「允许新成员加入」开关为打开状态

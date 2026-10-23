@@ -1,0 +1,26 @@
+# 房间管理 · Web 端 / 新建房间 / 房间头像支持自定义 / 正常场景
+# 前置：新建房间弹窗已打开；角色：房间创建者；入口：头像上传入口
+# 操作：点击上传头像，选择本地照片并点击创建
+# 预期 1：房间创建成功，房间头像展示上传的照片
+case: 1b79444c-9be6-4775-adf3-590e4a9dab65
+title: 新建房间时上传头像照片
+sourceHash: b5cdfa13a26b564e
+mode: auto
+actors:
+  - owner
+setup:
+  - actor: owner
+    flow: openCreateRoomDialog
+  - actor: owner
+    flow: armFileChooser
+    with:
+      file: avatar-checker.png
+steps:
+  - actor: owner
+    act: 点击弹窗中的上传头像入口，选择照片
+  - actor: owner
+    act: 如果出现裁剪或确认步骤就确认；把房间名称改为「{{runId}}-photo」，点击完成或创建
+  - actor: owner
+    n: 1
+    assert: 房间「{{runId}}-photo」创建成功，左侧列表中它的头像是一张红蓝相间的棋盘格图片
+    waitMs: 60000

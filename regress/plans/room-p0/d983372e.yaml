@@ -1,0 +1,31 @@
+# 房间管理 · Web 端 / 房间信息编辑 / 房间头像支持自定义 / 异常场景
+# 前置：用户已加入其他用户创建的房间；角色：非房主成员；入口：头像图案区域
+# 操作：点击任意头像图案
+# 预期 1：头像图案不可点击或不产生任何变化
+case: d983372e-e1fc-4951-8f3e-ac695298798f
+title: 非房主无法点击头像图案
+sourceHash: 6720f2bc6a793882
+mode: auto
+actors:
+  - owner
+  - member
+setup:
+  - actor: owner
+    flow: createRoom
+    save: room
+  - actor: owner
+    flow: copyInvite
+    with:
+      room: "{{room.name}}"
+    save: invite
+  - actor: member
+    flow: joinWithInvite
+    with:
+      invite: "{{invite.invite}}"
+      room: "{{room.name}}"
+steps:
+  - actor: member
+    act: 尝试打开房间信息编辑：点击房间左上角的房间头像；如果出现头像图案，点击任意一个
+  - actor: member
+    n: 1
+    assert: 成员无法修改头像：没有可点击的头像图案，或者点击后房间头像没有任何变化

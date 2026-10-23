@@ -1,0 +1,10 @@
+# 房间管理 · Web 端 / 房间信息面板 · 成员与共享 Agent / 共享 Agent 展示 / 正常场景（4）
+# 前置：房间内已有成员开启了 Agent 共享；角色：房主或成员；入口：房间信息面板
+# 操作：查看共享 Agent 列表
+# 预期 1：列表展示 ｜ 显示房间内所有已共享的 Agent
+# 预期 2：列表展示 ｜ 每行显示 Agent 头像与所属成员头像、名称、成员电脑标识与可用不可用状态
+case: dd67e03f-dfb3-41f5-836f-1f1f7d1c92aa
+title: 共享 Agent 列表展示
+sourceHash: 10c89067fc357c36
+mode: manual
+reason: 需要成员本地 Agent（Computer）开启共享，线上新建的测试用户没有 Computer

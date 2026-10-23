@@ -1,0 +1,39 @@
+# 房间管理 · Web 端 / 房间信息面板 · 邀请与准入 / 面板入口与权限 / 正常场景
+# 前置：当前用户是该房间的普通成员；角色：房间成员；入口：右上角头像组
+# 操作：点击右上角头像
+# 预期 1：列表展示 ｜ 面板只显示成员列表、共享 Agent 列表与退出房间按钮
+# 预期 2：权限授权 ｜ 不展示邀请链接、房间密码与准入开关，成员无法修改房间设置
+case: 330c80b3-0c6c-40ed-bab3-e1b64abdfaec
+title: 成员打开房间信息面板
+sourceHash: 43c851e6ef0a4e52
+mode: auto
+actors:
+  - owner
+  - member
+setup:
+  - actor: owner
+    flow: createRoom
+    save: room
+  - actor: owner
+    flow: copyInvite
+    with:
+      room: "{{room.name}}"
+    save: invite
+  - actor: member
+    flow: joinWithInvite
+    with:
+      invite: "{{invite.invite}}"
+      room: "{{room.name}}"
+  - actor: member
+    flow: openRoom
+    with:
+      room: "{{room.name}}"
+steps:
+  - actor: member
+    act: 点击房间页面右上角的成员头像组
+  - actor: member
+    n: 1
+    assert: 面板只显示成员列表、共享 Agent 列表与退出房间按钮
+  - actor: member
+    n: 2
+    assert: 面板中没有邀请链接、房间密码与准入开关，也没有修改房间设置的入口

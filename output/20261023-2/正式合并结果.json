@@ -1,0 +1,71 @@
+{
+  "choice": "附件最新版",
+  "specHash": "d8a340e4b0974a91",
+  "accepted": 99,
+  "final": "/Users/zhengweibin/Desktop/workspace/tutti-qa/output/20261023-2/Tutti新框架_20261021_20261023-2.pos",
+  "sha256": "6f37d281faeef5afa88b03e376d104a42a82d98e06d8a930927126447fa4a7a7",
+  "baseline": "/Users/zhengweibin/Desktop/workspace/tutti-qa/baseline/Tutti新框架_20261021.pos",
+  "archive": "/Users/zhengweibin/Desktop/workspace/tutti-qa/baseline/archive/Tutti新框架_20261021_游客第二版合并前_20261023210633.pos",
+  "archivedSha256": "a81b509f10bffd59f916fbb95b264efb33e0541e3ecd9e4b0cf9c9b1b74516ef",
+  "validationCommand": [
+    "python3",
+    "/Users/zhengweibin/Desktop/workspace/tutti-qa/.claude/skills/tutti-diff-testcase/scripts/pos_tool.py",
+    "validate",
+    "/Users/zhengweibin/Desktop/workspace/tutti-qa/output/20261023-2/.merge-candidates/附件宿主_保留原基准.pos",
+    "/Users/zhengweibin/Desktop/workspace/tutti-qa/output/20261023-2/Tutti新框架_20261021_20261023-2.pos",
+    "--ops",
+    "/Users/zhengweibin/Desktop/workspace/tutti-qa/output/20261023-2/Tutti新框架_20261021_20261023-2.pos.ops.json"
+  ],
+  "validation": {
+    "总量前后": {
+      "节点": [
+        33209,
+        33692
+      ],
+      "用例": [
+        4990,
+        5089
+      ],
+      "图标": [
+        2788,
+        2788
+      ],
+      "P0": [
+        2056,
+        2076
+      ],
+      "P1": [
+        1774,
+        1821
+      ],
+      "P2": [
+        1157,
+        1189
+      ]
+    },
+    "新增节点数": 483,
+    "新增用例数": 99,
+    "重复ID": [],
+    "parent错": [],
+    "空标题": [],
+    "原节点丢失": [],
+    "原节点丢失(已授权)": [],
+    "原节点标题被改": [],
+    "原节点标题被改(已授权)": [],
+    "被重新挂载的原节点": [],
+    "新引入的重名": [],
+    "A记法问题": [],
+    "新用例缺优先级": [],
+    "新节点残留待确认字样": []
+  },
+  "exactConfirmedCaseContentMatched": true,
+  "baselineRecordsUnchanged": true,
+  "published": true,
+  "publication": {
+    "turnId": "e6c28be9-0039-48a7-ad8f-ae2899016f46",
+    "artifactIds": [
+      "5bdb63ec-6a91-4e86-9b87-491275ed49e8",
+      "6bdf84b2-c6ac-4ad9-9877-dab7f4032ba1"
+    ]
+  }
+}

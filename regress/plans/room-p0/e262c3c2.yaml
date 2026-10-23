@@ -1,0 +1,33 @@
+# 房间管理 · Web 端 / 房间信息编辑 / 房间头像支持自定义 / 正常场景
+# 前置：编辑房间信息弹窗已打开；角色：房间所有者；入口：头像上传入口
+# 操作：选择本地照片并点击保存
+# 预期 1：房间头像更新成功，展示上传的照片
+case: e262c3c2-8e42-4e14-a55e-688cfda8a342
+title: 房主上传房间头像照片
+sourceHash: f5405eb4906faefd
+mode: auto
+actors:
+  - owner
+setup:
+  - actor: owner
+    flow: createRoom
+    save: room
+  - actor: owner
+    flow: openRoom
+    with:
+      room: "{{room.name}}"
+  - actor: owner
+    flow: openRoomEditDialog
+    with:
+      room: "{{room.name}}"
+  - actor: owner
+    flow: armFileChooser
+    with:
+      file: avatar-checker.png
+steps:
+  - actor: owner
+    act: 点击弹窗中的上传头像入口选择照片，如果出现裁剪或确认步骤就确认，然后点击保存
+  - actor: owner
+    n: 1
+    assert: 房间头像更新为一张红蓝相间的棋盘格图片
+    waitMs: 60000

@@ -1,0 +1,33 @@
+# 房间管理 · Web 端 / 新建房间 / 新建入口 / 正常场景
+# 前置：已登录并进入任一房间；角色：任意用户；入口：左侧 Rooms 分组旁的加号
+# 操作：悬停并点击加号
+# 预期 1：菜单展示 ｜ 呼出增加方式菜单，包含新建房间与加入房间两项
+# 预期 2：视觉展示 ｜ 菜单不遮挡房间列表，点击外部可关闭
+case: 87416c52-b09e-4644-83a2-360b311065fa
+title: 悬停 Rooms 旁的加号呼出菜单
+sourceHash: 3191c75233db2a8d
+mode: auto
+actors:
+  - owner
+setup:
+  - actor: owner
+    flow: createRoom
+    save: room
+  - actor: owner
+    flow: openRoom
+    with:
+      room: "{{room.name}}"
+steps:
+  - actor: owner
+    act: 把鼠标悬停在左侧房间分组标题（如 My cloud rooms）旁的加号上并点击
+  - actor: owner
+    n: 1
+    assert: 弹出了增加方式菜单，菜单中包含新建房间与加入房间两项
+  - actor: owner
+    n: 2
+    assert: 弹出的菜单没有遮挡左侧房间列表中的房间条目
+  - actor: owner
+    act: 点击页面中间的空白区域
+  - actor: owner
+    n: 2
+    assert: 增加方式菜单已关闭

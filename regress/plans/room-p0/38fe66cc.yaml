@@ -1,0 +1,43 @@
+# 房间管理 · Web 端 / Web 端浏览器行为 / 刷新与直达 / 正常场景（2）
+# 前置：已进入某房间并打开了会话；角色：房间成员；入口：浏览器刷新
+# 操作：刷新页面
+# 预期 1：持久化 ｜ 刷新后仍停留在同一房间，房间列表选中态不变
+# 预期 2：列表展示 ｜ 成员列表、席位与共享 Agent 列表恢复为最新状态
+case: 38fe66cc-3455-4a68-825b-5b72856f65b4
+title: 刷新后停留在当前房间
+sourceHash: 5456ec9212a59ad2
+mode: auto
+actors:
+  - owner
+  - member
+setup:
+  - actor: owner
+    flow: createRoom
+    save: room
+  - actor: owner
+    flow: copyInvite
+    with:
+      room: "{{room.name}}"
+    save: invite
+  - actor: member
+    flow: joinWithInvite
+    with:
+      invite: "{{invite.invite}}"
+      room: "{{room.name}}"
+  - actor: member
+    flow: openRoom
+    with:
+      room: "{{room.name}}"
+steps:
+  - actor: member
+    reload: true
+  - actor: member
+    n: 1
+    assert: 刷新后仍停留在房间「{{room.name}}」，左侧房间列表中该房间处于选中态
+    waitMs: 60000
+  - actor: member
+    act: 点击房间页面右上角的成员头像组打开房间信息面板
+  - actor: member
+    n: 2
+    assert: 成员列表显示 2 名成员（包含房主「{{owner.displayName}}」和「{{member.displayName}}」），席位与共享 Agent 列表正常展示
+    waitMs: 60000

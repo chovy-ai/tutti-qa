@@ -1,0 +1,29 @@
+# 房间管理 · Web 端 / 房间支持公告功能 / 正常场景
+# 前置：房间已有一条公告；角色：房间成员；入口：旧公告编辑区域
+# 操作：删除旧公告全部内容并点击“发布”
+# 预期 1：公告清空成功，再次点击公告时展示空白编辑区域和“写一条给所有房间成员看的公告...”提示语
+case: 8a798ef3-f2a8-4ab2-abac-8ee1f192b14b
+title: 房间成员清空公告
+sourceHash: 9f0cc13b76f97cfc
+mode: auto
+actors:
+  - owner
+setup:
+  - actor: owner
+    flow: createRoom
+    save: room
+  - actor: owner
+    flow: openRoom
+    with:
+      room: "{{room.name}}"
+  - actor: owner
+    act: 点击房间公告入口，在编辑公告弹窗中输入「{{runId}} 待清空公告」，点击发布
+steps:
+  - actor: owner
+    act: 打开房间公告，点击编辑公告，删除全部内容，点击发布
+  - actor: owner
+    act: 再次点击房间公告入口
+  - actor: owner
+    n: 1
+    assert: 编辑公告弹窗的编辑区为空，并显示“写一条给所有房间成员看的公告...”提示语
+    waitMs: 60000

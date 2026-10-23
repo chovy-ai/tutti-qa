@@ -1,0 +1,34 @@
+# 房间管理 · Web 端 / 新建房间 / 新建房间弹窗 / 正常场景
+# 前置：当天已用默认名称成功创建过一个房间；角色：任意用户；入口：新建房间弹窗
+# 操作：当天再次用默认名称连续创建两个房间
+# 预期 1：结果校验 ｜ 第二个起在默认名后追加序号，序号按用户与完整日期计数
+# 预期 2：持久化 ｜ 跨天后序号重新从头计数
+case: eb706e93-c74f-4584-9beb-7fc621ad7136
+title: 同日创建多个房间的序号
+sourceHash: 8c93807403be3010
+mode: auto
+actors:
+  - owner
+setup:
+  - actor: owner
+    flow: createRoom
+    with:
+      keepDefaultName: "true"
+    save: first
+steps:
+  - actor: owner
+    flow: createRoom
+    with:
+      keepDefaultName: "true"
+    save: second
+  - actor: owner
+    flow: createRoom
+    with:
+      keepDefaultName: "true"
+    save: third
+  - actor: owner
+    n: 1
+    assert: 左侧房间列表中有三个默认名称的房间：「{{first.name}}」「{{second.name}}」「{{third.name}}」，第二个和第三个在默认名后追加了递增的序号
+uncovered:
+  - n: 2
+    reason: 跨天后序号重新计数，需要跨天执行，单次运行无法验证

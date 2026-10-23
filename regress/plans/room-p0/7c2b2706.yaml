@@ -1,0 +1,42 @@
+# 房间管理 · Web 端 / 加入房间 / 邀请链接落地页 / 异常场景
+# 前置：通过链接点击加入页面；角色：新成员；入口：密码输入区
+# 操作：输入错误密码后确认
+# 预期 1：提示文案 ｜ 弹出错误提示说明密码不正确
+# 预期 2：输入框 ｜ 用户重新输入后错误提示自动清除
+case: 7c2b2706-f3f4-4d1d-a4c1-8ba46936d421
+title: 密码错误
+sourceHash: acb43469eea434c8
+mode: auto
+actors:
+  - owner
+  - guest
+setup:
+  - actor: owner
+    flow: createRoom
+    save: room
+  - actor: owner
+    flow: setPasswordProtection
+    with:
+      room: "{{room.name}}"
+      enabled: "true"
+  - actor: owner
+    flow: copyInvite
+    with:
+      room: "{{room.name}}"
+    save: invite
+steps:
+  - actor: guest
+    flow: openInviteLink
+    with:
+      link: "{{invite.link}}"
+  - actor: guest
+    act: 在密码输入框中输入 {{rand.pin}}（这是一个错误密码），点击加入 Room
+  - actor: guest
+    n: 1
+    assert: 页面提示密码不正确
+    waitMs: 60000
+  - actor: guest
+    act: 清空密码输入框，重新输入 1
+  - actor: guest
+    n: 2
+    assert: 密码错误的提示已自动消失

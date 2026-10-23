@@ -1,0 +1,42 @@
+# 房间管理 · Web 端 / 房间信息编辑 / 编辑房间信息 / 正常场景
+# 前置：房主已打开房间操作菜单；角色：房主；入口：菜单中的编辑
+# 操作：点击编辑，修改头像图标、背景色与房间名称后保存
+# 预期 1：面板开关 ｜ 弹出房间信息弹窗，预填当前的头像、背景色与名称
+# 预期 2：列表展示 ｜ 保存后左侧列表与房间顶部标题同步更新为新值
+# 预期 3：持久化 ｜ 刷新页面后仍是新值
+case: faaea76a-6cc6-4497-b7be-980c1f9d3102
+title: 编辑头像背景色与名称
+sourceHash: f850bf33eb569974
+mode: auto
+actors:
+  - owner
+setup:
+  - actor: owner
+    flow: createRoom
+    save: room
+  - actor: owner
+    flow: openRoom
+    with:
+      room: "{{room.name}}"
+  - actor: owner
+    flow: openRoomMenu
+    with:
+      room: "{{room.name}}"
+steps:
+  - actor: owner
+    act: 点击菜单中的编辑（Edit）
+  - actor: owner
+    n: 1
+    assert: 弹出了房间信息弹窗，预填了当前的头像、背景色与名称「{{room.name}}」
+  - actor: owner
+    act: 在弹窗中选择一个不同的头像图标和一个不同的背景色，把名称改为「{{room.name}}-new」，点击保存
+  - actor: owner
+    n: 2
+    assert: 左侧房间列表与房间顶部标题都显示为「{{room.name}}-new」
+    waitMs: 60000
+  - actor: owner
+    reload: true
+  - actor: owner
+    n: 3
+    assert: 刷新后左侧房间列表与房间顶部标题仍显示为「{{room.name}}-new」
+    waitMs: 60000

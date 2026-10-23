@@ -1,0 +1,28 @@
+# 房间管理 · Web 端 / 删除房间 / 删除房间 / 正常场景
+# 前置：房主已打开房间操作菜单；角色：房主；入口：菜单中的删除
+# 操作：点击删除
+# 预期 1：提示文案 ｜ 弹出确认弹窗，标题为 Delete this room，正文说明该房间将对房间内所有人删除且操作不可撤销
+# 预期 2：视觉展示 ｜ 正文中带出该房间的名称，删除按钮为红色危险样式
+case: 14b1ad8d-d349-48ad-b951-a5aa66355993
+title: 删除二次确认弹窗
+sourceHash: 424cb2d6dbfb6abb
+mode: auto
+actors:
+  - owner
+setup:
+  - actor: owner
+    flow: createRoom
+    save: room
+  - actor: owner
+    flow: openRoomMenu
+    with:
+      room: "{{room.name}}"
+steps:
+  - actor: owner
+    act: 点击菜单中的删除（Delete）
+  - actor: owner
+    n: 1
+    assert: 弹出了确认弹窗，标题为 Delete this room，正文说明该房间将对房间内所有人删除且操作不可撤销
+  - actor: owner
+    n: 2
+    assert: 确认弹窗正文中带出了房间名称「{{room.name}}」，删除按钮是红色的危险样式

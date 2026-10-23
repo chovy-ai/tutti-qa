@@ -1,0 +1,20 @@
+# 房间管理 · Web 端 / 新建房间 / 房间头像支持自定义 / 正常场景
+# 前置：用户已登录并打开新建房间弹窗；角色：房间创建者；入口：新建房间弹窗
+# 操作：选择头像图案，填写房间名称并点击创建
+# 预期 1：房间创建成功，房间头像展示所选图案
+case: a9f919c5-4740-4c3e-a7c2-f99e1dd006da
+title: 新建房间时选择默认头像图案
+sourceHash: a01ce1ecfe85f980
+mode: auto
+actors:
+  - owner
+setup:
+  - actor: owner
+    flow: openCreateRoomDialog
+steps:
+  - actor: owner
+    act: 在头像图标组中选择最后一个图案，把房间名称改为「{{runId}}-icon」，点击完成或创建
+  - actor: owner
+    n: 1
+    assert: 房间「{{runId}}-icon」创建成功，左侧列表中它的头像展示为一个图案图标（不是照片）
+    waitMs: 60000

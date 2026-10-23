@@ -1,0 +1,4001 @@
+{
+ "_说明": "代码路径 → .pos 模块路径的映射，只用于确认页里的「可能影响模块」初判与检索起点，不是最终落点。按 repo + 路径前缀匹配，一个文件可命中多条，取全部命中的并集。模块路径以 baseline 当前结构为准，库结构调整后同步改这里。 模块名写成「(无用例模块：xxx)」表示这块代码在库里没有对应模块，只命中这类规则的条目默认不勾选；「(按文案检索)」表示要用 diff 里的文案去库里搜。 tutti-server 的业务代码大量平铺在 internal/biz、internal/data、internal/service、db/queries、db/schema 下，用「目录/文件名前缀」写规则（如 internal/data/room_guest），新增业务前缀时在这几个目录各补一条。",
+ "rules": [
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "apps/web/src/renderer/src/modules/account-onboarding/",
+   "modules": [
+    "新用户流程"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "apps/web/src/renderer/src/modules/account-menu/",
+   "modules": [
+    "新用户流程/账号设置",
+    "左侧一级菜单栏/菜单结构与导航"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "apps/web/src/renderer/src/modules/account/",
+   "modules": [
+    "新用户流程/Web登录态",
+    "新用户流程/账号设置"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "apps/web/src/renderer/src/modules/newcomer-reward/",
+   "modules": [
+    "新用户流程/新人积分"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "apps/web/src/renderer/src/modules/user-profile/",
+   "modules": [
+    "新用户流程/账号设置"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "apps/web/src/renderer/src/modules/computer/",
+   "modules": [
+    "Computer 与 Agent 管理/Computer 接入与绑定",
+    "Computer 与 Agent 管理/Computer 管理与运维"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "apps/web/src/renderer/src/modules/computer-cli-help/",
+   "modules": [
+    "Computer 与 Agent 管理/Computer 接入与绑定"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "apps/web/src/renderer/src/modules/agent/",
+   "modules": [
+    "Computer 与 Agent 管理/Agent 检测与安装登录",
+    "Computer 与 Agent 管理/与房间会话的联动",
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "apps/web/src/renderer/src/modules/cloud-agent/",
+   "modules": [
+    "Computer 与 Agent 管理/Tutti API 与自定义模型",
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "apps/web/src/renderer/src/modules/commerce/",
+   "modules": [
+    "共享管理/额度保护",
+    "共享管理/使用概览",
+    "Computer 与 Agent 管理/Tutti API 与自定义模型"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "apps/web/src/renderer/src/modules/room-share/",
+   "modules": [
+    "共享管理",
+    "房间/共享 Agent",
+    "房间管理 · Web 端/房间信息面板 · 成员与共享 Agent"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "apps/web/src/renderer/src/modules/room/",
+   "modules": [
+    "房间管理 · Web 端"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "apps/web/src/renderer/src/modules/room-environment/",
+   "modules": [
+    "房间/本地房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "apps/web/src/renderer/src/modules/local-directory/",
+   "modules": [
+    "房间/本地房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "apps/web/src/renderer/src/modules/project-import/",
+   "modules": [
+    "房间/本地房间",
+    "房间/最终Agent GUI - 2/左侧列表"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "apps/web/src/renderer/src/modules/public-room/",
+   "modules": [
+    "房间/公开房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "apps/web/src/renderer/src/modules/chat/",
+   "modules": [
+    "房间/群聊"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "apps/web/src/renderer/src/modules/room-mention/",
+   "modules": [
+    "房间/群聊",
+    "房间/最终Agent GUI - 2/中间区域/引用与输入增强"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "apps/web/src/renderer/src/modules/session-comment/",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "apps/web/src/renderer/src/modules/conversation-note/",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "apps/web/src/renderer/src/modules/room-agent-reply-attention/",
+   "modules": [
+    "房间/最终Agent GUI - 2",
+    "左侧一级菜单栏/Notification"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "apps/web/src/renderer/src/modules/files/",
+   "modules": [
+    "房间/文件中心"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "apps/web/src/renderer/src/modules/file-preview/",
+   "modules": [
+    "房间/文件中心",
+    "房间/最终Agent GUI - 2/中间区域"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "apps/web/src/renderer/src/modules/uploads/",
+   "modules": [
+    "房间/文件传输",
+    "房间/文件中心"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "apps/web/src/renderer/src/modules/assets/",
+   "modules": [
+    "左侧一级菜单栏/My Assets",
+    "新用户流程/房间资产"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "apps/web/src/renderer/src/modules/notification/",
+   "modules": [
+    "左侧一级菜单栏/Notification"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "apps/web/src/renderer/src/modules/board/",
+   "modules": [
+    "活动看板"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "apps/web/src/renderer/src/modules/connector/",
+   "modules": [
+    "连接器"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "apps/web/src/renderer/src/modules/skill-market/",
+   "modules": [
+    "房间/最终Agent GUI - 2/中间区域/扩展生态与本地同步"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "apps/web/src/renderer/src/modules/sites/",
+   "modules": [
+    "房间/站点"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "apps/web/src/renderer/src/modules/task-schedules/",
+   "modules": [
+    "房间/自动化",
+    "工作台/触发及周期"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "apps/web/src/renderer/src/modules/workbench/",
+   "modules": [
+    "工作台"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "apps/web/src/renderer/src/modules/settings/",
+   "modules": [
+    "新用户流程/账号设置"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "apps/web/src/renderer/src/app/shell/",
+   "modules": [
+    "左侧一级菜单栏/菜单结构与导航",
+    "房间管理 · Web 端"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "apps/web/src/shared/i18n/",
+   "modules": [
+    "(按文案检索)"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "apps/web/src/renderer/src/routes/",
+   "modules": [
+    "左侧一级菜单栏/菜单结构与导航"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "apps/web/src/renderer/src/i18n/",
+   "modules": [
+    "(按文案检索)"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "packages/agent/gui/",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "packages/agent/gui/model-providers/",
+   "modules": [
+    "Computer 与 Agent 管理/Tutti API 与自定义模型"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "packages/agent/gui/agent-gui/terminalNode/",
+   "modules": [
+    "房间/最终Agent GUI - 2/右侧面板"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "packages/agent/gui/agent-message-center/",
+   "modules": [
+    "房间/最终Agent GUI - 2/中间区域",
+    "左侧一级菜单栏/Notification"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "packages/agent/gui/context-mention-palette/",
+   "modules": [
+    "房间/最终Agent GUI - 2/中间区域/引用与输入增强"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "packages/agent/activity-core/",
+   "modules": [
+    "活动看板",
+    "工作台"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "packages/agent/",
+   "modules": [
+    "房间/最终Agent GUI - 2",
+    "Agent 接入核心回归集"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "packages/connector/",
+   "modules": [
+    "连接器"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "packages/workspace/",
+   "modules": [
+    "房间/文件中心",
+    "房间/本地房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "cmd/computer-daemon/modules/agent/",
+   "modules": [
+    "Computer 与 Agent 管理/Agent 检测与安装登录",
+    "房间/最终Agent GUI - 2",
+    "Agent 接入核心回归集"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "cmd/computer-daemon/modules/computer/",
+   "modules": [
+    "Computer 与 Agent 管理/Computer 管理与运维"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "cmd/computer-daemon/modules/connector/",
+   "modules": [
+    "连接器/连接器能力生效与状态同步"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "cmd/computer-manager/",
+   "modules": [
+    "Computer 与 Agent 管理/Computer 管理与运维"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "cmd/connector-manager/",
+   "modules": [
+    "连接器"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "cmd/guest-services/modules/agent/",
+   "modules": [
+    "房间/共享 Agent",
+    "共享管理"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "cmd/guest-agent/",
+   "modules": [
+    "房间/共享 Agent",
+    "Agent 接入核心回归集"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "cmd/cloud-agent-worker/",
+   "modules": [
+    "Computer 与 Agent 管理/Tutti API 与自定义模型",
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "cmd/tutti-cli/",
+   "modules": [
+    "Computer 与 Agent 管理/Computer 接入与绑定"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "apps/tutti-cli/",
+   "modules": [
+    "Computer 与 Agent 管理/Computer 接入与绑定"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "cmd/runtime-host/",
+   "modules": [
+    "Computer 与 Agent 管理/Computer 管理与运维"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "gopackages/connectors/",
+   "modules": [
+    "连接器"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti",
+   "prefix": "gopackages/agent-runtime/",
+   "modules": [
+    "房间/最终Agent GUI - 2",
+    "Agent 接入核心回归集"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tsh-web",
+   "prefix": "apps/auth/",
+   "modules": [
+    "新用户流程/登录页",
+    "新用户流程/Web登录态"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tsh-web",
+   "prefix": "packages/login-service/",
+   "modules": [
+    "新用户流程/登录页"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tsh-web",
+   "prefix": "packages/auth-client/",
+   "modules": [
+    "新用户流程/登录页",
+    "新用户流程/Web登录态"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tsh-web",
+   "prefix": "packages/account-",
+   "modules": [
+    "新用户流程/账号设置"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tsh-web",
+   "prefix": "apps/commerce/",
+   "modules": [
+    "共享管理/额度保护",
+    "新用户流程/新人积分"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tsh-web",
+   "prefix": "apps/share/",
+   "modules": [
+    "左侧一级菜单栏/My Assets",
+    "房间/文件中心"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tsh-web",
+   "prefix": "packages/office-",
+   "modules": [
+    "房间/文件中心"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tsh-web",
+   "prefix": "packages/spreadsheet-editor/",
+   "modules": [
+    "房间/文件中心"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tsh-web",
+   "prefix": "packages/ooxml-",
+   "modules": [
+    "房间/文件中心"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tsh-web",
+   "prefix": "apps/connector-authorization/",
+   "modules": [
+    "连接器/连接器授权"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tsh-web",
+   "prefix": "apps/landing/",
+   "modules": [
+    "(无用例模块：官网)"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tsh-web",
+   "prefix": "apps/official/",
+   "modules": [
+    "(无用例模块：官网)"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/modules/agentcapability/",
+   "modules": [
+    "Computer 与 Agent 管理/Agent 检测与安装登录",
+    "Agent 接入核心回归集"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/modules/agentexecution/",
+   "modules": [
+    "房间/最终Agent GUI - 2",
+    "Agent 接入核心回归集"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/modules/agentprovider/",
+   "modules": [
+    "Computer 与 Agent 管理/Tutti API 与自定义模型"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/modules/assets/",
+   "modules": [
+    "左侧一级菜单栏/My Assets",
+    "房间/文件中心"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/modules/automation/",
+   "modules": [
+    "房间/自动化",
+    "工作台/触发及周期"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/modules/chat/",
+   "modules": [
+    "房间/群聊"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/modules/permission/",
+   "modules": [
+    "游客模式",
+    "共享管理",
+    "房间管理 · Web 端"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/modules/quickprompt/",
+   "modules": [
+    "房间/最终Agent GUI - 2/中间区域"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/modules/room/",
+   "modules": [
+    "房间管理 · Web 端",
+    "游客模式"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/modules/roomenvironment/",
+   "modules": [
+    "房间/本地房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/modules/roomtask/",
+   "modules": [
+    "活动看板"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/modules/runtime/",
+   "modules": [
+    "Computer 与 Agent 管理/Computer 管理与运维"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/modules/upload/",
+   "modules": [
+    "房间/文件传输"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/modules/website/",
+   "modules": [
+    "房间/站点"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/modules/workspace/",
+   "modules": [
+    "房间/文件中心",
+    "房间/本地房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/agentactivity",
+   "modules": [
+    "活动看板",
+    "工作台"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/agentprojection/",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/skill",
+   "modules": [
+    "房间/最终Agent GUI - 2/中间区域/扩展生态与本地同步"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "content/skills/",
+   "modules": [
+    "房间/最终Agent GUI - 2/中间区域/扩展生态与本地同步"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "api/permissioncontrol/",
+   "modules": [
+    "游客模式",
+    "共享管理"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "api/publicroomcontrol/",
+   "modules": [
+    "房间/公开房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "api/marketcontrol/",
+   "modules": [
+    "房间/最终Agent GUI - 2/中间区域/扩展生态与本地同步"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "api/acquisitioncontrol/",
+   "modules": [
+    "新用户流程"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "api/sandbox/",
+   "modules": [
+    "Computer 与 Agent 管理/Computer 管理与运维"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "api/agentprotocol/",
+   "modules": [
+    "房间/最终Agent GUI - 2",
+    "Agent 接入核心回归集"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/agent_session",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/agent_execution",
+   "modules": [
+    "房间/最终Agent GUI - 2",
+    "Agent 接入核心回归集"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/agent_executor",
+   "modules": [
+    "房间/最终Agent GUI - 2",
+    "Agent 接入核心回归集"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/agent_command",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/agent_prompt",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/agent_reply",
+   "modules": [
+    "房间/最终Agent GUI - 2",
+    "左侧一级菜单栏/Notification"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/agent_attention",
+   "modules": [
+    "房间/最终Agent GUI - 2",
+    "左侧一级菜单栏/Notification"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/agent_failure",
+   "modules": [
+    "房间/最终Agent GUI - 2",
+    "Agent 接入核心回归集"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/agent_artifact",
+   "modules": [
+    "房间/最终Agent GUI - 2",
+    "左侧一级菜单栏/My Assets"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/agent_project",
+   "modules": [
+    "房间/本地房间",
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/agent_activity",
+   "modules": [
+    "活动看板",
+    "工作台"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/agent_sharing",
+   "modules": [
+    "共享管理",
+    "房间/共享 Agent"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/shared_agent",
+   "modules": [
+    "共享管理",
+    "房间/共享 Agent"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/my_agent",
+   "modules": [
+    "共享管理/我的 Agent"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/agent_usage",
+   "modules": [
+    "共享管理/使用概览",
+    "共享管理/额度保护"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/agent_metering",
+   "modules": [
+    "共享管理/使用概览",
+    "共享管理/额度保护"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/agent_access",
+   "modules": [
+    "共享管理",
+    "房间/共享 Agent"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/agent_directory",
+   "modules": [
+    "Computer 与 Agent 管理/Agent 检测与安装登录"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/agent_catalog",
+   "modules": [
+    "Computer 与 Agent 管理/Agent 检测与安装登录"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/agent_model",
+   "modules": [
+    "Computer 与 Agent 管理/Tutti API 与自定义模型"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/agent_state",
+   "modules": [
+    "Computer 与 Agent 管理/与房间会话的联动"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/agent_anonymous",
+   "modules": [
+    "游客模式"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/agent_capability",
+   "modules": [
+    "Computer 与 Agent 管理/Agent 检测与安装登录",
+    "Agent 接入核心回归集"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/agent_connector",
+   "modules": [
+    "连接器"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/agent_handoff",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/agent_target",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/native_agent",
+   "modules": [
+    "Computer 与 Agent 管理/Agent 检测与安装登录",
+    "Agent 接入核心回归集"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/vm_agent",
+   "modules": [
+    "Agent 接入核心回归集"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/global_agent",
+   "modules": [
+    "共享管理"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/cloud_agent",
+   "modules": [
+    "Computer 与 Agent 管理/Tutti API 与自定义模型",
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/cloud_computer",
+   "modules": [
+    "Computer 与 Agent 管理/Tutti API 与自定义模型"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/model_provider",
+   "modules": [
+    "Computer 与 Agent 管理/Tutti API 与自定义模型"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/computer_",
+   "modules": [
+    "Computer 与 Agent 管理/Computer 管理与运维"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/computer.go",
+   "modules": [
+    "Computer 与 Agent 管理/Computer 管理与运维"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/computer_connector",
+   "modules": [
+    "连接器/连接器能力生效与状态同步"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/computer_agent",
+   "modules": [
+    "Computer 与 Agent 管理/Agent 检测与安装登录"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/computer_installation",
+   "modules": [
+    "Computer 与 Agent 管理/Computer 接入与绑定"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/computer_registration",
+   "modules": [
+    "Computer 与 Agent 管理/Computer 接入与绑定"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/connector_",
+   "modules": [
+    "连接器"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/room_task",
+   "modules": [
+    "活动看板"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/task_",
+   "modules": [
+    "活动看板"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/workbench_task",
+   "modules": [
+    "工作台"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/issue_manager",
+   "modules": [
+    "活动看板"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/room_guest",
+   "modules": [
+    "游客模式"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/room_anonymous",
+   "modules": [
+    "游客模式"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/preview_anonymous",
+   "modules": [
+    "游客模式",
+    "房间/站点"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/permission_",
+   "modules": [
+    "游客模式",
+    "共享管理"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/room_permission",
+   "modules": [
+    "游客模式",
+    "房间管理 · Web 端"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/room_authorization",
+   "modules": [
+    "游客模式",
+    "房间管理 · Web 端"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/room_member",
+   "modules": [
+    "房间管理 · Web 端/房间信息面板 · 成员与共享 Agent"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/invite_issuance",
+   "modules": [
+    "房间管理 · Web 端/房间信息面板 · 邀请与准入",
+    "游客模式"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/roomsharepush",
+   "modules": [
+    "房间管理 · Web 端",
+    "游客模式"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/room_shared",
+   "modules": [
+    "房间管理 · Web 端",
+    "游客模式"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/room_announcement",
+   "modules": [
+    "房间管理 · Web 端/房间支持公告功能"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/room_avatar",
+   "modules": [
+    "房间管理 · Web 端/新建房间",
+    "房间管理 · Web 端/房间信息编辑"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/room_creator",
+   "modules": [
+    "房间管理 · Web 端/新建房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/room_status",
+   "modules": [
+    "房间管理 · Web 端"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/room_usage",
+   "modules": [
+    "共享管理/额度保护"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/room_environment",
+   "modules": [
+    "房间/本地房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/room_env",
+   "modules": [
+    "房间/本地房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/room_native",
+   "modules": [
+    "房间/本地房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/native_room",
+   "modules": [
+    "房间/本地房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/native_project",
+   "modules": [
+    "房间/本地房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/room_terminal",
+   "modules": [
+    "房间/最终Agent GUI - 2/右侧面板"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/room_notification",
+   "modules": [
+    "左侧一级菜单栏/Notification"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/user_notification",
+   "modules": [
+    "左侧一级菜单栏/Notification"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/room_workspace",
+   "modules": [
+    "房间/文件中心"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/workspace_",
+   "modules": [
+    "房间/文件中心"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/room_file",
+   "modules": [
+    "房间/文件中心"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/public_room",
+   "modules": [
+    "房间/公开房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/preview_room",
+   "modules": [
+    "房间/站点"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/chat",
+   "modules": [
+    "房间/群聊"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/session_comment",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/comment",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/conversation_note",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/quick_prompt",
+   "modules": [
+    "房间/最终Agent GUI - 2/中间区域"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/website",
+   "modules": [
+    "房间/站点"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/runtime_preview",
+   "modules": [
+    "房间/站点"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/upload",
+   "modules": [
+    "房间/文件传输"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/uploaded_asset",
+   "modules": [
+    "左侧一级菜单栏/My Assets"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/my_assets",
+   "modules": [
+    "左侧一级菜单栏/My Assets"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/download_delivery",
+   "modules": [
+    "房间/文件中心"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/market",
+   "modules": [
+    "房间/最终Agent GUI - 2/中间区域/扩展生态与本地同步"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/skill_",
+   "modules": [
+    "房间/最终Agent GUI - 2/中间区域/扩展生态与本地同步"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/automation",
+   "modules": [
+    "房间/自动化",
+    "工作台/触发及周期"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/schedule",
+   "modules": [
+    "房间/自动化",
+    "工作台/触发及周期"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/acquisition_",
+   "modules": [
+    "新用户流程"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/biz/github_import",
+   "modules": [
+    "房间/本地房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/agent_session",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/agent_execution",
+   "modules": [
+    "房间/最终Agent GUI - 2",
+    "Agent 接入核心回归集"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/agent_executor",
+   "modules": [
+    "房间/最终Agent GUI - 2",
+    "Agent 接入核心回归集"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/agent_command",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/agent_prompt",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/agent_reply",
+   "modules": [
+    "房间/最终Agent GUI - 2",
+    "左侧一级菜单栏/Notification"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/agent_attention",
+   "modules": [
+    "房间/最终Agent GUI - 2",
+    "左侧一级菜单栏/Notification"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/agent_failure",
+   "modules": [
+    "房间/最终Agent GUI - 2",
+    "Agent 接入核心回归集"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/agent_artifact",
+   "modules": [
+    "房间/最终Agent GUI - 2",
+    "左侧一级菜单栏/My Assets"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/agent_project",
+   "modules": [
+    "房间/本地房间",
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/agent_activity",
+   "modules": [
+    "活动看板",
+    "工作台"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/agent_sharing",
+   "modules": [
+    "共享管理",
+    "房间/共享 Agent"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/shared_agent",
+   "modules": [
+    "共享管理",
+    "房间/共享 Agent"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/my_agent",
+   "modules": [
+    "共享管理/我的 Agent"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/agent_usage",
+   "modules": [
+    "共享管理/使用概览",
+    "共享管理/额度保护"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/agent_metering",
+   "modules": [
+    "共享管理/使用概览",
+    "共享管理/额度保护"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/agent_access",
+   "modules": [
+    "共享管理",
+    "房间/共享 Agent"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/agent_directory",
+   "modules": [
+    "Computer 与 Agent 管理/Agent 检测与安装登录"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/agent_catalog",
+   "modules": [
+    "Computer 与 Agent 管理/Agent 检测与安装登录"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/agent_model",
+   "modules": [
+    "Computer 与 Agent 管理/Tutti API 与自定义模型"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/agent_state",
+   "modules": [
+    "Computer 与 Agent 管理/与房间会话的联动"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/agent_anonymous",
+   "modules": [
+    "游客模式"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/agent_capability",
+   "modules": [
+    "Computer 与 Agent 管理/Agent 检测与安装登录",
+    "Agent 接入核心回归集"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/agent_connector",
+   "modules": [
+    "连接器"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/agent_handoff",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/agent_target",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/native_agent",
+   "modules": [
+    "Computer 与 Agent 管理/Agent 检测与安装登录",
+    "Agent 接入核心回归集"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/vm_agent",
+   "modules": [
+    "Agent 接入核心回归集"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/global_agent",
+   "modules": [
+    "共享管理"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/cloud_agent",
+   "modules": [
+    "Computer 与 Agent 管理/Tutti API 与自定义模型",
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/cloud_computer",
+   "modules": [
+    "Computer 与 Agent 管理/Tutti API 与自定义模型"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/model_provider",
+   "modules": [
+    "Computer 与 Agent 管理/Tutti API 与自定义模型"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/computer_",
+   "modules": [
+    "Computer 与 Agent 管理/Computer 管理与运维"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/computer.go",
+   "modules": [
+    "Computer 与 Agent 管理/Computer 管理与运维"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/computer_connector",
+   "modules": [
+    "连接器/连接器能力生效与状态同步"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/computer_agent",
+   "modules": [
+    "Computer 与 Agent 管理/Agent 检测与安装登录"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/computer_installation",
+   "modules": [
+    "Computer 与 Agent 管理/Computer 接入与绑定"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/computer_registration",
+   "modules": [
+    "Computer 与 Agent 管理/Computer 接入与绑定"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/connector_",
+   "modules": [
+    "连接器"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/room_task",
+   "modules": [
+    "活动看板"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/task_",
+   "modules": [
+    "活动看板"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/workbench_task",
+   "modules": [
+    "工作台"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/issue_manager",
+   "modules": [
+    "活动看板"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/room_guest",
+   "modules": [
+    "游客模式"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/room_anonymous",
+   "modules": [
+    "游客模式"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/preview_anonymous",
+   "modules": [
+    "游客模式",
+    "房间/站点"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/permission_",
+   "modules": [
+    "游客模式",
+    "共享管理"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/room_permission",
+   "modules": [
+    "游客模式",
+    "房间管理 · Web 端"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/room_authorization",
+   "modules": [
+    "游客模式",
+    "房间管理 · Web 端"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/room_member",
+   "modules": [
+    "房间管理 · Web 端/房间信息面板 · 成员与共享 Agent"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/invite_issuance",
+   "modules": [
+    "房间管理 · Web 端/房间信息面板 · 邀请与准入",
+    "游客模式"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/roomsharepush",
+   "modules": [
+    "房间管理 · Web 端",
+    "游客模式"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/room_shared",
+   "modules": [
+    "房间管理 · Web 端",
+    "游客模式"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/room_announcement",
+   "modules": [
+    "房间管理 · Web 端/房间支持公告功能"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/room_avatar",
+   "modules": [
+    "房间管理 · Web 端/新建房间",
+    "房间管理 · Web 端/房间信息编辑"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/room_creator",
+   "modules": [
+    "房间管理 · Web 端/新建房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/room_status",
+   "modules": [
+    "房间管理 · Web 端"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/room_usage",
+   "modules": [
+    "共享管理/额度保护"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/room_environment",
+   "modules": [
+    "房间/本地房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/room_env",
+   "modules": [
+    "房间/本地房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/room_native",
+   "modules": [
+    "房间/本地房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/native_room",
+   "modules": [
+    "房间/本地房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/native_project",
+   "modules": [
+    "房间/本地房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/room_terminal",
+   "modules": [
+    "房间/最终Agent GUI - 2/右侧面板"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/room_notification",
+   "modules": [
+    "左侧一级菜单栏/Notification"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/user_notification",
+   "modules": [
+    "左侧一级菜单栏/Notification"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/room_workspace",
+   "modules": [
+    "房间/文件中心"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/workspace_",
+   "modules": [
+    "房间/文件中心"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/room_file",
+   "modules": [
+    "房间/文件中心"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/public_room",
+   "modules": [
+    "房间/公开房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/preview_room",
+   "modules": [
+    "房间/站点"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/chat",
+   "modules": [
+    "房间/群聊"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/session_comment",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/comment",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/conversation_note",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/quick_prompt",
+   "modules": [
+    "房间/最终Agent GUI - 2/中间区域"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/website",
+   "modules": [
+    "房间/站点"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/runtime_preview",
+   "modules": [
+    "房间/站点"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/upload",
+   "modules": [
+    "房间/文件传输"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/uploaded_asset",
+   "modules": [
+    "左侧一级菜单栏/My Assets"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/my_assets",
+   "modules": [
+    "左侧一级菜单栏/My Assets"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/download_delivery",
+   "modules": [
+    "房间/文件中心"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/market",
+   "modules": [
+    "房间/最终Agent GUI - 2/中间区域/扩展生态与本地同步"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/skill_",
+   "modules": [
+    "房间/最终Agent GUI - 2/中间区域/扩展生态与本地同步"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/automation",
+   "modules": [
+    "房间/自动化",
+    "工作台/触发及周期"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/schedule",
+   "modules": [
+    "房间/自动化",
+    "工作台/触发及周期"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/acquisition_",
+   "modules": [
+    "新用户流程"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/data/github_import",
+   "modules": [
+    "房间/本地房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/agent_session",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/agent_execution",
+   "modules": [
+    "房间/最终Agent GUI - 2",
+    "Agent 接入核心回归集"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/agent_executor",
+   "modules": [
+    "房间/最终Agent GUI - 2",
+    "Agent 接入核心回归集"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/agent_command",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/agent_prompt",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/agent_reply",
+   "modules": [
+    "房间/最终Agent GUI - 2",
+    "左侧一级菜单栏/Notification"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/agent_attention",
+   "modules": [
+    "房间/最终Agent GUI - 2",
+    "左侧一级菜单栏/Notification"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/agent_failure",
+   "modules": [
+    "房间/最终Agent GUI - 2",
+    "Agent 接入核心回归集"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/agent_artifact",
+   "modules": [
+    "房间/最终Agent GUI - 2",
+    "左侧一级菜单栏/My Assets"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/agent_project",
+   "modules": [
+    "房间/本地房间",
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/agent_activity",
+   "modules": [
+    "活动看板",
+    "工作台"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/agent_sharing",
+   "modules": [
+    "共享管理",
+    "房间/共享 Agent"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/shared_agent",
+   "modules": [
+    "共享管理",
+    "房间/共享 Agent"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/my_agent",
+   "modules": [
+    "共享管理/我的 Agent"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/agent_usage",
+   "modules": [
+    "共享管理/使用概览",
+    "共享管理/额度保护"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/agent_metering",
+   "modules": [
+    "共享管理/使用概览",
+    "共享管理/额度保护"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/agent_access",
+   "modules": [
+    "共享管理",
+    "房间/共享 Agent"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/agent_directory",
+   "modules": [
+    "Computer 与 Agent 管理/Agent 检测与安装登录"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/agent_catalog",
+   "modules": [
+    "Computer 与 Agent 管理/Agent 检测与安装登录"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/agent_model",
+   "modules": [
+    "Computer 与 Agent 管理/Tutti API 与自定义模型"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/agent_state",
+   "modules": [
+    "Computer 与 Agent 管理/与房间会话的联动"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/agent_anonymous",
+   "modules": [
+    "游客模式"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/agent_capability",
+   "modules": [
+    "Computer 与 Agent 管理/Agent 检测与安装登录",
+    "Agent 接入核心回归集"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/agent_connector",
+   "modules": [
+    "连接器"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/agent_handoff",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/agent_target",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/native_agent",
+   "modules": [
+    "Computer 与 Agent 管理/Agent 检测与安装登录",
+    "Agent 接入核心回归集"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/vm_agent",
+   "modules": [
+    "Agent 接入核心回归集"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/global_agent",
+   "modules": [
+    "共享管理"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/cloud_agent",
+   "modules": [
+    "Computer 与 Agent 管理/Tutti API 与自定义模型",
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/cloud_computer",
+   "modules": [
+    "Computer 与 Agent 管理/Tutti API 与自定义模型"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/model_provider",
+   "modules": [
+    "Computer 与 Agent 管理/Tutti API 与自定义模型"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/computer_",
+   "modules": [
+    "Computer 与 Agent 管理/Computer 管理与运维"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/computer.go",
+   "modules": [
+    "Computer 与 Agent 管理/Computer 管理与运维"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/computer_connector",
+   "modules": [
+    "连接器/连接器能力生效与状态同步"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/computer_agent",
+   "modules": [
+    "Computer 与 Agent 管理/Agent 检测与安装登录"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/computer_installation",
+   "modules": [
+    "Computer 与 Agent 管理/Computer 接入与绑定"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/computer_registration",
+   "modules": [
+    "Computer 与 Agent 管理/Computer 接入与绑定"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/connector_",
+   "modules": [
+    "连接器"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/room_task",
+   "modules": [
+    "活动看板"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/task_",
+   "modules": [
+    "活动看板"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/workbench_task",
+   "modules": [
+    "工作台"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/issue_manager",
+   "modules": [
+    "活动看板"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/room_guest",
+   "modules": [
+    "游客模式"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/room_anonymous",
+   "modules": [
+    "游客模式"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/preview_anonymous",
+   "modules": [
+    "游客模式",
+    "房间/站点"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/permission_",
+   "modules": [
+    "游客模式",
+    "共享管理"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/room_permission",
+   "modules": [
+    "游客模式",
+    "房间管理 · Web 端"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/room_authorization",
+   "modules": [
+    "游客模式",
+    "房间管理 · Web 端"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/room_member",
+   "modules": [
+    "房间管理 · Web 端/房间信息面板 · 成员与共享 Agent"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/invite_issuance",
+   "modules": [
+    "房间管理 · Web 端/房间信息面板 · 邀请与准入",
+    "游客模式"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/roomsharepush",
+   "modules": [
+    "房间管理 · Web 端",
+    "游客模式"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/room_shared",
+   "modules": [
+    "房间管理 · Web 端",
+    "游客模式"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/room_announcement",
+   "modules": [
+    "房间管理 · Web 端/房间支持公告功能"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/room_avatar",
+   "modules": [
+    "房间管理 · Web 端/新建房间",
+    "房间管理 · Web 端/房间信息编辑"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/room_creator",
+   "modules": [
+    "房间管理 · Web 端/新建房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/room_status",
+   "modules": [
+    "房间管理 · Web 端"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/room_usage",
+   "modules": [
+    "共享管理/额度保护"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/room_environment",
+   "modules": [
+    "房间/本地房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/room_env",
+   "modules": [
+    "房间/本地房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/room_native",
+   "modules": [
+    "房间/本地房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/native_room",
+   "modules": [
+    "房间/本地房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/native_project",
+   "modules": [
+    "房间/本地房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/room_terminal",
+   "modules": [
+    "房间/最终Agent GUI - 2/右侧面板"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/room_notification",
+   "modules": [
+    "左侧一级菜单栏/Notification"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/user_notification",
+   "modules": [
+    "左侧一级菜单栏/Notification"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/room_workspace",
+   "modules": [
+    "房间/文件中心"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/workspace_",
+   "modules": [
+    "房间/文件中心"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/room_file",
+   "modules": [
+    "房间/文件中心"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/public_room",
+   "modules": [
+    "房间/公开房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/preview_room",
+   "modules": [
+    "房间/站点"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/chat",
+   "modules": [
+    "房间/群聊"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/session_comment",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/comment",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/conversation_note",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/quick_prompt",
+   "modules": [
+    "房间/最终Agent GUI - 2/中间区域"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/website",
+   "modules": [
+    "房间/站点"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/runtime_preview",
+   "modules": [
+    "房间/站点"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/upload",
+   "modules": [
+    "房间/文件传输"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/uploaded_asset",
+   "modules": [
+    "左侧一级菜单栏/My Assets"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/my_assets",
+   "modules": [
+    "左侧一级菜单栏/My Assets"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/download_delivery",
+   "modules": [
+    "房间/文件中心"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/market",
+   "modules": [
+    "房间/最终Agent GUI - 2/中间区域/扩展生态与本地同步"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/skill_",
+   "modules": [
+    "房间/最终Agent GUI - 2/中间区域/扩展生态与本地同步"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/automation",
+   "modules": [
+    "房间/自动化",
+    "工作台/触发及周期"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/schedule",
+   "modules": [
+    "房间/自动化",
+    "工作台/触发及周期"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/acquisition_",
+   "modules": [
+    "新用户流程"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "internal/service/github_import",
+   "modules": [
+    "房间/本地房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/agent_session",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/agent_execution",
+   "modules": [
+    "房间/最终Agent GUI - 2",
+    "Agent 接入核心回归集"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/agent_executor",
+   "modules": [
+    "房间/最终Agent GUI - 2",
+    "Agent 接入核心回归集"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/agent_command",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/agent_prompt",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/agent_reply",
+   "modules": [
+    "房间/最终Agent GUI - 2",
+    "左侧一级菜单栏/Notification"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/agent_attention",
+   "modules": [
+    "房间/最终Agent GUI - 2",
+    "左侧一级菜单栏/Notification"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/agent_failure",
+   "modules": [
+    "房间/最终Agent GUI - 2",
+    "Agent 接入核心回归集"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/agent_artifact",
+   "modules": [
+    "房间/最终Agent GUI - 2",
+    "左侧一级菜单栏/My Assets"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/agent_project",
+   "modules": [
+    "房间/本地房间",
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/agent_activity",
+   "modules": [
+    "活动看板",
+    "工作台"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/agent_sharing",
+   "modules": [
+    "共享管理",
+    "房间/共享 Agent"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/shared_agent",
+   "modules": [
+    "共享管理",
+    "房间/共享 Agent"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/my_agent",
+   "modules": [
+    "共享管理/我的 Agent"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/agent_usage",
+   "modules": [
+    "共享管理/使用概览",
+    "共享管理/额度保护"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/agent_metering",
+   "modules": [
+    "共享管理/使用概览",
+    "共享管理/额度保护"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/agent_access",
+   "modules": [
+    "共享管理",
+    "房间/共享 Agent"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/agent_directory",
+   "modules": [
+    "Computer 与 Agent 管理/Agent 检测与安装登录"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/agent_catalog",
+   "modules": [
+    "Computer 与 Agent 管理/Agent 检测与安装登录"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/agent_model",
+   "modules": [
+    "Computer 与 Agent 管理/Tutti API 与自定义模型"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/agent_state",
+   "modules": [
+    "Computer 与 Agent 管理/与房间会话的联动"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/agent_anonymous",
+   "modules": [
+    "游客模式"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/agent_capability",
+   "modules": [
+    "Computer 与 Agent 管理/Agent 检测与安装登录",
+    "Agent 接入核心回归集"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/agent_connector",
+   "modules": [
+    "连接器"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/agent_handoff",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/agent_target",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/native_agent",
+   "modules": [
+    "Computer 与 Agent 管理/Agent 检测与安装登录",
+    "Agent 接入核心回归集"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/vm_agent",
+   "modules": [
+    "Agent 接入核心回归集"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/global_agent",
+   "modules": [
+    "共享管理"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/cloud_agent",
+   "modules": [
+    "Computer 与 Agent 管理/Tutti API 与自定义模型",
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/cloud_computer",
+   "modules": [
+    "Computer 与 Agent 管理/Tutti API 与自定义模型"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/model_provider",
+   "modules": [
+    "Computer 与 Agent 管理/Tutti API 与自定义模型"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/computer_",
+   "modules": [
+    "Computer 与 Agent 管理/Computer 管理与运维"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/computer.go",
+   "modules": [
+    "Computer 与 Agent 管理/Computer 管理与运维"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/computer_connector",
+   "modules": [
+    "连接器/连接器能力生效与状态同步"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/computer_agent",
+   "modules": [
+    "Computer 与 Agent 管理/Agent 检测与安装登录"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/computer_installation",
+   "modules": [
+    "Computer 与 Agent 管理/Computer 接入与绑定"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/computer_registration",
+   "modules": [
+    "Computer 与 Agent 管理/Computer 接入与绑定"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/connector_",
+   "modules": [
+    "连接器"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/room_task",
+   "modules": [
+    "活动看板"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/task_",
+   "modules": [
+    "活动看板"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/workbench_task",
+   "modules": [
+    "工作台"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/issue_manager",
+   "modules": [
+    "活动看板"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/room_guest",
+   "modules": [
+    "游客模式"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/room_anonymous",
+   "modules": [
+    "游客模式"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/preview_anonymous",
+   "modules": [
+    "游客模式",
+    "房间/站点"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/permission_",
+   "modules": [
+    "游客模式",
+    "共享管理"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/room_permission",
+   "modules": [
+    "游客模式",
+    "房间管理 · Web 端"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/room_authorization",
+   "modules": [
+    "游客模式",
+    "房间管理 · Web 端"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/room_member",
+   "modules": [
+    "房间管理 · Web 端/房间信息面板 · 成员与共享 Agent"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/invite_issuance",
+   "modules": [
+    "房间管理 · Web 端/房间信息面板 · 邀请与准入",
+    "游客模式"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/roomsharepush",
+   "modules": [
+    "房间管理 · Web 端",
+    "游客模式"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/room_shared",
+   "modules": [
+    "房间管理 · Web 端",
+    "游客模式"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/room_announcement",
+   "modules": [
+    "房间管理 · Web 端/房间支持公告功能"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/room_avatar",
+   "modules": [
+    "房间管理 · Web 端/新建房间",
+    "房间管理 · Web 端/房间信息编辑"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/room_creator",
+   "modules": [
+    "房间管理 · Web 端/新建房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/room_status",
+   "modules": [
+    "房间管理 · Web 端"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/room_usage",
+   "modules": [
+    "共享管理/额度保护"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/room_environment",
+   "modules": [
+    "房间/本地房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/room_env",
+   "modules": [
+    "房间/本地房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/room_native",
+   "modules": [
+    "房间/本地房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/native_room",
+   "modules": [
+    "房间/本地房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/native_project",
+   "modules": [
+    "房间/本地房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/room_terminal",
+   "modules": [
+    "房间/最终Agent GUI - 2/右侧面板"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/room_notification",
+   "modules": [
+    "左侧一级菜单栏/Notification"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/user_notification",
+   "modules": [
+    "左侧一级菜单栏/Notification"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/room_workspace",
+   "modules": [
+    "房间/文件中心"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/workspace_",
+   "modules": [
+    "房间/文件中心"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/room_file",
+   "modules": [
+    "房间/文件中心"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/public_room",
+   "modules": [
+    "房间/公开房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/preview_room",
+   "modules": [
+    "房间/站点"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/chat",
+   "modules": [
+    "房间/群聊"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/session_comment",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/comment",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/conversation_note",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/quick_prompt",
+   "modules": [
+    "房间/最终Agent GUI - 2/中间区域"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/website",
+   "modules": [
+    "房间/站点"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/runtime_preview",
+   "modules": [
+    "房间/站点"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/upload",
+   "modules": [
+    "房间/文件传输"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/uploaded_asset",
+   "modules": [
+    "左侧一级菜单栏/My Assets"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/my_assets",
+   "modules": [
+    "左侧一级菜单栏/My Assets"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/download_delivery",
+   "modules": [
+    "房间/文件中心"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/market",
+   "modules": [
+    "房间/最终Agent GUI - 2/中间区域/扩展生态与本地同步"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/skill_",
+   "modules": [
+    "房间/最终Agent GUI - 2/中间区域/扩展生态与本地同步"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/automation",
+   "modules": [
+    "房间/自动化",
+    "工作台/触发及周期"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/schedule",
+   "modules": [
+    "房间/自动化",
+    "工作台/触发及周期"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/acquisition_",
+   "modules": [
+    "新用户流程"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/queries/github_import",
+   "modules": [
+    "房间/本地房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/agent_session",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/agent_execution",
+   "modules": [
+    "房间/最终Agent GUI - 2",
+    "Agent 接入核心回归集"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/agent_executor",
+   "modules": [
+    "房间/最终Agent GUI - 2",
+    "Agent 接入核心回归集"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/agent_command",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/agent_prompt",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/agent_reply",
+   "modules": [
+    "房间/最终Agent GUI - 2",
+    "左侧一级菜单栏/Notification"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/agent_attention",
+   "modules": [
+    "房间/最终Agent GUI - 2",
+    "左侧一级菜单栏/Notification"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/agent_failure",
+   "modules": [
+    "房间/最终Agent GUI - 2",
+    "Agent 接入核心回归集"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/agent_artifact",
+   "modules": [
+    "房间/最终Agent GUI - 2",
+    "左侧一级菜单栏/My Assets"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/agent_project",
+   "modules": [
+    "房间/本地房间",
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/agent_activity",
+   "modules": [
+    "活动看板",
+    "工作台"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/agent_sharing",
+   "modules": [
+    "共享管理",
+    "房间/共享 Agent"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/shared_agent",
+   "modules": [
+    "共享管理",
+    "房间/共享 Agent"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/my_agent",
+   "modules": [
+    "共享管理/我的 Agent"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/agent_usage",
+   "modules": [
+    "共享管理/使用概览",
+    "共享管理/额度保护"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/agent_metering",
+   "modules": [
+    "共享管理/使用概览",
+    "共享管理/额度保护"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/agent_access",
+   "modules": [
+    "共享管理",
+    "房间/共享 Agent"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/agent_directory",
+   "modules": [
+    "Computer 与 Agent 管理/Agent 检测与安装登录"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/agent_catalog",
+   "modules": [
+    "Computer 与 Agent 管理/Agent 检测与安装登录"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/agent_model",
+   "modules": [
+    "Computer 与 Agent 管理/Tutti API 与自定义模型"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/agent_state",
+   "modules": [
+    "Computer 与 Agent 管理/与房间会话的联动"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/agent_anonymous",
+   "modules": [
+    "游客模式"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/agent_capability",
+   "modules": [
+    "Computer 与 Agent 管理/Agent 检测与安装登录",
+    "Agent 接入核心回归集"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/agent_connector",
+   "modules": [
+    "连接器"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/agent_handoff",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/agent_target",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/native_agent",
+   "modules": [
+    "Computer 与 Agent 管理/Agent 检测与安装登录",
+    "Agent 接入核心回归集"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/vm_agent",
+   "modules": [
+    "Agent 接入核心回归集"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/global_agent",
+   "modules": [
+    "共享管理"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/cloud_agent",
+   "modules": [
+    "Computer 与 Agent 管理/Tutti API 与自定义模型",
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/cloud_computer",
+   "modules": [
+    "Computer 与 Agent 管理/Tutti API 与自定义模型"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/model_provider",
+   "modules": [
+    "Computer 与 Agent 管理/Tutti API 与自定义模型"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/computer_",
+   "modules": [
+    "Computer 与 Agent 管理/Computer 管理与运维"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/computer.go",
+   "modules": [
+    "Computer 与 Agent 管理/Computer 管理与运维"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/computer_connector",
+   "modules": [
+    "连接器/连接器能力生效与状态同步"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/computer_agent",
+   "modules": [
+    "Computer 与 Agent 管理/Agent 检测与安装登录"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/computer_installation",
+   "modules": [
+    "Computer 与 Agent 管理/Computer 接入与绑定"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/computer_registration",
+   "modules": [
+    "Computer 与 Agent 管理/Computer 接入与绑定"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/connector_",
+   "modules": [
+    "连接器"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/room_task",
+   "modules": [
+    "活动看板"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/task_",
+   "modules": [
+    "活动看板"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/workbench_task",
+   "modules": [
+    "工作台"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/issue_manager",
+   "modules": [
+    "活动看板"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/room_guest",
+   "modules": [
+    "游客模式"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/room_anonymous",
+   "modules": [
+    "游客模式"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/preview_anonymous",
+   "modules": [
+    "游客模式",
+    "房间/站点"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/permission_",
+   "modules": [
+    "游客模式",
+    "共享管理"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/room_permission",
+   "modules": [
+    "游客模式",
+    "房间管理 · Web 端"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/room_authorization",
+   "modules": [
+    "游客模式",
+    "房间管理 · Web 端"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/room_member",
+   "modules": [
+    "房间管理 · Web 端/房间信息面板 · 成员与共享 Agent"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/invite_issuance",
+   "modules": [
+    "房间管理 · Web 端/房间信息面板 · 邀请与准入",
+    "游客模式"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/roomsharepush",
+   "modules": [
+    "房间管理 · Web 端",
+    "游客模式"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/room_shared",
+   "modules": [
+    "房间管理 · Web 端",
+    "游客模式"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/room_announcement",
+   "modules": [
+    "房间管理 · Web 端/房间支持公告功能"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/room_avatar",
+   "modules": [
+    "房间管理 · Web 端/新建房间",
+    "房间管理 · Web 端/房间信息编辑"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/room_creator",
+   "modules": [
+    "房间管理 · Web 端/新建房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/room_status",
+   "modules": [
+    "房间管理 · Web 端"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/room_usage",
+   "modules": [
+    "共享管理/额度保护"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/room_environment",
+   "modules": [
+    "房间/本地房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/room_env",
+   "modules": [
+    "房间/本地房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/room_native",
+   "modules": [
+    "房间/本地房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/native_room",
+   "modules": [
+    "房间/本地房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/native_project",
+   "modules": [
+    "房间/本地房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/room_terminal",
+   "modules": [
+    "房间/最终Agent GUI - 2/右侧面板"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/room_notification",
+   "modules": [
+    "左侧一级菜单栏/Notification"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/user_notification",
+   "modules": [
+    "左侧一级菜单栏/Notification"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/room_workspace",
+   "modules": [
+    "房间/文件中心"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/workspace_",
+   "modules": [
+    "房间/文件中心"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/room_file",
+   "modules": [
+    "房间/文件中心"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/public_room",
+   "modules": [
+    "房间/公开房间"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/preview_room",
+   "modules": [
+    "房间/站点"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/chat",
+   "modules": [
+    "房间/群聊"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/session_comment",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/comment",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/conversation_note",
+   "modules": [
+    "房间/最终Agent GUI - 2"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/quick_prompt",
+   "modules": [
+    "房间/最终Agent GUI - 2/中间区域"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/website",
+   "modules": [
+    "房间/站点"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/runtime_preview",
+   "modules": [
+    "房间/站点"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/upload",
+   "modules": [
+    "房间/文件传输"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/uploaded_asset",
+   "modules": [
+    "左侧一级菜单栏/My Assets"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/my_assets",
+   "modules": [
+    "左侧一级菜单栏/My Assets"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/download_delivery",
+   "modules": [
+    "房间/文件中心"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/market",
+   "modules": [
+    "房间/最终Agent GUI - 2/中间区域/扩展生态与本地同步"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/skill_",
+   "modules": [
+    "房间/最终Agent GUI - 2/中间区域/扩展生态与本地同步"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/automation",
+   "modules": [
+    "房间/自动化",
+    "工作台/触发及周期"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/schedule",
+   "modules": [
+    "房间/自动化",
+    "工作台/触发及周期"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/acquisition_",
+   "modules": [
+    "新用户流程"
+   ]
+  },
+  {
+   "repo": "tutti-lab/tutti-server",
+   "prefix": "db/schema/github_import",
+   "modules": [
+    "房间/本地房间"
+   ]
+  }
+ ],
+ "noise": {
+  "_说明": "命中即在确认页默认不勾选（仍然列出，QA 可手动勾上）。title_types 匹配 conventional commit 的 type 或 type(scope)；paths 是「全部文件都命中才算噪音」。",
+  "title_types": [
+   "test",
+   "tests",
+   "ci",
+   "build",
+   "docs",
+   "chore",
+   "style",
+   "perf(test)",
+   "fix(test)",
+   "fix(ci)",
+   "fix(release)",
+   "chore(release)",
+   "perf(release)",
+   "refactor(test)",
+   "fix(build)",
+   "perf(ci)"
+  ],
+  "paths": [
+   "tools/",
+   ".github/",
+   ".husky/",
+   ".agents/",
+   ".claude/",
+   ".changeset/",
+   "docs/",
+   "design-proposals/",
+   "plan/",
+   "patches/",
+   "vendor/",
+   "tooling/",
+   "config/",
+   "README.md",
+   "AGENTS.md",
+   "CONTEXT.md",
+   "PRODUCT.md",
+   "design-qa.md",
+   "pnpm-lock.yaml",
+   "go.sum",
+   "go.work.sum",
+   "runtime-release.json",
+   "/__tests__/",
+   "/testing/",
+   "/test/",
+   ".test.",
+   ".spec.",
+   "_test.go",
+   ".stories.",
+   "deployment/",
+   "deploy/",
+   "infra/",
+   ".githooks/",
+   "scripts/",
+   "tests/",
+   "third_party/",
+   "/testdata/",
+   "internal/data/testdata/",
+   "internal/metrics/",
+   "internal/server/http",
+   "internal/conf/",
+   "db/governance/",
+   "db/migrations/migration-order.yaml",
+   "internal/logpolicy/",
+   "internal/servertiming/",
+   "internal/requestid/",
+   "internal/requestmeta/",
+   "internal/requestscope/"
+  ]
+ }
+}

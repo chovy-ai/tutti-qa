@@ -1,0 +1,28 @@
+# 房间管理 · Web 端 / 新建房间 / 新建房间弹窗 / 正常场景
+# 前置：新建房间弹窗已打开且名称未改；角色：任意用户；入口：完成按钮
+# 操作：直接点击完成
+# 预期 1：列表展示 ｜ 房间创建成功并出现在左侧 Rooms 列表中
+# 预期 2：结果校验 ｜ 房间名为「用户昵称 + 创建日期」，日期按用户所在时区计算，月份与日期均为两位数字
+# 预期 3：视觉展示 ｜ 列表中的头像与背景色与所选一致
+case: fbaa0d30-3372-4d6e-8c7a-e003dc960af8
+title: 使用默认名称创建
+sourceHash: fdc1ceaddd6b6069
+mode: auto
+actors:
+  - owner
+setup:
+  - actor: owner
+    flow: openCreateRoomDialog
+steps:
+  - actor: owner
+    act: 不修改房间名称，直接点击弹窗底部的完成或创建按钮
+  - actor: owner
+    n: 1
+    assert: 房间创建成功，左侧房间列表中出现了这个新房间
+    waitMs: 60000
+  - actor: owner
+    n: 2
+    assert: 新房间的名称由用户昵称「{{owner.displayName}}」加上今天的日期组成（今天是 {{today.date}}），日期中的月份与日期均为两位数字
+uncovered:
+  - n: 3
+    reason: 需要对比创建弹窗中默认选中的头像/背景色与列表展示，跨截图比对，人工复核

@@ -1,0 +1,56 @@
+# 房间管理 · Web 端 / 房间信息面板 · 邀请与准入 / 房间链接与密码 / 正常场景
+# 前置：房间密码区已进入编辑态；角色：房主；入口：密码输入框
+# 操作：输入一组新的 6 位数字并保存，随后让新成员分别用旧密码与新密码加入
+# 预期 1：提示文案 ｜ 进入编辑态时出现取消、保存以及旧密码将立即失效的提示
+# 预期 2：持久化 ｜ 保存成功后恢复只读掩码状态
+# 预期 3：权限授权 ｜ 新成员无法使用旧密码加入，使用新密码可成功加入
+case: 7af9eba7-2f37-41ec-a89e-6097d1996621
+title: 编辑并保存新密码
+sourceHash: 85ce34b2832838e5
+mode: auto
+actors:
+  - owner
+  - guestOld
+  - guestNew
+setup:
+  - actor: owner
+    flow: createRoom
+    save: room
+  - actor: owner
+    flow: setPasswordProtection
+    with:
+      room: "{{room.name}}"
+      enabled: "true"
+  - actor: owner
+    flow: copyInvite
+    with:
+      room: "{{room.name}}"
+    save: old
+steps:
+  - actor: owner
+    act: 点击房间密码区的编辑入口
+  - actor: owner
+    n: 1
+    assert: 密码区进入编辑态，出现取消与保存按钮，并提示旧密码将立即失效
+  - actor: owner
+    act: 把密码改为 {{rand.pin}} 并点击保存
+  - actor: owner
+    n: 2
+    assert: 保存成功，密码区恢复为只读的掩码状态
+    waitMs: 60000
+  - actor: guestOld
+    flow: joinWithInvite
+    with:
+      invite: "{{old.invite}}"
+  - actor: guestOld
+    n: 3
+    assert: 使用旧密码加入失败，提示密码不正确，左侧房间列表中没有「{{room.name}}」
+    waitMs: 60000
+  - actor: guestNew
+    flow: joinWithInvite
+    with:
+      invite: "{{old.link}} {{rand.pin}}"
+      room: "{{room.name}}"
+  - actor: guestNew
+    n: 3
+    assert: 使用新密码成功加入并进入了房间「{{room.name}}」

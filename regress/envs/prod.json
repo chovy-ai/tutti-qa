@@ -1,0 +1,12 @@
+{
+  "id": "prod",
+  "webUrl": "https://tutti.sh/platform/",
+  "accountApiOrigin": "https://tutti.sh/api/account",
+  "accountAppId": "233749",
+  "sessionCookieDomain": ".tutti.sh",
+  "adminUrl": "https://admin.tutti.sh",
+  "locale": "en-US",
+  "timezoneId": "Asia/Shanghai",
+  "capabilities": [],
+  "loginCodeTtlMinutes": 120
+}

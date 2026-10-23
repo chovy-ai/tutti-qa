@@ -1,0 +1,41 @@
+# 房间管理 · Web 端 / 加入房间 / 邀请链接落地页 / 正常场景
+# 前置：收到一条有效的邀请链接且当前账号不是该房间成员；角色：新成员；入口：浏览器中打开的邀请链接
+# 操作：在浏览器中打开该链接
+# 预期 1：展示房间名、房主名称与头像、已加入成员头像，以及已占席位与总席位 ｜ 显示输入密码框和加入 Room 的按钮
+# 预期 2：输入正确密码，点击加入 Room成功加入房间
+case: 248bee38-b92a-40ca-b21c-2acb278b0b0b
+title: 有密码，新成员打开邀请链接
+sourceHash: 9f5aff76611266b0
+mode: auto
+actors:
+  - owner
+  - guest
+setup:
+  - actor: owner
+    flow: createRoom
+    save: room
+  - actor: owner
+    flow: setPasswordProtection
+    with:
+      room: "{{room.name}}"
+      enabled: "true"
+  - actor: owner
+    flow: copyInvite
+    with:
+      room: "{{room.name}}"
+    save: invite
+steps:
+  - actor: guest
+    flow: openInviteLink
+    with:
+      link: "{{invite.link}}"
+  - actor: guest
+    n: 1
+    assert: 邀请落地页展示了房间名「{{room.name}}」、房主名称与头像、已加入成员头像，以及已占席位与总席位，并有密码输入框和加入 Room 的按钮
+    waitMs: 60000
+  - actor: guest
+    act: 在密码输入框中输入 {{invite.password}}，点击加入 Room
+  - actor: guest
+    n: 2
+    assert: 成功加入并进入了房间「{{room.name}}」
+    waitMs: 60000

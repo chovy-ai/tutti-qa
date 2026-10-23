@@ -1,0 +1,23 @@
+# 房间管理 · Web 端 / Web 多标签页一致性 / 房间列表与房间信息的跨 tab 同步 / 正常场景（5）
+# 前置：同一账号在标签页 A 与标签页 B 都打开了应用；角色：任意用户；入口：标签页 A 的新建房间
+# 操作：在 A 中创建一个房间，不刷新 B，观察 B 的房间列表
+# 预期 1：列表展示 ｜ B 的房间列表在合理时间内出现该房间，位置与 A 一致
+# 预期 2：性能 ｜ 无需手动刷新 B
+case: 3bbdef1a-1951-411c-a47e-68f0c8459299
+title: A 标签页建房 B 标签页同步出现
+sourceHash: 67938344019553c1
+mode: auto
+actors:
+  - owner
+  - owner#2
+steps:
+  - actor: owner
+    flow: createRoom
+    save: room
+  - actor: owner#2
+    n: 1
+    assert: 左侧房间列表中出现了房间「{{room.name}}」
+    waitMs: 30000
+  - actor: owner#2
+    n: 2
+    assert: （未刷新页面）左侧房间列表中有房间「{{room.name}}」

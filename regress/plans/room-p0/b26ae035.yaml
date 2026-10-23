@@ -1,0 +1,39 @@
+# 房间管理 · Web 端 / 退出房间 / 成员退出房间 / 正常场景
+# 前置：当前用户是某房间的普通成员；角色：房间成员；入口：房间操作菜单或房间信息面板中的退出房间
+# 操作：点击退出房间
+# 预期 1：提示文案 ｜ 弹出确认弹窗，标题为 Leave this room，正文说明将失去该房间的访问权限并释放协作者席位
+# 预期 2：视觉展示 ｜ 退出按钮为红色危险样式，另有取消按钮
+case: b26ae035-5185-4a3e-9724-da9e4bef231f
+title: 退出二次确认弹窗
+sourceHash: e497f12bea3c37d0
+mode: auto
+actors:
+  - owner
+  - member
+setup:
+  - actor: owner
+    flow: createRoom
+    save: room
+  - actor: owner
+    flow: copyInvite
+    with:
+      room: "{{room.name}}"
+    save: invite
+  - actor: member
+    flow: joinWithInvite
+    with:
+      invite: "{{invite.invite}}"
+      room: "{{room.name}}"
+  - actor: member
+    flow: openRoomMenu
+    with:
+      room: "{{room.name}}"
+steps:
+  - actor: member
+    act: 点击菜单中的离开房间（Leave）
+  - actor: member
+    n: 1
+    assert: 弹出了确认弹窗，标题为 Leave this room，正文说明将失去该房间的访问权限并释放协作者席位
+  - actor: member
+    n: 2
+    assert: 确认弹窗中的退出按钮是红色危险样式，另有取消按钮

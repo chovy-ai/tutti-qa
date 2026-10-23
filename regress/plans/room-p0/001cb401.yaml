@@ -1,0 +1,35 @@
+# 房间管理 · Web 端 / 房间信息编辑 / 编辑入口 / 正常场景
+# 前置：当前用户是某房间的普通成员；角色：房间成员；入口：左侧房间列表
+# 操作：悬停该房间并点击更多按钮
+# 预期 1：菜单展示 ｜ 菜单中不出现删除房间，提供离开房间
+# 预期 2：权限授权 ｜ 成员无法通过该菜单删除他人的房间
+case: 001cb401-420e-4868-9316-4a32189d8cde
+title: 成员看到的是离开而不是删除
+sourceHash: 88ad2b949692e0a1
+mode: auto
+actors:
+  - owner
+  - member
+setup:
+  - actor: owner
+    flow: createRoom
+    save: room
+  - actor: owner
+    flow: copyInvite
+    with:
+      room: "{{room.name}}"
+    save: invite
+  - actor: member
+    flow: joinWithInvite
+    with:
+      invite: "{{invite.invite}}"
+      room: "{{room.name}}"
+steps:
+  - actor: member
+    act: 把鼠标悬停在左侧房间列表中的房间「{{room.name}}」上，点击条目右侧出现的更多按钮
+  - actor: member
+    n: 1
+    assert: 弹出的菜单中没有删除房间的选项，有离开房间（Leave）的选项
+  - actor: member
+    n: 2
+    assert: 弹出的菜单中不存在任何删除（Delete）房间的入口

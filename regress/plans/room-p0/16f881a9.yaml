@@ -1,0 +1,41 @@
+# 房间管理 · Web 端 / 房间信息面板 · 邀请与准入 / 房间链接与密码 / 正常场景
+# 前置：房间信息面板已打开；角色：房主；入口：房间链接区
+# 操作：查看密码保护开关
+# 预期 1：按钮状态 ｜ 默认关闭
+# 预期 2：复制邀请链接，不含密码，成员可通过链接直接加入
+case: 16f881a9-b36b-4846-ad51-4e7bdd04dac4
+title: 密码保护开关默认关闭
+sourceHash: c8afb448c6f5de2b
+mode: auto
+actors:
+  - owner
+  - guest
+setup:
+  - actor: owner
+    flow: createRoom
+    save: room
+  - actor: owner
+    flow: copyInvite
+    with:
+      room: "{{room.name}}"
+    save: invite
+steps:
+  - actor: owner
+    n: 1
+    assert: 房间信息面板中的密码保护开关为关闭状态
+  - n: 2
+    check:
+      op: empty
+      left: "{{invite.password}}"
+  - n: 2
+    check:
+      op: nonEmpty
+      left: "{{invite.link}}"
+  - actor: guest
+    flow: joinWithInvite
+    with:
+      invite: "{{invite.link}}"
+  - actor: guest
+    n: 2
+    assert: 没有被要求输入密码，已直接进入房间「{{room.name}}」
+    waitMs: 60000

@@ -1,0 +1,28 @@
+# 房间管理 · Web 端 / 房间信息面板 · 邀请与准入 / 面板入口与权限 / 正常场景
+# 前置：当前用户是该房间房主；角色：房主；入口：右上角头像组
+# 操作：点击右上角头像
+# 预期 1：面板开关 ｜ 打开房间信息面板
+# 预期 2：列表展示 ｜ 面板包含邀请成员、成员展示与共享 Agent 展示三块
+case: fb26be7e-8c36-4758-9b1d-c96eb3005def
+title: 房主打开房间信息面板
+sourceHash: e2f99242b438a6a2
+mode: auto
+actors:
+  - owner
+setup:
+  - actor: owner
+    flow: createRoom
+    save: room
+  - actor: owner
+    flow: openRoom
+    with:
+      room: "{{room.name}}"
+steps:
+  - actor: owner
+    act: 点击房间页面右上角的成员头像组
+  - actor: owner
+    n: 1
+    assert: 打开了房间信息面板
+  - actor: owner
+    n: 2
+    assert: 面板中包含邀请成员、成员展示与共享 Agent 展示三块内容

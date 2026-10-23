@@ -1,0 +1,38 @@
+# 房间管理 · Web 端 / 房间信息面板 · 成员与共享 Agent / 成员展示 / 正常场景
+# 前置：房间内已有多名成员；角色：房主或成员；入口：房间信息面板
+# 操作：查看席位数与成员列表
+# 预期 1：列表展示 ｜ 展示已占席位与总席位
+# 预期 2：列表展示 ｜ 每个成员单独一行，显示头像、名称、成员标识与在线离线状态
+case: d6a204a8-0e54-4695-84ba-42d672d057f0
+title: 席位与成员列表展示
+sourceHash: 883cc3b4126b6061
+mode: auto
+actors:
+  - owner
+  - member
+setup:
+  - actor: owner
+    flow: createRoom
+    save: room
+  - actor: owner
+    flow: copyInvite
+    with:
+      room: "{{room.name}}"
+    save: invite
+  - actor: member
+    flow: joinWithInvite
+    with:
+      invite: "{{invite.invite}}"
+      room: "{{room.name}}"
+  - actor: owner
+    flow: openRoomInfoPanel
+    with:
+      room: "{{room.name}}"
+steps:
+  - actor: owner
+    n: 1
+    assert: 房间信息面板展示了已占席位与总席位，已占席位为 2
+    waitMs: 60000
+  - actor: owner
+    n: 2
+    assert: 成员列表中每个成员单独一行，显示头像、名称、成员标识与在线或离线状态，其中包含「{{member.displayName}}」

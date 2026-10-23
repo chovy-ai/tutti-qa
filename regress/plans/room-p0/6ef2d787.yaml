@@ -1,0 +1,34 @@
+# 房间管理 · Web 端 / 加入房间 / 加入房间弹窗 / 正常场景
+# 前置：关闭密码保护，已复制一条只含链接的完整邀请信息；角色：新成员；入口：加入房间弹窗
+# 操作：粘贴完整邀请信息后点击确认
+# 预期 1：列表展示 ｜ 不弹加入密码弹窗，直接成功加入房间，房间出现在左侧列表并自动进入
+# 预期 2：列表展示 ｜ 房主的分享面板通过实时事件更新成员列表与已占席位
+case: 6ef2d787-10c9-45b1-b777-7f9ac29b4f93
+title: 关闭密码保护，粘贴完整邀请信息加入
+sourceHash: c52fc765def305cf
+mode: auto
+actors:
+  - owner
+  - guest
+setup:
+  - actor: owner
+    flow: createRoom
+    save: room
+  - actor: owner
+    flow: copyInvite
+    with:
+      room: "{{room.name}}"
+    save: invite
+steps:
+  - actor: guest
+    flow: joinWithInvite
+    with:
+      invite: "{{invite.invite}}"
+  - actor: guest
+    n: 1
+    assert: 没有弹出加入密码弹窗，已直接进入房间「{{room.name}}」，并且它出现在左侧房间列表中
+    waitMs: 60000
+  - actor: owner
+    n: 2
+    assert: （未刷新页面）房间信息面板的成员列表中出现了「{{guest.displayName}}」，已占席位为 2
+    waitMs: 60000

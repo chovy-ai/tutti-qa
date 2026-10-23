@@ -1,0 +1,27 @@
+# 房间管理 · Web 端 / 房间支持公告功能 / 正常场景
+# 前置：房间已有一条公告；角色：房间成员；入口：房间公告弹窗
+# 操作：点击“编辑公告”，在旧公告内容上修改并点击“发布”
+# 预期 1：原公告内容更新成功，房间内始终只有一条公告
+case: bcf602cb-54e0-41d3-a1ce-2933f344a449
+title: 房间成员编辑已有公告
+sourceHash: 56057cb227b316c0
+mode: auto
+actors:
+  - owner
+setup:
+  - actor: owner
+    flow: createRoom
+    save: room
+  - actor: owner
+    flow: openRoom
+    with:
+      room: "{{room.name}}"
+  - actor: owner
+    act: 点击房间公告入口，在编辑公告弹窗中输入「{{runId}} 旧公告」，点击发布
+steps:
+  - actor: owner
+    act: 打开房间公告，点击编辑公告，把内容改为「{{runId}} 新公告」，点击发布
+  - actor: owner
+    n: 1
+    assert: 公告内容已更新为「{{runId}} 新公告」，房间内只有这一条公告，看不到旧公告
+    waitMs: 60000

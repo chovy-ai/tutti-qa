@@ -1,0 +1,25 @@
+# 房间管理 · Web 端 / 新建房间 / 新建房间弹窗 / 正常场景
+# 前置：新建房间弹窗已打开；角色：任意用户；入口：头像与背景色选项
+# 操作：依次点选不同的头像图标与背景色，观察顶部预览
+# 预期 1：视觉展示 ｜ 顶部预览实时反映当前选中的图标与背景色
+# 预期 2：按钮状态 ｜ 同组内只能选中一项，选中态清晰可辨
+case: ae0358cf-31d3-4ec1-8246-ea487c1d4d80
+title: 选择头像与背景色
+sourceHash: 0b0fcd6276c68af3
+mode: auto
+actors:
+  - owner
+setup:
+  - actor: owner
+    flow: openCreateRoomDialog
+steps:
+  - actor: owner
+    act: 在头像图标组中点选一个当前未选中的图标
+  - actor: owner
+    act: 在背景色组中点选一个当前未选中的颜色
+  - actor: owner
+    n: 1
+    assert: 弹窗顶部的头像预览显示的是当前选中的图标，背景为当前选中的颜色
+  - actor: owner
+    n: 2
+    assert: 头像图标组中只有一项处于选中态，背景色组中也只有一项处于选中态，选中态清晰可辨

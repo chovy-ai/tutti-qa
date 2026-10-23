@@ -1,0 +1,30 @@
+[
+  {
+    "command": [
+      "python3",
+      "/Users/zhengweibin/Desktop/workspace/tutti-qa/.claude/skills/tutti-diff-testcase/scripts/pos_tool.py",
+      "merge",
+      "/Users/zhengweibin/Desktop/workspace/tutti-qa/output/20261023-2/inputs/参考宿主库.pos",
+      "/var/folders/r2/742l1bhx29q93tl07lx0y59c0000gn/T/tutti-qa-v2-check-4xh0dkr3/spec.json",
+      "-o",
+      "/var/folders/r2/742l1bhx29q93tl07lx0y59c0000gn/T/tutti-qa-v2-check-4xh0dkr3/precheck.pos"
+    ],
+    "exit_code": 0,
+    "stdout": "已写入 /var/folders/r2/742l1bhx29q93tl07lx0y59c0000gn/T/tutti-qa-v2-check-4xh0dkr3/precheck.pos：新增节点 483，更新 0，删除子树 0（0 个节点），移动 0，基准 未变\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "python3",
+      "/Users/zhengweibin/Desktop/workspace/tutti-qa/.claude/skills/tutti-diff-testcase/scripts/pos_tool.py",
+      "validate",
+      "/Users/zhengweibin/Desktop/workspace/tutti-qa/output/20261023-2/inputs/参考宿主库.pos",
+      "/var/folders/r2/742l1bhx29q93tl07lx0y59c0000gn/T/tutti-qa-v2-check-4xh0dkr3/precheck.pos",
+      "--ops",
+      "/var/folders/r2/742l1bhx29q93tl07lx0y59c0000gn/T/tutti-qa-v2-check-4xh0dkr3/precheck.pos.ops.json"
+    ],
+    "exit_code": 0,
+    "stdout": "{\n  \"总量前后\": {\n    \"节点\": [\n      33200,\n      33683\n    ],\n    \"用例\": [\n      4990,\n      5089\n    ],\n    \"图标\": [\n      2788,\n      2788\n    ],\n    \"P0\": [\n      2056,\n      2076\n    ],\n    \"P1\": [\n      1774,\n      1821\n    ],\n    \"P2\": [\n      1157,\n      1189\n    ]\n  },\n  \"新增节点数\": 483,\n  \"新增用例数\": 99,\n  \"重复ID\": [],\n  \"parent错\": [],\n  \"空标题\": [],\n  \"原节点丢失\": [],\n  \"原节点丢失(已授权)\": [],\n  \"原节点标题被改\": [],\n  \"原节点标题被改(已授权)\": [],\n  \"被重新挂载的原节点\": [],\n  \"新引入的重名\": [],\n  \"A记法问题\": [],\n  \"新用例缺优先级\": [],\n  \"新节点残留待确认字样\": []\n}\n",
+    "stderr": ""
+  }
+]

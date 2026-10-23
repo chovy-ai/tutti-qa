@@ -1,0 +1,50 @@
+# 房间管理 · Web 端 / 加入房间 / 邀请链接落地页 / 正常场景
+# 前置：当前账号已是该房间成员；角色：已有成员；入口：邀请链接落地页
+# 操作：打开链接并点击打开 Room
+# 预期 1：跳转定位 ｜ 直接进入房间，不再校验密码
+# 预期 2：权限授权 ｜ 席位已满或房主已关闭新成员准入时，已有成员仍可正常进入
+case: 3662856d-5d4c-4ca9-a288-30cdaedc2aa5
+title: 已是成员打开邀请链接
+sourceHash: b9e36834bc4a470a
+mode: auto
+actors:
+  - owner
+  - member
+setup:
+  - actor: owner
+    flow: createRoom
+    save: room
+  - actor: owner
+    flow: setPasswordProtection
+    with:
+      room: "{{room.name}}"
+      enabled: "true"
+  - actor: owner
+    flow: copyInvite
+    with:
+      room: "{{room.name}}"
+    save: invite
+  - actor: member
+    flow: joinWithInvite
+    with:
+      invite: "{{invite.invite}}"
+      room: "{{room.name}}"
+  - actor: owner
+    flow: setAdmission
+    with:
+      room: "{{room.name}}"
+      enabled: "false"
+steps:
+  - actor: member
+    flow: openInviteLink
+    with:
+      link: "{{invite.link}}"
+  - actor: member
+    act: 如果落地页上有打开 Room 按钮就点击它
+  - actor: member
+    n: 1
+    assert: 直接进入了房间「{{room.name}}」，没有要求输入密码
+    waitMs: 60000
+  - actor: member
+    n: 2
+    assert: 在房主已关闭新成员准入的情况下，已有成员仍正常进入了房间「{{room.name}}」

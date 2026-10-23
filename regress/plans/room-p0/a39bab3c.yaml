@@ -1,0 +1,63 @@
+# 房间管理 · Web 端 / Web 多标签页一致性 / 房间列表与房间信息的跨 tab 同步 / 正常场景（5）
+# 前置：两个标签页都停留在同一房间的房间信息面板；角色：房主；入口：标签页 A 的密码编辑
+# 操作：在 A 中修改密码并保存，不刷新 B，在 B 中点击复制邀请信息
+# 预期 1：分享链接 ｜ B 复制到的邀请信息中是新密码
+# 预期 2：权限授权 ｜ 用 B 复制出的密码可成功加入，用旧密码无法加入
+case: a39bab3c-5ea9-4fe2-a4f4-3ff72215204c
+title: A 改密码 B 复制到的是新密码
+sourceHash: fb9b2cfd5668d346
+mode: auto
+actors:
+  - owner
+  - owner#2
+  - guestOld
+  - guestNew
+setup:
+  - actor: owner
+    flow: createRoom
+    save: room
+  - actor: owner
+    flow: setPasswordProtection
+    with:
+      room: "{{room.name}}"
+      enabled: "true"
+  - actor: owner
+    flow: copyInvite
+    with:
+      room: "{{room.name}}"
+    save: old
+  - actor: owner#2
+    flow: openRoomInfoPanel
+    with:
+      room: "{{room.name}}"
+steps:
+  - actor: owner
+    act: 点击房间密码区的编辑入口，把密码改为 {{rand.pin}} 并保存
+  - actor: owner#2
+    flow: clearClipboard
+  - actor: owner#2
+    act: 不刷新页面，直接点击房间信息面板中的复制邀请信息按钮
+  - actor: owner#2
+    flow: readClipboard
+    save: fromB
+  - n: 1
+    check:
+      op: equals
+      left: "{{fromB.password}}"
+      right: "{{rand.pin}}"
+  - actor: guestNew
+    flow: joinWithInvite
+    with:
+      invite: "{{fromB.invite}}"
+      room: "{{room.name}}"
+  - actor: guestNew
+    n: 2
+    assert: 使用 B 标签页复制的密码成功进入了房间「{{room.name}}」
+  - actor: guestOld
+    flow: joinWithInvite
+    with:
+      invite: "{{old.invite}}"
+  - actor: guestOld
+    n: 2
+    assert: 使用旧密码加入失败，提示密码不正确
+    waitMs: 60000

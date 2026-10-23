@@ -1,0 +1,35 @@
+# 房间管理 · Web 端 / 房间信息面板 · 邀请与准入 / 移除成员 / 正常场景
+# 前置：房间信息面板已打开；角色：房主；入口：人类分类下
+# 操作：悬浮成员名称
+# 预期 1：显示移除按钮
+case: 2954a7f7-6923-4c76-91c5-9347b0757d99
+title: 悬浮成员名称显示移除按钮
+sourceHash: 9fb270df7a82368a
+mode: auto
+actors:
+  - owner
+  - member
+setup:
+  - actor: owner
+    flow: createRoom
+    save: room
+  - actor: owner
+    flow: copyInvite
+    with:
+      room: "{{room.name}}"
+    save: invite
+  - actor: member
+    flow: joinWithInvite
+    with:
+      invite: "{{invite.invite}}"
+      room: "{{room.name}}"
+  - actor: owner
+    flow: openRoomInfoPanel
+    with:
+      room: "{{room.name}}"
+steps:
+  - actor: owner
+    act: 在房间信息面板的人类成员分类下，把鼠标悬停在成员「{{member.displayName}}」上
+  - actor: owner
+    n: 1
+    assert: 成员「{{member.displayName}}」所在行出现了移除按钮

@@ -1,0 +1,27 @@
+# 房间管理 · Web 端 / 新建房间 / 新建房间弹窗 / 正常场景
+# 前置：新建房间弹窗已打开；角色：任意用户；入口：房间名称输入框
+# 操作：清空默认名并输入自定义名称后点击完成
+# 预期 1：列表展示 ｜ 以自定义名称创建成功
+# 预期 2：结果校验 ｜ 自定义名称允许与已有房间重名，不自动追加序号
+case: 453851d7-8f74-4024-9371-67de5e2429de
+title: 使用自定义名称创建
+sourceHash: c032d5dcf02d5f06
+mode: auto
+actors:
+  - owner
+setup:
+  - actor: owner
+    flow: createRoom
+    save: room
+  - actor: owner
+    flow: openCreateRoomDialog
+steps:
+  - actor: owner
+    act: 清空房间名称输入框，输入「{{room.name}}」，然后点击完成或创建按钮
+  - actor: owner
+    n: 1
+    assert: 以自定义名称创建成功：左侧房间列表中有新创建的房间「{{room.name}}」
+    waitMs: 60000
+  - actor: owner
+    n: 2
+    assert: 左侧房间列表中有两个名称都是「{{room.name}}」的房间，名称后都没有追加序号

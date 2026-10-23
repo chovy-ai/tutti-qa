@@ -1,0 +1,56 @@
+# 房间管理 · Web 端 / 房间信息面板 · 邀请与准入 / 复制邀请信息 / 正常场景
+# 前置：房间已改过密码；角色：房主与新成员；入口：复制邀请信息按钮
+# 操作：改密码后复制邀请信息，让新成员分别用其中的密码与旧密码加入
+# 预期 1：分享链接 ｜ 邀请信息中的密码为新密码
+# 预期 2：权限授权 ｜ 新密码可成功加入，旧密码无法加入
+case: a4fc7f5b-e7f3-4309-84cc-bd26e171085b
+title: 改密码后复制取新密码
+sourceHash: 5dbabe111270db09
+mode: auto
+actors:
+  - owner
+  - guestOld
+  - guestNew
+setup:
+  - actor: owner
+    flow: createRoom
+    save: room
+  - actor: owner
+    flow: setPasswordProtection
+    with:
+      room: "{{room.name}}"
+      enabled: "true"
+  - actor: owner
+    flow: copyInvite
+    with:
+      room: "{{room.name}}"
+    save: old
+steps:
+  - actor: owner
+    act: 点击房间密码区的编辑入口，把密码改为 {{rand.pin}} 并保存
+  - actor: owner
+    flow: copyInvite
+    with:
+      room: "{{room.name}}"
+    save: fresh
+  - n: 1
+    check:
+      op: equals
+      left: "{{fresh.password}}"
+      right: "{{rand.pin}}"
+  - actor: guestNew
+    flow: joinWithInvite
+    with:
+      invite: "{{fresh.invite}}"
+      room: "{{room.name}}"
+  - actor: guestNew
+    n: 2
+    assert: 使用新密码成功加入并进入了房间「{{room.name}}」
+  - actor: guestOld
+    flow: joinWithInvite
+    with:
+      invite: "{{old.invite}}"
+  - actor: guestOld
+    n: 2
+    assert: 使用旧密码加入失败，提示密码不正确，左侧房间列表中没有「{{room.name}}」
+    waitMs: 60000

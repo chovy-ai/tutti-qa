@@ -1,0 +1,28 @@
+# 房间管理 · Web 端 / 加入房间 / 加入房间弹窗 / 正常场景
+# 前置：已登录；角色：任意用户；入口：Rooms 旁加号菜单中的加入房间
+# 操作：点击加入房间
+# 预期 1：面板开关 ｜ 弹出 Join a room 弹窗
+# 预期 2：输入框 ｜ 提供一个可粘贴房间链接与密码的多行输入区，占位文案说明粘贴链接和密码
+# 预期 3：按钮状态 ｜ 底部为取消与确认两个按钮
+case: 7440e6ce-75c6-4ddb-9561-e1be64e0b44e
+title: 从加号入口打开加入房间弹窗
+sourceHash: 266331759c0165f9
+mode: auto
+actors:
+  - owner
+setup:
+  - actor: owner
+    flow: createRoom
+    save: room
+steps:
+  - actor: owner
+    act: 点击左侧房间分组标题旁的加号，在菜单中点击加入房间
+  - actor: owner
+    n: 1
+    assert: 弹出了 Join a room 弹窗
+  - actor: owner
+    n: 2
+    assert: 弹窗中有一个多行输入区，占位文案说明可以粘贴房间链接和密码
+  - actor: owner
+    n: 3
+    assert: 弹窗底部有取消与确认两个按钮

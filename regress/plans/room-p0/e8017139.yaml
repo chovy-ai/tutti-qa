@@ -1,0 +1,45 @@
+# 房间管理 · Web 端 / Web 多标签页一致性 / 房间列表与房间信息的跨 tab 同步 / 正常场景（5）
+# 前置：两个标签页都停留在同一房间的房间信息面板；角色：房主；入口：标签页 A 的准入开关
+# 操作：在 A 中关闭允许新成员加入，观察 B 的开关状态
+# 预期 1：按钮状态 ｜ B 中的开关同步变为关闭态
+# 预期 2：结果校验 ｜ 在 B 中再次操作该开关时以服务端最新状态为基准，不把过期状态写回
+case: e8017139-631c-4c51-b31c-c9103ac1ed21
+title: A 关闭准入开关 B 的开关同步
+sourceHash: 41f263336edde333
+mode: auto
+actors:
+  - owner
+  - owner#2
+setup:
+  - actor: owner
+    flow: createRoom
+    save: room
+  - actor: owner
+    flow: openRoomInfoPanel
+    with:
+      room: "{{room.name}}"
+  - actor: owner#2
+    flow: openRoomInfoPanel
+    with:
+      room: "{{room.name}}"
+steps:
+  - actor: owner
+    act: 把房间信息面板中的「允许新成员加入」开关关闭
+  - actor: owner#2
+    n: 1
+    assert: （未刷新页面）「允许新成员加入」开关已同步变为关闭状态
+    waitMs: 30000
+  - actor: owner#2
+    act: 点击一次「允许新成员加入」开关
+  - actor: owner#2
+    n: 2
+    assert: 「允许新成员加入」开关现在为打开状态
+    waitMs: 60000
+  - actor: owner
+    reload: true
+  - actor: owner
+    act: 如果房间信息面板未打开，点击右上角成员头像组打开它
+  - actor: owner
+    n: 2
+    assert: 刷新后「允许新成员加入」开关为打开状态（以服务端最新状态为准，没有把过期的关闭状态写回）
+    waitMs: 60000

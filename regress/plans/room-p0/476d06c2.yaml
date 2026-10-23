@@ -1,0 +1,45 @@
+# 房间管理 · Web 端 / 房间信息面板 · 邀请与准入 / 复制邀请信息 / 正常场景
+# 前置：房间信息面板已打开；角色：房主；入口：复制邀请信息按钮
+# 操作：点击复制并粘贴到文本编辑器查看
+# 预期 1：提示文案 ｜ 点击后提示已复制邀请信息
+# 预期 2：分享链接 ｜ 剪贴板内容包含邀请语与房间名、房间链接、房间密码三项，格式完整可直接发送
+case: 476d06c2-0e67-49a8-a63e-15eeccfa16be
+title: 复制邀请信息的内容
+sourceHash: 310ebc965c0d07d8
+mode: auto
+actors:
+  - owner
+setup:
+  - actor: owner
+    flow: createRoom
+    save: room
+  - actor: owner
+    flow: setPasswordProtection
+    with:
+      room: "{{room.name}}"
+      enabled: "true"
+  - actor: owner
+    flow: clearClipboard
+steps:
+  - actor: owner
+    act: 点击房间信息面板中的复制邀请信息按钮
+  - actor: owner
+    n: 1
+    assert: 页面提示已复制邀请信息
+  - actor: owner
+    flow: readClipboard
+    save: invite
+  - n: 2
+    check:
+      op: contains
+      left: "{{invite.invite}}"
+      right: "{{room.name}}"
+  - n: 2
+    check:
+      op: nonEmpty
+      left: "{{invite.link}}"
+  - n: 2
+    check:
+      op: matches
+      left: "{{invite.password}}"
+      right: ^\d{6}$

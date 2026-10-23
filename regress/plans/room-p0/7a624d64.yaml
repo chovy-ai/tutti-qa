@@ -1,0 +1,42 @@
+# 房间管理 · Web 端 / 房间信息面板 · 邀请与准入 / 复制邀请信息 / 正常场景
+# 前置：房间已改过名称；角色：房主；入口：复制邀请信息按钮
+# 操作：改名后立即复制邀请信息
+# 预期 1：分享链接 ｜ 邀请信息中的房间名为最新保存的名称
+# 预期 2：分享链接 ｜ 房间链接保持不变
+case: 7a624d64-a23e-4c0e-8fbb-d999b3fcc381
+title: 改名后复制取最新名称
+sourceHash: bc0da35d64f9c8b3
+mode: auto
+actors:
+  - owner
+setup:
+  - actor: owner
+    flow: createRoom
+    save: room
+  - actor: owner
+    flow: copyInvite
+    with:
+      room: "{{room.name}}"
+    save: before
+steps:
+  - actor: owner
+    flow: openRoomEditDialog
+    with:
+      room: "{{room.name}}"
+  - actor: owner
+    act: 把房间名称改为「{{room.name}}-new」并保存
+  - actor: owner
+    flow: copyInvite
+    with:
+      room: "{{room.name}}-new"
+    save: after
+  - n: 1
+    check:
+      op: contains
+      left: "{{after.invite}}"
+      right: "{{room.name}}-new"
+  - n: 2
+    check:
+      op: equals
+      left: "{{after.link}}"
+      right: "{{before.link}}"

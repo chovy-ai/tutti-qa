@@ -1,0 +1,12 @@
+{
+  "sandbox": "allow-scripts; localStorage denied",
+  "cases": 99,
+  "assertions": 607,
+  "completeParts": true,
+  "expandAll": "PASS",
+  "search": "PASS",
+  "groupSelection": "PASS",
+  "priorityAndNotes": "PASS",
+  "exportedKept": 98,
+  "scriptErrors": []
+}

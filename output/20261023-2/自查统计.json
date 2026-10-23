@@ -1,0 +1,22 @@
+{
+  "old_cases": 40,
+  "old_assertions": 149,
+  "new_cases": 99,
+  "new_assertions": 607,
+  "priorities": {
+    "P0": 20,
+    "P1": 47,
+    "P2": 32
+  },
+  "scenes": {
+    "正常场景": 41,
+    "异常场景": 43,
+    "边界场景": 15
+  },
+  "source_nodes": 33200,
+  "source_cases_recognized": 4990,
+  "source_sha256": "c48cd07d0ac969032e429b0ad9fc68d6c3f5596e3a9ef2f267d67d17c8f24e80",
+  "source_skill_sha256": "e7a41dc659602c4e19f192903cceb35bf47fabe19bd6112f032a1c48d1e98f26",
+  "frontend_sha": "e54d2f6fc260684281cf9c5f49c42a16660a14e6",
+  "server_sha": "f876eb0cfbc4abc72eccf2109a4fc5041b9bd999"
+}

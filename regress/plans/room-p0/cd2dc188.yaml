@@ -1,0 +1,29 @@
+# 房间管理 · Web 端 / 房间信息编辑 / 房间头像支持自定义 / 正常场景
+# 前置：编辑房间信息弹窗已打开；角色：房间所有者；入口：头像图案区域
+# 操作：选择其他头像图案并点击保存
+# 预期 1：头像图案更新成功，房间内展示新的头像图案
+case: cd2dc188-228e-4dee-9ae3-48420449b574
+title: 房主更换房间头像图案
+sourceHash: 1dfaeb69f508b5f0
+mode: auto
+actors:
+  - owner
+setup:
+  - actor: owner
+    flow: createRoom
+    save: room
+  - actor: owner
+    flow: openRoom
+    with:
+      room: "{{room.name}}"
+  - actor: owner
+    flow: openRoomEditDialog
+    with:
+      room: "{{room.name}}"
+steps:
+  - actor: owner
+    act: 在头像图案组中选择一个当前未选中的图案，点击保存
+  - actor: owner
+    n: 1
+    assert: 保存成功，弹窗已关闭，房间头像展示为新选的图案
+    waitMs: 60000
