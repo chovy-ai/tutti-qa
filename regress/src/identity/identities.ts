@@ -3,9 +3,9 @@
 import { chmod, mkdir, readFile, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { request } from "playwright";
-import { type EnvProfile, loadEnv, regressRoot } from "./config.ts";
+import { type EnvProfile, loadEnv, regressRoot } from "../core/config.ts";
 import { createLoginCode, deleteLoginCode, type SessionCookie, sessionCookies, verifyLoginCode } from "./identity.ts";
-import { openLedger, readLedger } from "./ledger.ts";
+import { openLedger, readLedger } from "../core/ledger.ts";
 
 export interface Identity {
   readonly name: string;

@@ -35,6 +35,7 @@ steps:
     waitMs: 60000
   - actor: guest
     act: 在密码输入框中输入 {{invite.password}}，点击加入 Room
+    cache: false
   - actor: guest
     n: 2
     assert: 成功加入并进入了房间「{{room.name}}」

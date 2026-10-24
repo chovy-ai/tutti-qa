@@ -5,8 +5,8 @@ import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { createServer } from "node:net";
 import { join, resolve } from "node:path";
 import { type Browser, type BrowserContext, chromium, type Page } from "playwright";
-import { loadEnv, regressRoot } from "./config.ts";
-import { resolveIdentity } from "./identities.ts";
+import { loadEnv, regressRoot } from "../core/config.ts";
+import { resolveIdentity } from "../identity/identities.ts";
 
 export interface SessionRecord {
   readonly id: string;

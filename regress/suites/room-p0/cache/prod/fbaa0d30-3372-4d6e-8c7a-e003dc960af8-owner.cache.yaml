@@ -1,0 +1,32 @@
+midsceneVersion: 1.16.5
+cacheId: fbaa0d30-3372-4d6e-8c7a-e003dc960af8-owner
+caches:
+  - type: plan
+    prompt: |-
+      <CONTEXT>
+      你在操作 Tutti 的 Web 端（Room 是多人与 Agent 协作的房间）。
+      界面可能是中文或英文，按含义而非字面匹配按钮与文案。
+      不要点击与当前任务无关的入口；遇到新手引导、欢迎页或可跳过的提示时先跳过。
+      </CONTEXT>
+
+      不修改房间名称，直接点击弹窗底部的完成或创建按钮
+    yamlWorkflow: |
+      tasks:
+        - name: 不修改房间名称，直接点击弹窗底部的完成或创建按钮
+          flow:
+            - aiTap: ''
+              locate: 弹窗底部的 Create room 按钮
+  - type: locate
+    prompt: |-
+      <CONTEXT>
+      你在操作 Tutti 的 Web 端（Room 是多人与 Agent 协作的房间）。
+      界面可能是中文或英文，按含义而非字面匹配按钮与文案。
+      不要点击与当前任务无关的入口；遇到新手引导、欢迎页或可跳过的提示时先跳过。
+      </CONTEXT>
+
+      <LOCATE_TARGET>
+      弹窗底部的 Create room 按钮
+      </LOCATE_TARGET>
+    cache:
+      xpaths:
+        - /html/body/div[3]/div[3]/button[2]

@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { loadSuite } from "../src/config.ts";
-import { loadPlans, validatePlan, type Plan } from "../src/plan.ts";
-import { parseCase } from "../src/pos.ts";
-import { evaluateCheck, interpolate, selectCases, suiteCases } from "../src/runner.ts";
+import { loadSuite, suitePlansDir } from "../src/core/config.ts";
+import { loadPlans, validatePlan, type Plan } from "../src/core/plan.ts";
+import { parseCase } from "../src/core/pos.ts";
+import { evaluateCheck, interpolate, selectCases, suiteCases } from "../src/run/runner.ts";
 
 const node = {
   id: "case-1",
@@ -75,7 +75,7 @@ test("evaluateCheck 覆盖全部操作符", () => {
 test("room-p0 的 Plan 与当前 .pos 一一对应且全部有效", async () => {
   const suite = await loadSuite("room-p0");
   const cases = await suiteCases(suite);
-  const plans = await loadPlans(new URL("../plans/room-p0", import.meta.url).pathname);
+  const plans = await loadPlans(suitePlansDir(suite));
   assert.equal(plans.length, cases.length);
   for (const { file, plan } of plans) {
     assert.deepEqual(validatePlan(plan, cases.find((item) => item.id === plan.case)), [], file);

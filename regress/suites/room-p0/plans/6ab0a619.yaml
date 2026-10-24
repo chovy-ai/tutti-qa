@@ -35,6 +35,7 @@ steps:
     waitMs: 60000
   - actor: guest
     act: 输入密码 {{invite.password}} 并确认
+    cache: false
   - actor: guest
     n: 2
     assert: 补入正确密码后成功进入了房间「{{room.name}}」

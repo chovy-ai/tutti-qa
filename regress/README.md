@@ -3,29 +3,52 @@
 基于 Midscene 的功能回归：把 `baseline/*.pos` 里的 P0 用例编译成 Plan，在指定环境上用全新测试用户执行，产出报告。
 
 ```
-.pos 用例库 ──sync──▶ Plan（plans/<suite>/*.yaml，人工审核后入库）
+.pos 用例库 ──sync──▶ Plan（suites/<suite>/plans/*.yaml，人工审核后入库）
                          │
 环境配置 envs/*.json ────┤
                          ▼
 run：预检 → 申请登录码（新用户）→ 前置 flow → 操作/断言 → 清理房间 → 回收登录码 → report.html + result.json
 ```
 
+## 目录
+
+```
+regress/
+├─ envs/<env>.json                 环境：入口、账号服务、时区、能力
+├─ suites/<suite>/
+│   ├─ suite.json                  从 .pos 的哪个子树取哪些优先级的用例
+│   ├─ plans/<id 前 8 位>.yaml      可执行 Plan（人工审核后入库）
+│   └─ cache/<env>/                该 suite 的用例缓存（入库）
+├─ flows-cache/<env>/              共享 flow 缓存（入库）
+├─ fixtures/                       上传用的测试文件
+├─ src/
+│   ├─ cli.ts                      命令入口
+│   ├─ core/                       环境与 suite、.pos 用例抽取、Plan 模型与校验、资源台账
+│   ├─ identity/                   原子能力：测试身份（登录码 → session）
+│   ├─ browser/                    原子能力：独立浏览器会话；run 内的 actor
+│   ├─ ai/                         原子能力：Midscene agent、单步操作、缓存与命中统计
+│   ├─ flows/                      公共前置流程与清理
+│   └─ run/                        编排与判定、事后清理、报告
+├─ test/                           单元测试
+└─ 本机（不入库）：.env  .runs/  .identities/  .sessions/  .local-cache/
+```
+
 ## 分工：哪些是代码，哪些是 AI
 
 | 环节 | 实现 | 位置 |
 |---|---|---|
-| 用例抽取、内容指纹、Plan 校验 | 代码 | `src/pos.ts`、`src/plan.ts` |
-| 测试身份（tutti-ops 登录码 → session Cookie） | 代码 | `src/identity.ts`、`src/identities.ts` |
-| 独立浏览器会话（单独进程、CDP 接入） | 代码 | `src/session.ts` |
-| Midscene agent（上下文提示、缓存、报告）与单步操作 | Midscene | `src/midscene.ts` |
-| 前置条件与清理（建房、开面板、复制邀请、加入…） | 代码维护的固定流程，内部用 Midscene 操作页面 | `src/flows.ts` |
+| 用例抽取、内容指纹、Plan 校验 | 代码 | `src/core/pos.ts`、`src/core/plan.ts` |
+| 测试身份（tutti-ops 登录码 → session Cookie） | 代码 | `src/identity/` |
+| 独立浏览器会话（单独进程、CDP 接入） | 代码 | `src/browser/session.ts` |
+| Midscene agent（上下文提示、缓存、报告）与单步操作 | Midscene | `src/ai/midscene.ts`、`src/ai/cache.ts` |
+| 前置条件与清理（建房、开面板、复制邀请、加入…） | 代码维护的固定流程，内部用 Midscene 操作页面 | `src/flows/flows.ts` |
 | 用例里的具体操作与视觉断言 | Midscene `aiAct` / `aiAssert` | Plan 的 `act` / `assert` |
 | 剪贴板内容、链接/密码等确定性断言 | 代码 | Plan 的 `check` |
-| 判定、资源台账 | 代码 | `src/runner.ts`、`src/ledger.ts` |
-| 报告（汇总 + Midscene 合并回放） | 代码 + Midscene `ReportMergingTool` | `src/report.ts` |
-| .pos 用例 → Plan 编译 | Agent 按 [COMPILE.md](COMPILE.md) 编译，人工审核 | `plans/` |
+| 判定、资源台账 | 代码 | `src/run/runner.ts`、`src/core/ledger.ts` |
+| 报告（汇总 + Midscene 合并回放） | 代码 + Midscene `ReportMergingTool` | `src/run/report.ts` |
+| .pos 用例 → Plan 编译 | Agent 按 [COMPILE.md](COMPILE.md) 编译，人工审核 | `suites/<suite>/plans/` |
 
-**页面改版时先改 `src/flows.ts`**，Plan 和 .pos 用例通常不用动。
+**页面改版时先改 `src/flows/flows.ts`**，Plan 和 .pos 用例通常不用动。
 
 ## 准备
 
@@ -76,17 +99,16 @@ node src/cli.ts session stop --all && node src/cli.ts identity release --batch d
 
 - 会话进程独立于 CLI，`act` 等命令每次通过 CDP 接入、执行完断开，页面状态保留。`--headed` 打开有头浏览器便于观察。
 - 新建的用户无法删除，会留在线上；`identity release` 只回收登录码。会话里创建的房间不会自动清理，需要在会话中自行删除。
-- 单步命令的 Midscene 缓存在 `.cache/midscene/<env>/sessions/`，cacheId 默认为会话 id，可用 `--cache-id` 指定。
+- 单步命令的 Midscene 缓存在 `.local-cache/sessions/<env>/`（只在本机），cacheId 默认为会话 id，可用 `--cache-id` 指定。
 
 ## 缓存
 
 设置 `REGRESS_CACHE=read-write`（或 `read-only` / `write-only`）开启，默认关闭。缓存只覆盖「怎么操作」（aiAct 的规划与元素定位），断言、等待、查询每次都走模型。
 
 ```
-.cache/midscene/<env>/
-  cases/<用例id>-<actor>.cache.yaml   用例自己的 steps；用例通过后清掉本次没用到的条目
-  flows/<flow>.cache.yaml             公共前置流程，跨用例共享；只在 --concurrency 1 时写入，并发时只读
-  sessions/<cacheId>.cache.yaml       单步命令
+suites/<suite>/cache/<env>/<用例id>-<actor>.cache.yaml   用例自己的 steps，入库；用例通过后清掉本次没用到的条目
+flows-cache/<env>/flow-<flow>.cache.yaml                公共前置流程，跨用例共享，入库；只在 --concurrency 1 时写入，并发时只读
+.local-cache/sessions/<env>/<cacheId>.cache.yaml        单步命令，只在本机
 ```
 
 命中规则（Midscene 1.16）：同类型、提示词逐字相等（含 AI 上下文）才命中，同一提示词按出现顺序各用一条；本次新写入的条目下次 Run 才可用。xpath 在当前页面找不到元素、或缓存的规划回放失败时自动回退到 AI 并更新记录。
@@ -96,7 +118,8 @@ node src/cli.ts session stop --all && node src/cli.ts identity release --batch d
 - 数据名按用例固定：`{{tag}}` 为用例 id 前 6 位，`createRoom` 默认房间名为 `<tag>-<序号>`，昵称为 `QA <actor> <tag>`，`{{rand.pin}}` 由用例 id 派生。actor 都是新用户，不会与其他 Run 撞名。
 - 带「如果…」分支的操作不进缓存：flow 里用 `{ cacheable: false }`，Plan 的 act 步骤写 `cache: false`。
 - `enterApp` 先用代码判断引导页与房间列表，失败时才交给 AI。
-- 改动 `src/midscene.ts` 里的 AI 上下文会让全部缓存失效。
+- 改动 `src/ai/midscene.ts` 里的 AI 上下文会让全部缓存失效。
+- 用例与 flow 缓存随仓库提交，换机器或在 CI 上也能命中。多人同时更新同一缓存文件发生冲突时，任选一方的版本即可，下次 Run 会补齐。缓存里只有提示词、规划步骤与 xpath；每次都会变的房间密码等数据所在的步骤标了 `cache: false`，不会写进缓存。
 
 新用例或改过的用例建议先 `--concurrency 1` 跑两遍预热：第一遍写入规划，第二遍回放时定位用的是带上下文的提示词，会再写一轮定位缓存，第三遍起完全命中。每次 Run 的命中情况写在 `result.json` 的 `cache` 字段与报告中（有效命中率 = 真正省掉模型调用的查找占比，回退不计入）。
 
