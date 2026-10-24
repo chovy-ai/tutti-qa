@@ -59,6 +59,8 @@ export interface RunOptions {
   readonly suiteId: string;
   readonly only?: readonly string[];
   readonly caseTimeoutMs?: number;
+  /** 同时执行的用例数。每个 worker 独占一个浏览器进程，避免剪贴板等浏览器级状态在用例间串扰 */
+  readonly concurrency?: number;
 }
 
 export async function runSuite(options: RunOptions): Promise<{ runDir: string; result: RunResult }> {
@@ -73,7 +75,7 @@ export async function runSuite(options: RunOptions): Promise<{ runDir: string; r
 
   const blocked = await preflight(env);
   const sources = await suiteCases(suite);
-  const selected = options.only?.length ? sources.filter((item) => options.only!.includes(item.id)) : sources;
+  const selected = selectCases(sources, options.only);
   if (blocked) {
     const result: RunResult = {
       ...base,
@@ -88,28 +90,50 @@ export async function runSuite(options: RunOptions): Promise<{ runDir: string; r
 
   const plans = new Map((await loadPlans(suitePlansDir(suite))).map(({ plan }) => [plan.case, plan]));
   await loadMidscene(join(runDir, "midscene"));
-  const browser = await launchBrowser();
-  const cases: CaseResult[] = [];
-  try {
-    for (const source of selected) {
-      const result = await runCase({
-        source,
-        plan: plans.get(source.id),
-        env,
-        runId,
-        runDir,
-        ledger,
-        factory: actorFactory(browser, env, runId, ledger),
-        timeoutMs: options.caseTimeoutMs ?? 10 * 60_000
-      });
-      cases.push(result);
-      process.stdout.write(`${JSON.stringify({ event: "case.result", id: result.id, status: result.status, title: result.title })}\n`);
+  const queue = selected.map((source, index) => ({ source, index }));
+  const results: CaseResult[] = new Array(selected.length);
+  const worker = async (): Promise<void> => {
+    const browser = await launchBrowser();
+    try {
+      for (let next = queue.shift(); next; next = queue.shift()) {
+        const result = await runCase({
+          source: next.source,
+          plan: plans.get(next.source.id),
+          env,
+          runId,
+          runDir,
+          ledger,
+          factory: actorFactory(browser, env, runId, ledger),
+          timeoutMs: options.caseTimeoutMs ?? 10 * 60_000
+        });
+        results[next.index] = result;
+        process.stdout.write(
+          `${JSON.stringify({ event: "case.result", id: result.id, status: result.status, title: result.title, done: results.filter(Boolean).length, total: selected.length })}\n`
+        );
+      }
+    } finally {
+      await browser.close();
     }
-  } finally {
-    await browser.close();
-  }
+  };
+  const workers = Math.max(1, Math.min(options.concurrency ?? 1, selected.length));
+  await Promise.all(Array.from({ length: workers }, worker));
+  const cases = results;
   const cleanup = await revokeLoginCodes(env, ledger);
   return finish(runDir, { ...base, finishedAt: new Date().toISOString(), status: "completed", cases, cleanup });
+}
+
+/** --only 支持完整 id 或 id 前缀（如 Plan 文件名的 8 位）；匹配不到或有歧义直接报错，避免静默少跑。 */
+export function selectCases(sources: readonly PosCase[], only: readonly string[] | undefined): PosCase[] {
+  if (!only?.length) return [...sources];
+  const picked = new Map<string, PosCase>();
+  for (const key of only) {
+    const matches = sources.filter((item) => item.id.startsWith(key));
+    if (matches.length !== 1) {
+      throw new Error(`--only ${key} ${matches.length === 0 ? "没有匹配的用例" : `匹配到 ${matches.length} 条用例`}`);
+    }
+    picked.set(matches[0]!.id, matches[0]!);
+  }
+  return sources.filter((item) => picked.has(item.id));
 }
 
 export async function suiteCases(suite: Suite): Promise<PosCase[]> {
@@ -197,13 +221,16 @@ async function runCase(input: CaseInput): Promise<CaseResult> {
       phase = "steps";
       for (const step of plan.steps ?? []) await runStep(ctx, actors, step, vars, recorder);
     } catch (error) {
+      // 超时后页面被主动关闭，随之抛出的错误不能覆盖「超时」这个真实原因
+      if (timedOut) return;
       status = phase === "setup" ? "blocked" : "failed";
       reason = `${phase === "setup" ? "前置条件无法达成" : "操作步骤执行失败"}：${(error as Error).message}`;
     }
   };
 
+  let timedOut = false;
   const running = body();
-  const timedOut = await withTimeout(running, input.timeoutMs);
+  timedOut = await withTimeout(running, input.timeoutMs);
   if (timedOut) {
     status = "blocked";
     reason = `用例超时（${Math.round(input.timeoutMs / 1000)}s）`;

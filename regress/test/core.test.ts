@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { loadSuite } from "../src/config.ts";
 import { loadPlans, validatePlan, type Plan } from "../src/plan.ts";
 import { parseCase } from "../src/pos.ts";
-import { evaluateCheck, interpolate, suiteCases } from "../src/runner.ts";
+import { evaluateCheck, interpolate, selectCases, suiteCases } from "../src/runner.ts";
 
 const node = {
   id: "case-1",
@@ -80,4 +80,12 @@ test("room-p0 的 Plan 与当前 .pos 一一对应且全部有效", async () => 
   for (const { file, plan } of plans) {
     assert.deepEqual(validatePlan(plan, cases.find((item) => item.id === plan.case)), [], file);
   }
+});
+
+test("selectCases 支持 id 前缀，未匹配时报错", () => {
+  const a = parseCase({ ...node, id: "aaaa1111-x" }, [])!;
+  const b = parseCase({ ...node, id: "bbbb2222-y" }, [])!;
+  assert.deepEqual(selectCases([a, b], ["bbbb2222"]).map((item) => item.id), ["bbbb2222-y"]);
+  assert.equal(selectCases([a, b], undefined).length, 2);
+  assert.throws(() => selectCases([a, b], ["cccc"]), /没有匹配/u);
 });

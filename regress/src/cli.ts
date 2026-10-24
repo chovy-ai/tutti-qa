@@ -2,8 +2,8 @@
 // tutti-regress：.pos P0 用例 → Plan → Midscene 执行 → 报告。
 import { access, readFile, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
-import { parseArgs } from "node:util";
-import { existsSync } from "node:fs";
+import { parseArgs, parseEnv } from "node:util";
+import { existsSync, readFileSync } from "node:fs";
 import { stringify } from "yaml";
 import { loadEnv, loadSuite, missingModelEnv, regressRoot, suitePlansDir } from "./config.ts";
 import { cleanupRun } from "./cleanup.ts";
@@ -16,13 +16,17 @@ const USAGE = `用法：
   regress doctor  --env <env>                         检查模型配置、tutti-ops 与环境入口
   regress cases   --suite <suite> [--id <caseId>]     导出用例 JSON（编译 Plan 的输入）
   regress sync    --suite <suite> [--scaffold]        核对 .pos 与 Plan：缺失 / 过期 / 失效；--scaffold 为缺失用例生成待编译占位
-  regress run     --env <env> --suite <suite> [--only id,id] [--timeout-min 10]
+  regress run     --env <env> --suite <suite> [--only id,id] [--timeout-min 10] [--concurrency 10]
   regress report  --run <runId>                       由 result.json 重新生成 report.html
   regress cleanup --env <env> --run <runId>           按台账补清理房间并回收登录码`;
 
-// 本地 .env 只补充未设置的变量，命令行环境变量优先
+// 本地 .env：MIDSCENE_* 以本项目配置为准（覆盖 shell 全局导出的模型配置），其他变量只补充未设置的
 const dotenv = join(regressRoot, ".env");
-if (existsSync(dotenv)) process.loadEnvFile(dotenv);
+if (existsSync(dotenv)) {
+  for (const [key, value] of Object.entries(parseEnv(readFileSync(dotenv, "utf8")))) {
+    if (key.startsWith("MIDSCENE_") || process.env[key] === undefined) process.env[key] = value;
+  }
+}
 
 const { positionals, values } = parseArgs({
   allowPositionals: true,
@@ -33,7 +37,8 @@ const { positionals, values } = parseArgs({
     only: { type: "string" },
     run: { type: "string" },
     scaffold: { type: "boolean" },
-    "timeout-min": { type: "string" }
+    "timeout-min": { type: "string" },
+    concurrency: { type: "string" }
   }
 });
 
@@ -99,7 +104,8 @@ switch (command) {
       envId: need("env"),
       suiteId: need("suite"),
       only: values.only?.split(",").map((item) => item.trim()).filter(Boolean),
-      caseTimeoutMs: timeoutMin * 60_000
+      caseTimeoutMs: timeoutMin * 60_000,
+      concurrency: readConcurrency()
     });
     printSummary(runDir, result);
     process.exitCode = exitCode(result);
@@ -121,6 +127,20 @@ switch (command) {
   default:
     console.log(USAGE);
     process.exitCode = command ? 64 : 0;
+}
+
+/** 默认 10：实际吞吐受模型网关能同时服务的请求数限制，超出部分在网关排队。有头模式共用系统剪贴板，只能串行。 */
+function readConcurrency(): number {
+  const value = Number(values.concurrency ?? process.env.REGRESS_CONCURRENCY ?? "10");
+  if (!Number.isInteger(value) || value < 1) {
+    console.error("--concurrency 必须是正整数");
+    process.exit(64);
+  }
+  if (process.env.REGRESS_HEADED === "1" && value > 1) {
+    console.error("有头模式共用系统剪贴板，已改为串行执行");
+    return 1;
+  }
+  return value;
 }
 
 function need(key: "env" | "suite" | "run"): string {

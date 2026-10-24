@@ -32,7 +32,7 @@ pnpm exec playwright install chromium
 tutti-ops auth status        # 需要 access 模块写权限（申请/删除登录码）
 ```
 
-模型通过 Midscene 环境变量配置，见 `.env.example`。本机已登录 Codex CLI 时可直接用 `codex://app-server`，不需要 API key。
+模型通过 `regress/.env` 配置（模板见 `.env.example`），其中的 `MIDSCENE_*` 会覆盖 shell 里的同名变量。推荐复用本机 sub2api（`http://127.0.0.1:8080/v1`，分组 codex，`gpt-6.1-sol`），并设置 `MIDSCENE_MODEL_REASONING_ENABLED=false`；本机已登录 Codex CLI 时也可以用 `codex://app-server`。
 
 ## 命令
 
@@ -40,10 +40,12 @@ tutti-ops auth status        # 需要 access 模块写权限（申请/删除登�
 node src/cli.ts doctor  --env prod                     # 检查模型、tutti-ops、环境入口
 node src/cli.ts sync    --suite room-p0 [--scaffold]   # .pos 与 Plan 对账：缺失 / 内容变化 / 孤儿
 node src/cli.ts cases   --suite room-p0 [--id <id>]    # 导出用例 JSON，给编译用
-node src/cli.ts run     --env prod --suite room-p0 [--only id,id] [--timeout-min 10]
+node src/cli.ts run     --env prod --suite room-p0 [--only id前缀,...] [--timeout-min 10] [--concurrency 10]
 node src/cli.ts report  --run <runId>                  # 由 result.json 重新生成 report.html
 node src/cli.ts cleanup --env prod --run <runId>       # 补清理：为台账里的测试用户补发登录码并清空房间
 ```
+
+并行：每个 worker 独占一个浏览器进程（隔离剪贴板），用例之间本来就是不同的测试用户。并发数默认取 `REGRESS_CONCURRENCY`（10），上限取决于模型网关能同时服务的请求数，超过只会在网关排队。
 
 `run` 的退出码：`0` 全部通过，`1` 有失败，`2` 有阻塞 / 待复核 / 整体阻塞。产物在 `.runs/<runId>/`：
 `report.html`、`result.json`、`ledger.jsonl`（创建过的登录码与房间）、`midscene/report/*.html`（每个 actor 的逐步回放）。
