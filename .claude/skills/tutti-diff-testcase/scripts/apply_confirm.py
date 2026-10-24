@@ -32,9 +32,24 @@ def main():
     unknown = [s["key"] for s in conf["selected"] if s["key"] not in by]
     if unknown:
         sys.exit(f"确认结果里有 changes.json 不存在的条目：{unknown}")
+    questions = ch.get("review_questions", [])
+    answers = conf.get("answers", [])
+    if questions:
+        expected = [q["id"] for q in questions]
+        if (not isinstance(answers, list)
+                or any(not isinstance(a, dict) for a in answers)):
+            sys.exit("待确认项答复格式错误，请用本批页面重新导出")
+        ids = [a.get("id") for a in answers]
+        if len(set(expected)) != len(expected) or sorted(ids, key=str) != sorted(expected, key=str):
+            sys.exit("待确认项答复缺失、重复或含未知 ID，请用本批页面重新导出")
+        if any(not isinstance(a.get("answer"), str) or not a["answer"].strip() for a in answers):
+            sys.exit("待确认项尚未全部回答，请填写答复后重新导出")
     sel = [dict(by[s["key"]], note=s.get("note") or "") for s in conf["selected"]]
     out = {"batch": ch["batch"], "repos": ch["repos"], "scope": ch.get("scope", {}),
            "selected": sel, "unselected": conf.get("unselected", [])}
+    if questions:
+        by_answer = {a["id"]: a["answer"].strip() for a in answers}
+        out["review_questions"] = [dict(q, answer=by_answer[q["id"]]) for q in questions]
     dst = os.path.join(os.path.dirname(os.path.abspath(a.changes)), "selected.json")
     with open(dst, "w", encoding="utf-8") as f:
         json.dump(out, f, ensure_ascii=False, indent=1)

@@ -6,6 +6,8 @@
 页面功能：按仓库分组列出每个 PR / commit；候选默认勾选、噪音默认不勾选；可按「候选 / 噪音 / 全部」
 筛选、关键词搜索、展开看文件与 PR 描述、逐条写备注；勾选状态存在浏览器本地。
 点「导出确认结果」生成一段文本（末行是 TUTTI-QA-CONFIRM 开头的 JSON），复制后粘回对话即可。
+可选 review_questions 数组用于分析后的口径 review：每项含 id、question、suggestion、reason。
+建议只作参考；QA 必须填写答复后才能导出，不把建议或默认勾选当成人工确认。
 """
 import argparse
 import html
@@ -40,6 +42,8 @@ h2{font-size:15px;margin:18px 0 8px}
 details{margin-top:6px;font-size:12px}summary{cursor:pointer;color:var(--muted)}
 pre{white-space:pre-wrap;word-break:break-all;margin:4px 0;max-height:260px;overflow:auto;background:var(--bg);padding:6px;border-radius:4px}
 .note{width:100%;margin-top:6px;font:inherit;font-size:12px;border:1px solid var(--line);border-radius:6px;padding:4px 8px;background:transparent;color:var(--txt)}
+.question{display:block}.question .answer{min-height:70px;resize:vertical}
+.question.pending{border-color:var(--warn)}
 input[type=checkbox]{width:18px;height:18px;margin-top:2px}
 #out{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:9}
 #out .box{background:var(--card);width:min(900px,94vw);border-radius:10px;padding:16px}
@@ -57,11 +61,12 @@ input[type=checkbox]{width:18px;height:18px;margin-top:2px}
   <span class="count" id="count"></span>
   <button class="primary" id="export">导出确认结果</button>
  </div>
+ <div class="tip" id="status" role="status"></div>
 </header>
 <main id="list"></main>
 <div id="out"><div class="box">
  <b>确认结果</b>
- <div class="tip">已自动复制到剪贴板；如未复制成功，点「复制」或手动全选复制，然后粘贴回对话。</div>
+ <div class="tip">将整段结果粘贴回对话；复制受限时可在下方手动全选复制。</div>
  <textarea id="txt" readonly></textarea>
  <div class="bar"><button class="primary" id="copy">复制</button><button id="dl">下载 .txt</button><button id="close">关闭</button><span class="tip" id="copied"></span></div>
 </div></div>
@@ -73,7 +78,11 @@ const store = (() => { try { const s = window.localStorage; s.getItem("_"); retu
 let saved = {}; try { saved = JSON.parse((store && store.getItem(KEY)) || "{}"); } catch {}
 const st = {};
 D.items.forEach(i => st[i.key] = saved[i.key] || {checked: i.checked, note: ""});
-const save = () => { try { store && store.setItem(KEY, JSON.stringify(st)); } catch {} };
+const questions = D.review_questions || [];
+const answers = {};
+questions.forEach(q => answers[q.id] = saved["question:" + q.id]?.answer || "");
+const questionState = () => Object.fromEntries(questions.map(q => ["question:" + q.id, {answer: answers[q.id]}]));
+const save = () => { try { store && store.setItem(KEY, JSON.stringify({...st, ...questionState()})); } catch {} };
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const short = r => r.split("/")[1];
 const prLabel = i => short(i.repo) + (i.pr ? "#" + i.pr : "@" + i.sha.slice(0,10));
@@ -86,6 +95,21 @@ document.getElementById("scope").innerHTML =
   `<span>删除模块：<b>${esc((sc.delete||[]).join("、") || "无")}</b></span>`;
 
 const list = document.getElementById("list");
+if (questions.length) {
+  const section = document.createElement("section");
+  section.innerHTML = '<h2>待确认项</h2><div class="tip">逐项填写答复；接受建议时请明确填写“按建议”。勾选 PR 不代表确认扩大新增或删除范围。</div>';
+  for (const q of questions) {
+    const el = document.createElement("div"); el.className = "item question";
+    el.innerHTML = `<label class="title" for="answer-${esc(q.id)}">${esc(q.id)} · ${esc(q.question)}</label>
+      <div class="impact">建议：${esc(q.suggestion || "请明确口径")}</div>
+      <div class="tip">依据：${esc(q.reason || "见相关变更说明")}</div>
+      <textarea class="note answer" id="answer-${esc(q.id)}" placeholder="填写答复，或明确写“按建议”"></textarea>`;
+    const input = el.querySelector("textarea"); input.value = answers[q.id];
+    input.oninput = () => { answers[q.id] = input.value; el.classList.remove("pending"); save(); };
+    section.appendChild(el);
+  }
+  list.appendChild(section);
+}
 for (const repo of Object.keys(D.repos)) {
   const items = D.items.filter(i => i.repo === repo);
   const h = document.createElement("h2"); h.textContent = `${repo}（${items.length}）`; list.appendChild(h);
@@ -108,7 +132,7 @@ for (const repo of Object.keys(D.repos)) {
 let filter = "cand";
 function apply() {
   const q = document.getElementById("q").value.trim().toLowerCase();
-  for (const el of list.querySelectorAll(".item")) {
+  for (const el of list.querySelectorAll(".item[data-key]")) {
     const i = D.items.find(x => x.key === el.dataset.key);
     const okF = filter === "all" || (filter === "cand" ? !i.noise : !!i.noise);
     el.classList.toggle("hide", !(okF && (!q || el.dataset.text.includes(q))));
@@ -122,7 +146,7 @@ document.querySelectorAll("[data-f]").forEach(b => b.onclick = () => {
   filter = b.dataset.f; document.querySelectorAll("[data-f]").forEach(x => x.classList.toggle("primary", x === b)); apply(); });
 document.getElementById("q").oninput = apply;
 const setAll = pred => { D.items.forEach(i => st[i.key].checked = pred(i)); save();
-  list.querySelectorAll(".item").forEach(el => el.querySelector("input[type=checkbox]").checked = st[el.dataset.key].checked); count(); };
+  list.querySelectorAll(".item[data-key]").forEach(el => el.querySelector("input[type=checkbox]").checked = st[el.dataset.key].checked); count(); };
 document.getElementById("selCand").onclick = () => setAll(i => !i.noise || st[i.key].checked);
 document.getElementById("clear").onclick = () => setAll(() => false);
 
@@ -134,17 +158,27 @@ function buildText() {
     `已勾选 ${sel.length} / ${D.items.length}：`];
   sel.forEach((i, n) => L.push(`${n+1}. ${prLabel(i)} ${i.sha.slice(0,10)} ${i.title}` + (i.modules.length ? ` ｜ 模块：${i.modules.join("、")}` : "") + (st[i.key].note ? ` ｜ 备注：${st[i.key].note}` : "")));
   L.push(`未勾选 ${uns.length} 条：` + (uns.map(prLabel).join("、") || "无"));
+  questions.forEach(q => L.push(`待确认 ${q.id}：${q.question} ｜ 答复：${answers[q.id].trim()}`));
   L.push("TUTTI-QA-CONFIRM " + JSON.stringify({batch: D.batch,
-    selected: sel.map(i => ({key: i.key, note: st[i.key].note || undefined})), unselected: uns.map(i => i.key)}));
+    selected: sel.map(i => ({key: i.key, note: st[i.key].note || undefined})), unselected: uns.map(i => i.key),
+    answers: questions.map(q => ({id: q.id, answer: answers[q.id].trim()}))}));
   return L.join("\n");
 }
 const out = document.getElementById("out"), txt = document.getElementById("txt");
 async function copy() {
   try { await navigator.clipboard.writeText(txt.value); document.getElementById("copied").textContent = "已复制"; }
-  catch { txt.select(); try { document.execCommand("copy"); document.getElementById("copied").textContent = "已复制"; }
+  catch { txt.select(); try { document.getElementById("copied").textContent = document.execCommand("copy") ? "已复制" : "请手动复制"; }
           catch { document.getElementById("copied").textContent = "请手动复制"; } }
 }
-document.getElementById("export").onclick = () => { txt.value = buildText(); out.style.display = "flex"; txt.focus(); txt.select(); copy(); };
+document.getElementById("export").onclick = () => {
+  const missing = questions.filter(q => !answers[q.id].trim());
+  document.getElementById("status").textContent = missing.length ? `请先回答待确认项：${missing.map(q => q.id).join("、")}` : "";
+  if (missing.length) {
+    const input = document.getElementById("answer-" + missing[0].id);
+    input.closest(".question").classList.add("pending"); input.focus(); return;
+  }
+  txt.value = buildText(); out.style.display = "flex"; txt.focus(); txt.select(); copy();
+};
 document.getElementById("copy").onclick = copy;
 document.getElementById("close").onclick = () => out.style.display = "none";
 document.getElementById("dl").onclick = () => { const a = document.createElement("a");
