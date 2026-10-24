@@ -1,9 +1,9 @@
 // 事后清理：按 Run 台账为每个测试用户补发登录码，登录后清空其房间，最后回收全部登录码。
 import { join, resolve } from "node:path";
 import { loadEnv, regressRoot } from "./config.ts";
-import { actorFactory, launchBrowser, loadMidscene } from "./browser.ts";
-import { runTag } from "./runner.ts";
-import { clearRooms, enterApp } from "./flows.ts";
+import { actorFactory, launchBrowser } from "./browser.ts";
+import { loadMidscene } from "./midscene.ts";
+import { clearRooms, enterApp, flowContext } from "./flows.ts";
 import { deleteLoginCode } from "./identity.ts";
 import { openLedger, readLedger } from "./ledger.ts";
 
@@ -26,11 +26,11 @@ export async function cleanupRun(runId: string, envId: string): Promise<CleanupR
   const browser = await launchBrowser();
   const users: CleanupResult["users"][number][] = [];
   try {
-    const factory = actorFactory(browser, env, runId, ledger);
+    const factory = actorFactory(browser, env, ledger, { flowCacheWritable: false });
     for (const userId of userIds) {
       try {
         const actor = await factory.create("cleanup", "cleanup", "cleanup", userId);
-        await enterApp({ env, runId, runTag: runTag(runId), caseId: "cleanup", ledger }, actor);
+        await enterApp(flowContext({ env, runId, tag: "cleanup", caseId: "cleanup", ledger }), actor);
         users.push({ userId, leftovers: await clearRooms(actor, env) });
         await actor.context.close();
       } catch (error) {

@@ -13,8 +13,8 @@ setup:
     flow: openCreateRoomDialog
 steps:
   - actor: owner
-    act: 在背景色（配色）组中选择最后一个颜色，把房间名称改为「{{runId}}-color」，点击完成或创建
+    act: 在背景色（配色）组中选择最后一个颜色，把房间名称改为「{{tag}}-color」，点击完成或创建
   - actor: owner
     n: 1
-    assert: 房间「{{runId}}-color」创建成功，左侧列表中它的头像背景色与刚才选择的最后一个颜色一致
+    assert: 房间「{{tag}}-color」创建成功，左侧列表中它的头像背景色与刚才选择的最后一个颜色一致
     waitMs: 60000

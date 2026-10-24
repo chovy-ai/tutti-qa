@@ -11,8 +11,11 @@ import {
   suitePlansDir,
   suitePosPath
 } from "./config.ts";
-import { type Actor, actorFactory, launchBrowser, loadMidscene, type NetworkIssue } from "./browser.ts";
-import { clearRooms, enterApp, type FlowContext, runFlow } from "./flows.ts";
+import { createHash } from "node:crypto";
+import { type Actor, actorFactory, caseTag, launchBrowser, type NetworkIssue } from "./browser.ts";
+import { addStats, type CacheStats, cacheStrategy, emptyStats } from "./cache.ts";
+import { loadMidscene } from "./midscene.ts";
+import { clearRooms, enterApp, type FlowContext, flowContext, runFlow } from "./flows.ts";
 import { deleteLoginCode, opsWhoami } from "./identity.ts";
 import { type Ledger, openLedger, readLedger } from "./ledger.ts";
 import { type CheckOp, loadPlans, type Plan, type PlanStep, stepKind, validatePlan } from "./plan.ts";
@@ -39,6 +42,8 @@ export interface CaseResult {
   readonly reports: readonly string[];
   readonly leftovers: readonly string[];
   readonly durationMs: number;
+  /** 本条用例全部 agent 的缓存命中情况；缓存关闭时全为 0 */
+  readonly cache: CacheStats;
 }
 
 export interface RunResult {
@@ -52,6 +57,8 @@ export interface RunResult {
   readonly model: string;
   readonly cases: readonly CaseResult[];
   readonly cleanup: { readonly loginCodesDeleted: number; readonly errors: readonly string[] };
+  /** 缓存策略（off 表示关闭）与全部用例的命中汇总 */
+  readonly cache: { readonly strategy: string; readonly flowWritable: boolean; readonly stats: CacheStats };
 }
 
 export interface RunOptions {
@@ -72,6 +79,7 @@ export async function runSuite(options: RunOptions): Promise<{ runDir: string; r
   const ledger = openLedger(runDir);
   const startedAt = new Date().toISOString();
   const base = { runId, env: env.id, suite: suite.id, startedAt, model: process.env.MIDSCENE_MODEL_NAME ?? "" };
+  const strategy = cacheStrategy() ?? "off";
 
   const blocked = await preflight(env);
   const sources = await suiteCases(suite);
@@ -83,7 +91,8 @@ export async function runSuite(options: RunOptions): Promise<{ runDir: string; r
       status: "blocked",
       blockedReason: blocked,
       cases: [],
-      cleanup: { loginCodesDeleted: 0, errors: [] }
+      cleanup: { loginCodesDeleted: 0, errors: [] },
+      cache: { strategy, flowWritable: false, stats: emptyStats() }
     };
     return finish(runDir, result);
   }
@@ -92,6 +101,9 @@ export async function runSuite(options: RunOptions): Promise<{ runDir: string; r
   await loadMidscene(join(runDir, "midscene"));
   const queue = selected.map((source, index) => ({ source, index }));
   const results: CaseResult[] = new Array(selected.length);
+  const workers = Math.max(1, Math.min(options.concurrency ?? 1, selected.length));
+  // 共享 flow 缓存只在串行时写：并发 worker 各自加载、各自整文件回写，后写的会覆盖先写的
+  const flowCacheWritable = workers === 1;
   const worker = async (): Promise<void> => {
     const browser = await launchBrowser();
     try {
@@ -103,7 +115,7 @@ export async function runSuite(options: RunOptions): Promise<{ runDir: string; r
           runId,
           runDir,
           ledger,
-          factory: actorFactory(browser, env, runId, ledger),
+          factory: actorFactory(browser, env, ledger, { flowCacheWritable }),
           timeoutMs: options.caseTimeoutMs ?? 10 * 60_000
         });
         results[next.index] = result;
@@ -115,11 +127,18 @@ export async function runSuite(options: RunOptions): Promise<{ runDir: string; r
       await browser.close();
     }
   };
-  const workers = Math.max(1, Math.min(options.concurrency ?? 1, selected.length));
   await Promise.all(Array.from({ length: workers }, worker));
   const cases = results;
   const cleanup = await revokeLoginCodes(env, ledger);
-  return finish(runDir, { ...base, finishedAt: new Date().toISOString(), status: "completed", cases, cleanup });
+  const stats = cases.reduce((total, item) => addStats(total, item.cache), emptyStats());
+  return finish(runDir, {
+    ...base,
+    finishedAt: new Date().toISOString(),
+    status: "completed",
+    cases,
+    cleanup,
+    cache: { strategy, flowWritable: flowCacheWritable, stats }
+  });
 }
 
 /** --only 支持完整 id 或 id 前缀（如 Plan 文件名的 8 位）；匹配不到或有歧义直接报错，避免静默少跑。 */
@@ -182,7 +201,8 @@ async function runCase(input: CaseInput): Promise<CaseResult> {
     issues: [],
     reports: [],
     leftovers: [],
-    durationMs: Date.now() - started
+    durationMs: Date.now() - started,
+    cache: emptyStats()
   });
 
   if (!plan) return skeleton("skipped", "尚未编译 Plan");
@@ -193,10 +213,12 @@ async function runCase(input: CaseInput): Promise<CaseResult> {
   if (lacking.length) return skeleton("skipped", `环境缺少能力：${lacking.join(", ")}`);
 
   const actors = new Map<string, Actor>();
-  const ctx: FlowContext = { env, runId: input.runId, runTag: runTag(input.runId), caseId: source.id, ledger: input.ledger };
+  const tag = caseTag(source.id);
+  const ctx: FlowContext = flowContext({ env, runId: input.runId, tag, caseId: source.id, ledger: input.ledger });
+  // 数据名与密码按用例固定：actor 都是新用户，不会与其他 Run 撞名，固定后提示词才能命中缓存
   const vars: Vars = {
-    runId: runTag(input.runId),
-    rand: { pin: String(Math.floor(100_000 + Math.random() * 900_000)) },
+    tag,
+    rand: { pin: stablePin(source.id) },
     today: { date: new Intl.DateTimeFormat("sv-SE", { timeZone: env.timezoneId }).format(new Date()) }
   };
   const recorder = expectRecorder(source);
@@ -248,18 +270,26 @@ async function runCase(input: CaseInput): Promise<CaseResult> {
       leftovers.push(`${actor.name}:清理失败 ${(error as Error).message}`);
     }
   }
-  const reports: string[] = [];
-  for (const actor of actors.values()) {
-    const file = actor.agent.reportFile;
-    if (file) reports.push(relative(input.runDir, file));
-    await actor.context.close().catch(() => undefined);
-  }
-
   const expectResults = recorder.results();
   if (status === "passed") {
     if (expectResults.some((item) => item.status === "failed")) status = "failed";
     else if (expectResults.some((item) => item.status === "uncertain")) status = "uncertain";
   }
+  // 用例完整通过时，清掉用例缓存里本次没用到的旧条目；失败或中断时路径不完整，不清理以免误删
+  if (status === "passed" && cacheStrategy() === "read-write") {
+    for (const actor of actors.values()) actor.agent.flushCache({ cleanUnused: true });
+  }
+  const reports: string[] = [];
+  const cache = emptyStats();
+  for (const actor of actors.values()) {
+    for (const agent of actor.agents()) {
+      const file = agent.reportFile;
+      if (file) reports.push(relative(input.runDir, file));
+    }
+    addStats(cache, actor.cacheStats());
+    await actor.context.close().catch(() => undefined);
+  }
+
   const names = new Set(actors.keys());
   return {
     id: source.id,
@@ -271,13 +301,15 @@ async function runCase(input: CaseInput): Promise<CaseResult> {
     issues: input.factory.issues.filter((issue) => names.has(issue.actor)),
     reports,
     leftovers,
-    durationMs: Date.now() - started
+    durationMs: Date.now() - started,
+    cache
   };
 }
 
-/** runId 形如 20261023T092452-prod-room-p0，取时分秒作为数据名前缀 */
-export function runTag(runId: string): string {
-  return runId.slice(9, 15);
+/** 由用例 id 派生的固定 6 位数字，用作房间密码等需要随机值的数据 */
+export function stablePin(caseId: string): string {
+  const value = createHash("sha256").update(caseId).digest().readUInt32BE(0);
+  return String(100_000 + (value % 900_000));
 }
 
 type Vars = Record<string, Record<string, string> | string>;
@@ -299,7 +331,7 @@ async function runStep(
   const actor = actors.get(step.actor!)!;
   switch (kind) {
     case "act":
-      await actor.agent.aiAct(interpolate(step.act!, vars));
+      await actor.agent.aiAct(interpolate(step.act!, vars), { cacheable: step.cache !== false });
       return;
     case "reload":
       await actor.page.reload({ waitUntil: "load" });

@@ -19,8 +19,9 @@ steps:
   - actor: owner
     act: 点击弹窗中的上传头像入口，选择照片
   - actor: owner
-    act: 如果出现裁剪或确认步骤就确认；把房间名称改为「{{runId}}-photo」，点击完成或创建
+    act: 如果出现裁剪或确认步骤就确认；把房间名称改为「{{tag}}-photo」，点击完成或创建
+    cache: false
   - actor: owner
     n: 1
-    assert: 房间「{{runId}}-photo」创建成功，左侧列表中它的头像是一张红蓝相间的棋盘格图片
+    assert: 房间「{{tag}}-photo」创建成功，左侧列表中它的头像是一张红蓝相间的棋盘格图片
     waitMs: 60000

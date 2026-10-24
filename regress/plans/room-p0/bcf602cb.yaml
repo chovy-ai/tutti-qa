@@ -17,11 +17,11 @@ setup:
     with:
       room: "{{room.name}}"
   - actor: owner
-    act: 点击房间公告入口，在编辑公告弹窗中输入「{{runId}} 旧公告」，点击发布
+    act: 点击房间公告入口，在编辑公告弹窗中输入「{{tag}} 旧公告」，点击发布
 steps:
   - actor: owner
-    act: 打开房间公告，点击编辑公告，把内容改为「{{runId}} 新公告」，点击发布
+    act: 打开房间公告，点击编辑公告，把内容改为「{{tag}} 新公告」，点击发布
   - actor: owner
     n: 1
-    assert: 公告内容已更新为「{{runId}} 新公告」，房间内只有这一条公告，看不到旧公告
+    assert: 公告内容已更新为「{{tag}} 新公告」，房间内只有这一条公告，看不到旧公告
     waitMs: 60000

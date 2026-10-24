@@ -26,6 +26,7 @@ setup:
 steps:
   - actor: member
     act: 尝试打开房间信息编辑：点击房间左上角的房间头像；如果出现头像图案，点击任意一个
+    cache: false
   - actor: member
     n: 1
     assert: 成员无法修改头像：没有可点击的头像图案，或者点击后房间头像没有任何变化

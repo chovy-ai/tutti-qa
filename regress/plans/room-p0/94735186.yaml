@@ -37,6 +37,7 @@ steps:
     reload: true
   - actor: owner
     act: 如果房间信息面板未打开，点击右上角成员头像组打开它
+    cache: false
   - actor: owner
     n: 2
     assert: 房间信息面板显示只有房主一名成员，已占席位为 1
