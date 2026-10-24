@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import type { APIRequestContext, BrowserContext } from "playwright";
-import type { EnvProfile } from "./config.ts";
+import type { EnvProfile } from "../core/config.ts";
 
 const run = promisify(execFile);
 

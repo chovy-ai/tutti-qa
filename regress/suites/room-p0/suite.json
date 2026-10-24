@@ -3,6 +3,5 @@
   "title": "房间管理 · Web 端 P0",
   "pos": "baseline/Tutti新框架_20261021.pos",
   "roots": ["588703c8-ded7-47d4-9d8a-d61b802cb468"],
-  "priorities": ["P0"],
-  "plansDir": "plans/room-p0"
+  "priorities": ["P0"]
 }

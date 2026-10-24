@@ -5,14 +5,15 @@ import { join, resolve } from "node:path";
 import { parseArgs, parseEnv } from "node:util";
 import { existsSync, readFileSync } from "node:fs";
 import { stringify } from "yaml";
-import { loadEnv, loadSuite, missingModelEnv, regressRoot, suitePlansDir } from "./config.ts";
-import { cleanupRun } from "./cleanup.ts";
-import { issueIdentities, loadIdentityBatch, releaseIdentities } from "./identities.ts";
-import { opsWhoami } from "./identity.ts";
-import { aiStep, createAgent, loadMidscene } from "./midscene.ts";
-import { loadPlans, validatePlan } from "./plan.ts";
-import { describeCache, mergeSessionReports, summarize, writeReport } from "./report.ts";
-import { runSuite, suiteCases, type RunResult } from "./runner.ts";
+import { loadEnv, loadSuite, missingModelEnv, regressRoot, suitePlansDir } from "./core/config.ts";
+import { cleanupRun } from "./run/cleanup.ts";
+import { issueIdentities, loadIdentityBatch, releaseIdentities } from "./identity/identities.ts";
+import { opsWhoami } from "./identity/identity.ts";
+import { sessionCacheDir } from "./ai/cache.ts";
+import { aiStep, createAgent, loadMidscene } from "./ai/midscene.ts";
+import { loadPlans, validatePlan } from "./core/plan.ts";
+import { describeCache, mergeSessionReports, summarize, writeReport } from "./run/report.ts";
+import { runSuite, suiteCases, type RunResult } from "./run/runner.ts";
 import {
   connectSession,
   listSessions,
@@ -20,7 +21,7 @@ import {
   sessionsRoot,
   startSessions,
   stopSession
-} from "./session.ts";
+} from "./browser/session.ts";
 
 const USAGE = `用法：
   regress doctor  --env <env>                         检查模型配置、tutti-ops 与环境入口
@@ -228,7 +229,7 @@ switch (command) {
         groupName: id,
         // 时间戳前缀保证 session report 按执行顺序合并
         reportFileName: `${new Date().toISOString().replace(/[-:.]/gu, "")}-${command}`,
-        cache: { kind: "sessions", env: connected.record.env }
+        cache: { dir: sessionCacheDir(connected.record.env) }
       });
       const timeoutMs = values["timeout-sec"] ? positiveInt(values["timeout-sec"], 60, "--timeout-sec") * 1000 : undefined;
       const result = await aiStep(agent, command, prompt, { timeoutMs });

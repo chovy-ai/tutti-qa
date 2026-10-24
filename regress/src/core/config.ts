@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-export const regressRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+export const regressRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 
 export interface EnvProfile {
   readonly id: string;
@@ -30,8 +30,6 @@ export interface Suite {
   readonly pos: string;
   readonly roots: readonly string[];
   readonly priorities: readonly string[];
-  /** 相对 regress 根目录 */
-  readonly plansDir: string;
 }
 
 export async function loadEnv(id: string): Promise<EnvProfile> {
@@ -39,15 +37,21 @@ export async function loadEnv(id: string): Promise<EnvProfile> {
 }
 
 export async function loadSuite(id: string): Promise<Suite> {
-  return readJSON<Suite>(resolve(regressRoot, "suites", `${id}.json`));
+  return readJSON<Suite>(resolve(suiteDir(id), "suite.json"));
 }
 
 export function suitePosPath(suite: Suite): string {
   return resolve(regressRoot, "..", suite.pos);
 }
 
+/** 一个 suite 的全部内容在同一目录下：suite.json、plans/、cache/ */
+export function suiteDir(id: string): string {
+  if (!/^[\w.-]+$/u.test(id)) throw new Error(`suite id 只能包含字母、数字、. _ -：${id}`);
+  return resolve(regressRoot, "suites", id);
+}
+
 export function suitePlansDir(suite: Suite): string {
-  return resolve(regressRoot, suite.plansDir);
+  return resolve(suiteDir(suite.id), "plans");
 }
 
 export const requiredModelEnv = [

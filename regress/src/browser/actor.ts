@@ -3,11 +3,11 @@
 import type { Browser, BrowserContext, Page } from "playwright";
 import { chromium } from "playwright";
 import type { PlaywrightAgent } from "@midscene/web/playwright/agent";
-import { addStats, type CacheStats, emptyStats } from "./cache.ts";
-import type { EnvProfile } from "./config.ts";
-import { createLoginCode, exchangeSession, type LoginCode } from "./identity.ts";
-import type { Ledger } from "./ledger.ts";
-import { createAgent } from "./midscene.ts";
+import { addStats, type CacheStats, emptyStats, flowCacheDir } from "../ai/cache.ts";
+import type { EnvProfile } from "../core/config.ts";
+import { createLoginCode, exchangeSession, type LoginCode } from "../identity/identity.ts";
+import type { Ledger } from "../core/ledger.ts";
+import { createAgent } from "../ai/midscene.ts";
 
 export interface NetworkIssue {
   readonly actor: string;
@@ -44,6 +44,8 @@ export interface ActorFactory {
 }
 
 export interface ActorFactoryOptions {
+  /** 用例缓存目录（suites/<suite>/cache/<env>）；null 表示用例 agent 不用缓存，如事后清理 */
+  readonly caseCacheDir: string | null;
   /** 共享的 flow 缓存是否可写；并发 Run 中多个 worker 同时写同一文件会互相覆盖，只在串行时写 */
   readonly flowCacheWritable: boolean;
 }
@@ -88,7 +90,7 @@ export function actorFactory(
         id: `${caseId}-${name}`,
         groupName: reportName,
         reportFileName: reportBase,
-        cache: { kind: "cases", env: env.id },
+        cache: options.caseCacheDir ? { dir: options.caseCacheDir } : null,
         stats: caseStats
       });
       created.push(agent);
@@ -107,7 +109,7 @@ export function actorFactory(
             id: `flow-${flowName}`,
             groupName: reportName,
             reportFileName: `${reportBase}-flow-${flowName}`,
-            cache: { kind: "flows", env: env.id, writable: options.flowCacheWritable },
+            cache: { dir: flowCacheDir(env.id), writable: options.flowCacheWritable },
             stats: flowStats
           });
           flowAgents.set(flowName, agent);

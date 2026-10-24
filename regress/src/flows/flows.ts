@@ -1,9 +1,9 @@
 // 固定流程库：用例前置条件与清理统一走这里，用代码维护。
 // 页面改版时优先修改这里的提示词或实现，Plan 与 .pos 用例不需要跟着改。
 import { resolve } from "node:path";
-import type { Actor } from "./browser.ts";
-import { type EnvProfile, regressRoot } from "./config.ts";
-import type { Ledger } from "./ledger.ts";
+import type { Actor } from "../browser/actor.ts";
+import { type EnvProfile, regressRoot } from "../core/config.ts";
+import type { Ledger } from "../core/ledger.ts";
 
 export interface FlowContext {
   readonly env: EnvProfile;

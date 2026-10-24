@@ -2,7 +2,7 @@
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { parse } from "yaml";
-import { flowNames } from "./flows.ts";
+import { flowNames } from "../flows/flows.ts";
 import type { PosCase } from "./pos.ts";
 
 export type PlanMode = "auto" | "manual";

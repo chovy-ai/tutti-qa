@@ -1,18 +1,26 @@
 // Midscene 缓存：目录布局、读写策略与命中统计。
 // 缓存只覆盖「怎么操作」（aiAct 的规划与元素定位），断言、等待、查询每次都走模型。
 //
-// .cache/midscene/<env>/
-//   cases/<用例id>-<actor>.cache.yaml   用例自己的 steps，读写；用例通过后清掉本次未用到的条目
-//   flows/<flow>.cache.yaml             公共前置流程，跨用例共享；只在串行 Run 中写入，并发时只读
-//   sessions/<cacheId>.cache.yaml       单步命令（act / assert …）
-import { join, resolve } from "node:path";
+// suites/<suite>/cache/<env>/<用例id>-<actor>.cache.yaml   用例自己的 steps，入库；用例通过后清掉本次未用到的条目
+// flows-cache/<env>/flow-<flow>.cache.yaml                公共前置流程，跨用例共享，入库；只在串行 Run 中写入，并发时只读
+// .local-cache/sessions/<env>/<cacheId>.cache.yaml        单步命令（act / assert …），只在本机
+import { resolve } from "node:path";
 import type { PlaywrightAgent } from "@midscene/web/playwright/agent";
-import { regressRoot } from "./config.ts";
+import { regressRoot, suiteDir } from "../core/config.ts";
 
 export type CacheStrategy = "read-only" | "read-write" | "write-only";
-export type CacheKind = "cases" | "flows" | "sessions";
 
-export const cacheRoot = resolve(regressRoot, ".cache", "midscene");
+export function caseCacheDir(suite: string, env: string): string {
+  return resolve(suiteDir(suite), "cache", env);
+}
+
+export function flowCacheDir(env: string): string {
+  return resolve(regressRoot, "flows-cache", env);
+}
+
+export function sessionCacheDir(env: string): string {
+  return resolve(regressRoot, ".local-cache", "sessions", env);
+}
 
 /** 缓存默认关闭；REGRESS_CACHE=read-write 等开启。 */
 export function cacheStrategy(value = process.env.REGRESS_CACHE): CacheStrategy | null {
@@ -22,18 +30,18 @@ export function cacheStrategy(value = process.env.REGRESS_CACHE): CacheStrategy 
 }
 
 export interface CacheScope {
-  readonly kind: CacheKind;
-  readonly env: string;
+  /** 缓存文件所在目录，见文件头的布局 */
+  readonly dir: string;
   /** false 时即使全局为 read-write 也只读，用于并发 Run 中的共享 flow 缓存 */
   readonly writable?: boolean;
 }
 
-/** 返回 Midscene agent 的 cache 配置；缓存关闭时返回 undefined。 */
-export function cacheConfig(scope: CacheScope, id: string): { id: string; strategy: CacheStrategy; cacheDir: string } | undefined {
+/** 返回 Midscene agent 的 cache 配置；缓存关闭或 scope 为 null 时返回 undefined。 */
+export function cacheConfig(scope: CacheScope | null, id: string): { id: string; strategy: CacheStrategy; cacheDir: string } | undefined {
   const strategy = cacheStrategy();
-  if (!strategy) return undefined;
+  if (!strategy || !scope) return undefined;
   const effective = scope.writable === false && strategy !== "write-only" ? "read-only" : strategy;
-  return { id, strategy: effective, cacheDir: join(cacheRoot, scope.env, scope.kind) };
+  return { id, strategy: effective, cacheDir: scope.dir };
 }
 
 /**

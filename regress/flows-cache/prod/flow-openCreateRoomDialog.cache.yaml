@@ -1,0 +1,115 @@
+midsceneVersion: 1.16.5
+cacheId: flow-openCreateRoomDialog
+caches:
+  - type: plan
+    prompt: |-
+      <CONTEXT>
+      你在操作 Tutti 的 Web 端（Room 是多人与 Agent 协作的房间）。
+      界面可能是中文或英文，按含义而非字面匹配按钮与文案。
+      不要点击与当前任务无关的入口；遇到新手引导、欢迎页或可跳过的提示时先跳过。
+      </CONTEXT>
+
+      点击 Create room 按钮，或房间列表分组旁的加号后选择新建房间；如果弹窗要求先选择房间类型，选择「My cloud rooms」并点击 Next
+    yamlWorkflow: |
+      tasks:
+        - name: >-
+            点击 Create room 按钮，或房间列表分组旁的加号后选择新建房间；如果弹窗要求先选择房间类型，选择「My cloud rooms」并点击
+            Next
+          flow: []
+  - type: plan
+    prompt: |-
+      <CONTEXT>
+      你在操作 Tutti 的 Web 端（Room 是多人与 Agent 协作的房间）。
+      界面可能是中文或英文，按含义而非字面匹配按钮与文案。
+      不要点击与当前任务无关的入口；遇到新手引导、欢迎页或可跳过的提示时先跳过。
+      </CONTEXT>
+
+      点击 Create room 按钮，或房间列表分组旁的加号后选择新建房间；如果弹窗要求先选择房间类型，选择「My cloud rooms」并点击 Next
+    yamlWorkflow: |
+      tasks:
+        - name: >-
+            点击 Create room 按钮，或房间列表分组旁的加号后选择新建房间；如果弹窗要求先选择房间类型，选择「My cloud rooms」并点击
+            Next
+          flow:
+            - aiTap: ''
+              locate: My cloud rooms 分组旁的加号
+            - aiTap: ''
+              locate: New room 菜单项
+  - type: locate
+    prompt: My cloud rooms 分组右侧的加号
+    cache:
+      xpaths:
+        - /html/body/div[1]/div[1]/div[1]/main[1]/div[1]/div[1]/div[3]/div[1]/div[1]/section[1]/div[1]/div[1]/main[normalize-space()="TuttiSkip for nowWelcome to TuttiSee how people work with Agents in roomsDevelopersFix an open-source bug across time zonesReproduce in Berlin, review a failed fix, and pick up the handoff in Singapore.Enter roomNew engineer, first PR on day oneRead the team’s past decisions, build a first feature, and get it reviewed.Enter roomStudentsBuild a hackathon demo in 36 hoursSplit the frontend, API and design work, then bring it into one working demo.Enter roomTurn four drafts into one group reportShare the research, merge the drafts, and revise the report after feedback.Enter roomStartups & teamsWrite the monthly investor updateReconcile growth and finance numbers, then turn them into an investor update.Enter roomSize up competitors before launchCompare products, challenge the findings, and agree on a launch position.Enter roomLifePlan a group trip to LisbonCombine everyone’s constraints into one itinerary and a shared budget.Enter roomFind a flat with roommatesCompare listings, weigh the trade-offs, and agree on a fair rent split.Enter roomAlready know your way around?Create your own room, or join someone else's.Create my roomJoin someone's roomGo to home"]
+  - type: locate
+    prompt: Skip for now 按钮
+    cache:
+      xpaths:
+        - /html/body/div[1]/div[1]/div[1]/main[1]/div[1]/div[1]/div[3]/div[1]/div[1]/section[1]/div[1]/div[1]/main[1]/header[1]/button[normalize-space()="Skip for now"]
+  - type: locate
+    prompt: Create room 按钮
+    cache:
+      xpaths:
+        - /html/body/div[1]/div[1]/div[1]/main[1]/div[1]/div[1]/div[3]/div[1]/div[1]/section[1]/div[1]/div[1]/main[1]/section[1]/div[3]/div[1]/button[normalize-space()="Create room"]
+  - type: locate
+    prompt: My cloud rooms 类型卡片
+    cache:
+      xpaths:
+        - /html/body/div[3]/fieldset[1]/label[2]/span[normalize-space()="Create a room in the cloud with a shared runtime environment.For research, collaborative development, image and video generation, and other workflows centered on in-depth sharingSecure sandboxPersistent environmentQuick sharingUse local Agents too"]
+  - type: locate
+    prompt: Next 按钮
+    cache:
+      xpaths:
+        - /html/body/div[3]/div[3]/button[normalize-space()="Next"]
+  - type: locate
+    prompt: |-
+      <CONTEXT>
+      你在操作 Tutti 的 Web 端（Room 是多人与 Agent 协作的房间）。
+      界面可能是中文或英文，按含义而非字面匹配按钮与文案。
+      不要点击与当前任务无关的入口；遇到新手引导、欢迎页或可跳过的提示时先跳过。
+      </CONTEXT>
+
+      <LOCATE_TARGET>
+      My cloud rooms 分组右侧的加号
+      </LOCATE_TARGET>
+    cache:
+      xpaths:
+        - /html/body/div[1]/div[1]/div[1]/main[1]/div[1]/div[1]/div[1]/div[1]/aside[1]/div[1]/nav[1]/div[1]/section[2]/div[1]/div[1]/button[1]
+  - type: locate
+    prompt: New room 菜单选项
+    cache:
+      xpaths:
+        - /html/body/div[2]/div[1]/div[normalize-space()="New room"]
+  - type: locate
+    prompt: My cloud rooms 分组旁的加号
+    cache:
+      xpaths:
+        - /html/body/div[1]/div[1]/div[1]/main[1]/div[1]/div[1]/div[1]/div[1]/aside[1]/div[1]/nav[1]/div[1]/section[2]/div[1]/div[1]/button[1]
+  - type: locate
+    prompt: New room 菜单项
+    cache:
+      xpaths:
+        - /html/body/div[2]/div[1]/div[normalize-space()="New room"]
+  - type: locate
+    prompt: My cloud rooms 类型选项
+    cache:
+      xpaths:
+        - /html/body/div[3]/fieldset[1]/label[2]/span[normalize-space()="Create a room in the cloud with a shared runtime environment.For research, collaborative development, image and video generation, and other workflows centered on in-depth sharingSecure sandboxPersistent environmentQuick sharingUse local Agents too"]
+  - type: locate
+    prompt: |-
+      <CONTEXT>
+      你在操作 Tutti 的 Web 端（Room 是多人与 Agent 协作的房间）。
+      界面可能是中文或英文，按含义而非字面匹配按钮与文案。
+      不要点击与当前任务无关的入口；遇到新手引导、欢迎页或可跳过的提示时先跳过。
+      </CONTEXT>
+
+      <LOCATE_TARGET>
+      Create room 按钮
+      </LOCATE_TARGET>
+    cache:
+      xpaths:
+        - /html/body/div[1]/div[1]/div[1]/main[1]/div[1]/div[1]/div[3]/div[1]/div[1]/section[1]/div[1]/div[1]/main[normalize-space()="TuttiSkip for nowWelcome to TuttiSee how people work with Agents in roomsDevelopersFix an open-source bug across time zonesReproduce in Berlin, review a failed fix, and pick up the handoff in Singapore.Enter roomNew engineer, first PR on day oneRead the team’s past decisions, build a first feature, and get it reviewed.Enter roomStudentsBuild a hackathon demo in 36 hoursSplit the frontend, API and design work, then bring it into one working demo.Enter roomTurn four drafts into one group reportShare the research, merge the drafts, and revise the report after feedback.Enter roomStartups & teamsWrite the monthly investor updateReconcile growth and finance numbers, then turn them into an investor update.Enter roomSize up competitors before launchCompare products, challenge the findings, and agree on a launch position.Enter roomLifePlan a group trip to LisbonCombine everyone’s constraints into one itinerary and a shared budget.Enter roomFind a flat with roommatesCompare listings, weigh the trade-offs, and agree on a fair rent split.Enter roomAlready know your way around?Create your own room, or join someone else's.Create my roomJoin someone's roomGo to home"]
+  - type: locate
+    prompt: Skip for now button
+    cache:
+      xpaths:
+        - /html/body/div[1]/div[1]/div[1]/main[1]/div[1]/div[1]/div[3]/div[1]/div[1]/section[1]/div[1]/div[1]/main[1]/header[1]/button[normalize-space()="Skip for now"]

@@ -1,0 +1,23 @@
+midsceneVersion: 1.16.5
+cacheId: flow-openRoom
+caches:
+  - type: plan
+    prompt: |-
+      <CONTEXT>
+      你在操作 Tutti 的 Web 端（Room 是多人与 Agent 协作的房间）。
+      界面可能是中文或英文，按含义而非字面匹配按钮与文案。
+      不要点击与当前任务无关的入口；遇到新手引导、欢迎页或可跳过的提示时先跳过。
+      </CONTEXT>
+
+      在左侧房间列表中点击房间「b40cf7-1」进入该房间
+    yamlWorkflow: |
+      tasks:
+        - name: 在左侧房间列表中点击房间「b40cf7-1」进入该房间
+          flow:
+            - aiTap: ''
+              locate: 左侧房间列表中的 b40cf7-1 房间名称
+  - type: locate
+    prompt: 左侧房间列表中的 b40cf7-1 房间名称
+    cache:
+      xpaths:
+        - /html/body/div[1]/div[1]/div[1]/main[1]/div[1]/div[1]/div[1]/div[1]/aside[1]/div[1]/nav[1]/div[1]/section[2]/div[2]/div[1]/div[1]/div[1]/div[1]/ul[1]/li[1]/div[1]/button[1]/span[2]

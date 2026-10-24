@@ -10,16 +10,16 @@ import {
   type Suite,
   suitePlansDir,
   suitePosPath
-} from "./config.ts";
+} from "../core/config.ts";
 import { createHash } from "node:crypto";
-import { type Actor, actorFactory, caseTag, launchBrowser, type NetworkIssue } from "./browser.ts";
-import { addStats, type CacheStats, cacheStrategy, emptyStats } from "./cache.ts";
-import { loadMidscene } from "./midscene.ts";
-import { clearRooms, enterApp, type FlowContext, flowContext, runFlow } from "./flows.ts";
-import { deleteLoginCode, opsWhoami } from "./identity.ts";
-import { type Ledger, openLedger, readLedger } from "./ledger.ts";
-import { type CheckOp, loadPlans, type Plan, type PlanStep, stepKind, validatePlan } from "./plan.ts";
-import { extractCases, loadPos, type PosCase } from "./pos.ts";
+import { type Actor, actorFactory, caseTag, launchBrowser, type NetworkIssue } from "../browser/actor.ts";
+import { addStats, caseCacheDir, type CacheStats, cacheStrategy, emptyStats } from "../ai/cache.ts";
+import { loadMidscene } from "../ai/midscene.ts";
+import { clearRooms, enterApp, type FlowContext, flowContext, runFlow } from "../flows/flows.ts";
+import { deleteLoginCode, opsWhoami } from "../identity/identity.ts";
+import { type Ledger, openLedger, readLedger } from "../core/ledger.ts";
+import { type CheckOp, loadPlans, type Plan, type PlanStep, stepKind, validatePlan } from "../core/plan.ts";
+import { extractCases, loadPos, type PosCase } from "../core/pos.ts";
 import { writeReport } from "./report.ts";
 
 export type CaseStatus = "passed" | "failed" | "blocked" | "uncertain" | "skipped";
@@ -115,7 +115,7 @@ export async function runSuite(options: RunOptions): Promise<{ runDir: string; r
           runId,
           runDir,
           ledger,
-          factory: actorFactory(browser, env, ledger, { flowCacheWritable }),
+          factory: actorFactory(browser, env, ledger, { caseCacheDir: caseCacheDir(suite.id, env.id), flowCacheWritable }),
           timeoutMs: options.caseTimeoutMs ?? 10 * 60_000
         });
         results[next.index] = result;

@@ -1,0 +1,23 @@
+midsceneVersion: 1.16.5
+cacheId: b40cf749-ba79-4a52-ba6c-dc79f6713f1c-owner
+caches:
+  - type: plan
+    prompt: |-
+      <CONTEXT>
+      你在操作 Tutti 的 Web 端（Room 是多人与 Agent 协作的房间）。
+      界面可能是中文或英文，按含义而非字面匹配按钮与文案。
+      不要点击与当前任务无关的入口；遇到新手引导、欢迎页或可跳过的提示时先跳过。
+      </CONTEXT>
+
+      通过房间信息区域打开编辑房间信息（例如点击左上角房间头像或名称，再点击编辑）
+    yamlWorkflow: |
+      tasks:
+        - name: 通过房间信息区域打开编辑房间信息（例如点击左上角房间头像或名称，再点击编辑）
+          flow:
+            - aiTap: ''
+              locate: 左上角房间名称 b40cf7-1
+  - type: locate
+    prompt: 左上角房间名称 b40cf7-1
+    cache:
+      xpaths:
+        - /html/body/div[1]/div[1]/div[1]/main[1]/div[1]/div[1]/div[3]/div[1]/div[1]/header[1]/div[1]/div[1]/div[1]/div[1]/div[1]/button[1]

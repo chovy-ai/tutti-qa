@@ -1,0 +1,30 @@
+midsceneVersion: 1.16.5
+cacheId: flow-openRoomMenu
+caches:
+  - type: plan
+    prompt: |-
+      <CONTEXT>
+      你在操作 Tutti 的 Web 端（Room 是多人与 Agent 协作的房间）。
+      界面可能是中文或英文，按含义而非字面匹配按钮与文案。
+      不要点击与当前任务无关的入口；遇到新手引导、欢迎页或可跳过的提示时先跳过。
+      </CONTEXT>
+
+      在左侧房间列表中把鼠标悬停在房间「14b1ad-1」上，点击条目右侧出现的更多按钮
+    yamlWorkflow: |
+      tasks:
+        - name: 在左侧房间列表中把鼠标悬停在房间「14b1ad-1」上，点击条目右侧出现的更多按钮
+          flow:
+            - aiHover: ''
+              locate: 左侧房间列表中的14b1ad-1房间条目
+            - aiTap: ''
+              locate: 14b1ad-1房间条目右侧的三点更多按钮
+  - type: locate
+    prompt: 左侧房间列表中的14b1ad-1房间条目
+    cache:
+      xpaths:
+        - /html/body/div[1]/div[1]/div[1]/main[1]/div[1]/div[1]/div[1]/div[1]/aside[1]/div[1]/nav[1]/div[1]/section[2]/div[2]/div[1]/div[1]/div[1]/div[1]/ul[1]/li[1]/div[1]/button[1]/span[normalize-space()="14b1ad-1"]
+  - type: locate
+    prompt: 14b1ad-1房间条目右侧的三点更多按钮
+    cache:
+      xpaths:
+        - /html/body/div[1]/div[1]/div[1]/main[1]/div[1]/div[1]/div[1]/div[1]/aside[1]/div[1]/nav[1]/div[1]/section[2]/div[2]/div[1]/div[1]/div[1]/div[1]/ul[1]/li[1]/div[1]/button[2]

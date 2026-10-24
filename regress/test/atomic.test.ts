@@ -1,12 +1,21 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { loadEnv } from "../src/config.ts";
-import { sessionCookies } from "../src/identity.ts";
-import { caseTag } from "../src/browser.ts";
-import { cacheConfig, cacheStrategy, emptyStats, hitRate, instrumentCache } from "../src/cache.ts";
-import { flowContext } from "../src/flows.ts";
-import { stablePin } from "../src/runner.ts";
-import { midsceneStatus } from "../src/report.ts";
+import { loadEnv } from "../src/core/config.ts";
+import { sessionCookies } from "../src/identity/identity.ts";
+import { caseTag } from "../src/browser/actor.ts";
+import {
+  cacheConfig,
+  cacheStrategy,
+  caseCacheDir,
+  emptyStats,
+  flowCacheDir,
+  hitRate,
+  instrumentCache,
+  sessionCacheDir
+} from "../src/ai/cache.ts";
+import { flowContext } from "../src/flows/flows.ts";
+import { stablePin } from "../src/run/runner.ts";
+import { midsceneStatus } from "../src/run/report.ts";
 
 test("cacheStrategy 默认关闭，只接受 Midscene 支持的策略", () => {
   assert.equal(cacheStrategy(undefined), null);
@@ -52,19 +61,26 @@ test("instrumentCache 统计命中、未命中与回退，回退计入有效命�
   assert.equal(hitRate(emptyStats()), null);
 });
 
-test("cacheConfig：共享 flow 在并发时降为只读，缓存关闭时不配置", () => {
+test("cacheConfig：共享 flow 在并发时降为只读，缓存关闭或不配目录时不启用", () => {
   const saved = process.env.REGRESS_CACHE;
   try {
     process.env.REGRESS_CACHE = "read-write";
-    assert.equal(cacheConfig({ kind: "flows", env: "prod", writable: false }, "flow-x")?.strategy, "read-only");
-    assert.equal(cacheConfig({ kind: "cases", env: "prod" }, "c")?.strategy, "read-write");
-    assert.match(cacheConfig({ kind: "cases", env: "prod" }, "c")!.cacheDir, /midscene\/prod\/cases$/u);
+    assert.equal(cacheConfig({ dir: flowCacheDir("prod"), writable: false }, "flow-x")?.strategy, "read-only");
+    assert.equal(cacheConfig({ dir: caseCacheDir("room-p0", "prod") }, "c")?.strategy, "read-write");
+    assert.equal(cacheConfig(null, "c"), undefined);
     delete process.env.REGRESS_CACHE;
-    assert.equal(cacheConfig({ kind: "cases", env: "prod" }, "c"), undefined);
+    assert.equal(cacheConfig({ dir: caseCacheDir("room-p0", "prod") }, "c"), undefined);
   } finally {
     if (saved === undefined) delete process.env.REGRESS_CACHE;
     else process.env.REGRESS_CACHE = saved;
   }
+});
+
+test("缓存目录：用例缓存随 suite 入库，flow 缓存共享，单步缓存只在本机", () => {
+  assert.match(caseCacheDir("room-p0", "prod"), /regress\/suites\/room-p0\/cache\/prod$/u);
+  assert.match(flowCacheDir("prod"), /regress\/flows-cache\/prod$/u);
+  assert.match(sessionCacheDir("prod"), /regress\/\.local-cache\/sessions\/prod$/u);
+  assert.throws(() => caseCacheDir("../x", "prod"), /suite id/u);
 });
 
 test("测试数据按用例固定：密码与房间名每次一致，用例内房间名递增", () => {

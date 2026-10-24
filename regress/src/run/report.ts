@@ -4,7 +4,7 @@ import { existsSync } from "node:fs";
 import { readdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ReportMergingTool } from "@midscene/core/report";
-import { type CacheStats, hitRate } from "./cache.ts";
+import { type CacheStats, hitRate } from "../ai/cache.ts";
 import type { CaseResult, CaseStatus, RunResult } from "./runner.ts";
 
 export const MIDSCENE_REPORT = "midscene-report";

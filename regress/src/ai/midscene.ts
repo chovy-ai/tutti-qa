@@ -15,7 +15,8 @@ export interface AgentOptions {
   readonly id: string;
   readonly groupName: string;
   readonly reportFileName: string;
-  readonly cache: CacheScope;
+  /** null 表示这个 agent 不用缓存 */
+  readonly cache: CacheScope | null;
   /** 传入时累计该 agent 的缓存命中情况 */
   readonly stats?: CacheStats;
 }

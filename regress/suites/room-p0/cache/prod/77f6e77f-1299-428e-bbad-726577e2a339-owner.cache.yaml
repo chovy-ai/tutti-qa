@@ -1,0 +1,43 @@
+midsceneVersion: 1.16.5
+cacheId: 77f6e77f-1299-428e-bbad-726577e2a339-owner
+caches:
+  - type: plan
+    prompt: |-
+      <CONTEXT>
+      你在操作 Tutti 的 Web 端（Room 是多人与 Agent 协作的房间）。
+      界面可能是中文或英文，按含义而非字面匹配按钮与文案。
+      不要点击与当前任务无关的入口；遇到新手引导、欢迎页或可跳过的提示时先跳过。
+      </CONTEXT>
+
+      把鼠标悬停在左侧房间列表中的房间「77f6e7-2」上
+    yamlWorkflow: |
+      tasks:
+        - name: 把鼠标悬停在左侧房间列表中的房间「77f6e7-2」上
+          flow:
+            - aiHover: ''
+              locate: 左侧房间列表中的房间名称「77f6e7-2」
+  - type: plan
+    prompt: |-
+      <CONTEXT>
+      你在操作 Tutti 的 Web 端（Room 是多人与 Agent 协作的房间）。
+      界面可能是中文或英文，按含义而非字面匹配按钮与文案。
+      不要点击与当前任务无关的入口；遇到新手引导、欢迎页或可跳过的提示时先跳过。
+      </CONTEXT>
+
+      点击房间「77f6e7-2」条目右侧的更多按钮
+    yamlWorkflow: |
+      tasks:
+        - name: 点击房间「77f6e7-2」条目右侧的更多按钮
+          flow:
+            - aiTap: ''
+              locate: 房间「77f6e7-2」条目右侧的三点更多按钮
+  - type: locate
+    prompt: 左侧房间列表中的房间名称「77f6e7-2」
+    cache:
+      xpaths:
+        - /html/body/div[1]/div[1]/div[1]/main[1]/div[1]/div[1]/div[1]/div[1]/aside[1]/div[1]/nav[1]/div[1]/section[2]/div[2]/div[1]/div[1]/div[1]/div[1]/ul[1]/li[1]/div[1]/button[1]/span[normalize-space()="77f6e7-2"]
+  - type: locate
+    prompt: 房间「77f6e7-2」条目右侧的三点更多按钮
+    cache:
+      xpaths:
+        - /html/body/div[1]/div[1]/div[1]/main[1]/div[1]/div[1]/div[1]/div[1]/aside[1]/div[1]/nav[1]/div[1]/section[2]/div[2]/div[1]/div[1]/div[1]/div[1]/ul[1]/li[1]/div[1]/button[2]

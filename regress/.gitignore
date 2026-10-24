@@ -4,4 +4,4 @@ midscene_run/
 .env
 .identities/
 .sessions/
-.cache/
+.local-cache/
