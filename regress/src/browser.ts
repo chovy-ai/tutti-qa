@@ -1,10 +1,13 @@
-// 浏览器与 Actor：每个 actor 是一个独立用户、独立 BrowserContext，各自持有一个 Midscene agent。
+// 浏览器与 Actor：每个 actor 是一个独立用户、独立 BrowserContext。
+// 一个 actor 持有一个用例 agent（用例自己的 steps）和按需创建的 flow agent（公共前置流程，跨用例共享缓存）。
 import type { Browser, BrowserContext, Page } from "playwright";
 import { chromium } from "playwright";
 import type { PlaywrightAgent } from "@midscene/web/playwright/agent";
+import { addStats, type CacheStats, emptyStats } from "./cache.ts";
 import type { EnvProfile } from "./config.ts";
 import { createLoginCode, exchangeSession, type LoginCode } from "./identity.ts";
 import type { Ledger } from "./ledger.ts";
+import { createAgent } from "./midscene.ts";
 
 export interface NetworkIssue {
   readonly actor: string;
@@ -19,7 +22,14 @@ export interface Actor {
   readonly context: BrowserContext;
   readonly loginCode: LoginCode;
   page: Page;
+  /** 用例自己的 agent，缓存在 cases/<用例id>-<actor> */
   agent: PlaywrightAgent;
+  /** 公共 flow 的 agent，缓存在 flows/<flow>，同一页面上按 flow 名复用 */
+  flow(name: string): PlaywrightAgent;
+  /** 本 actor 创建过的全部 agent（含超时重启前的），用于收集报告 */
+  agents(): readonly PlaywrightAgent[];
+  /** 用例 agent 与 flow agent 的缓存命中情况 */
+  cacheStats(): CacheStats;
   /** 关闭当前页面（中断进行中的 AI 操作），换一个新页面与 agent，用于超时后的清理 */
   restart(): Promise<void>;
 }
@@ -33,11 +43,10 @@ export interface ActorFactory {
   tab(base: Actor, name: string, caseId: string, reportName: string): Promise<Actor>;
 }
 
-const AI_CONTEXT = [
-  "你在操作 Tutti 的 Web 端（Room 是多人与 Agent 协作的房间）。",
-  "界面可能是中文或英文，按含义而非字面匹配按钮与文案。",
-  "不要点击与当前任务无关的入口；遇到新手引导、欢迎页或可跳过的提示时先跳过。"
-].join("\n");
+export interface ActorFactoryOptions {
+  /** 共享的 flow 缓存是否可写；并发 Run 中多个 worker 同时写同一文件会互相覆盖，只在串行时写 */
+  readonly flowCacheWritable: boolean;
+}
 
 export async function launchBrowser(): Promise<Browser> {
   const proxy = process.env.HTTPS_PROXY ?? process.env.https_proxy;
@@ -47,50 +56,71 @@ export async function launchBrowser(): Promise<Browser> {
   });
 }
 
+/** 测试数据的稳定标识：取用例 id 前 6 位，同一用例每次 Run 一致，提示词才能命中缓存 */
+export function caseTag(caseId: string): string {
+  return caseId.slice(0, 6);
+}
+
 export function actorFactory(
   browser: Browser,
   env: EnvProfile,
-  runId: string,
-  ledger: Ledger
+  ledger: Ledger,
+  options: ActorFactoryOptions
 ): ActorFactory {
   const issues: NetworkIssue[] = [];
-  const { PlaywrightAgent: Agent } = loadedMidscene();
-  const open = async (
-    context: BrowserContext,
-    name: string,
-    caseId: string,
-    reportName: string
-  ): Promise<{ page: Page; agent: PlaywrightAgent }> => {
-    const page = await context.newPage();
-    observe(page, name, issues);
-    const agent = new Agent(page, {
-      testId: `${caseId}-${name}`,
-      groupName: reportName,
-      reportFileName: `${reportName}-${name.replace("#", "-tab")}`,
-      generateReport: true,
-      autoPrintReportMsg: false,
-      aiContexts: { default: AI_CONTEXT }
-    });
-    return { page, agent };
-  };
-  const actor = (
+  const actor = async (
     name: string,
     displayName: string,
     context: BrowserContext,
     loginCode: LoginCode,
-    opened: { page: Page; agent: PlaywrightAgent },
     caseId: string,
     reportName: string
-  ): Actor => {
+  ): Promise<Actor> => {
+    const reportBase = `${reportName}-${name.replace("#", "-tab")}`;
+    const created: PlaywrightAgent[] = [];
+    const caseStats = emptyStats();
+    const flowStats = emptyStats();
+    let flowAgents = new Map<string, PlaywrightAgent>();
+    const open = async (): Promise<{ page: Page; agent: PlaywrightAgent }> => {
+      const page = await context.newPage();
+      observe(page, name, issues);
+      const agent = createAgent(page, {
+        id: `${caseId}-${name}`,
+        groupName: reportName,
+        reportFileName: reportBase,
+        cache: { kind: "cases", env: env.id },
+        stats: caseStats
+      });
+      created.push(agent);
+      return { page, agent };
+    };
     const self: Actor = {
       name,
       displayName,
       context,
       loginCode,
-      ...opened,
+      ...(await open()),
+      flow(flowName) {
+        let agent = flowAgents.get(flowName);
+        if (!agent) {
+          agent = createAgent(self.page, {
+            id: `flow-${flowName}`,
+            groupName: reportName,
+            reportFileName: `${reportBase}-flow-${flowName}`,
+            cache: { kind: "flows", env: env.id, writable: options.flowCacheWritable },
+            stats: flowStats
+          });
+          flowAgents.set(flowName, agent);
+          created.push(agent);
+        }
+        return agent;
+      },
+      agents: () => created,
+      cacheStats: () => addStats(addStats(emptyStats(), caseStats), flowStats),
       async restart() {
         await self.page.close().catch(() => undefined);
-        Object.assign(self, await open(context, name, caseId, reportName));
+        flowAgents = new Map();
+        Object.assign(self, await open());
       }
     };
     return self;
@@ -99,8 +129,8 @@ export function actorFactory(
     browser,
     issues,
     async create(name, caseId, reportName, userId) {
-      // 登录码的 display_name 会成为新用户昵称，带上 runId 便于在后台识别与清理
-      const displayName = `QA ${name} ${runId.slice(9, 15)}`;
+      // 登录码的 display_name 会成为新用户昵称：带用例标识便于在后台识别，且每次 Run 一致
+      const displayName = `QA ${name} ${caseTag(caseId)}`;
       const loginCode = await createLoginCode(env, displayName, userId);
       await ledger.add({ kind: "login-code", id: loginCode.id, userId: loginCode.userId, caseId });
       const context = await browser.newContext({
@@ -110,11 +140,10 @@ export function actorFactory(
         permissions: ["clipboard-read", "clipboard-write"]
       });
       await exchangeSession(env, context, loginCode.code);
-      return actor(name, displayName, context, loginCode, await open(context, name, caseId, reportName), caseId, reportName);
+      return actor(name, displayName, context, loginCode, caseId, reportName);
     },
     async tab(base, name, caseId, reportName) {
-      const opened = await open(base.context, name, caseId, reportName);
-      return actor(name, base.displayName, base.context, base.loginCode, opened, caseId, reportName);
+      return actor(name, base.displayName, base.context, base.loginCode, caseId, reportName);
     }
   };
 }
@@ -142,17 +171,4 @@ export function redact(url: string): string {
   } catch {
     return url.split(/[?#]/u, 1)[0] ?? "";
   }
-}
-
-// Midscene 在 import 时读取 MIDSCENE_RUN_DIR，所以必须先设置环境变量再动态加载。
-let midscene: typeof import("@midscene/web/playwright/agent") | null = null;
-
-export async function loadMidscene(runDir: string): Promise<void> {
-  process.env.MIDSCENE_RUN_DIR = runDir;
-  midscene = await import("@midscene/web/playwright/agent");
-}
-
-function loadedMidscene(): typeof import("@midscene/web/playwright/agent") {
-  if (!midscene) throw new Error("Midscene 尚未加载，先调用 loadMidscene");
-  return midscene;
 }

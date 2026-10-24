@@ -18,10 +18,10 @@ setup:
       room: "{{room.name}}"
 steps:
   - actor: owner
-    act: 点击房间公告入口，在编辑公告弹窗中输入「{{runId}} 第一条公告」，点击发布
+    act: 点击房间公告入口，在编辑公告弹窗中输入「{{tag}} 第一条公告」，点击发布
   - actor: owner
     n: 1
-    assert: 公告发布成功，展示为「{{owner.displayName}}：{{runId}} 第一条公告」
+    assert: 公告发布成功，展示为「{{owner.displayName}}：{{tag}} 第一条公告」
     waitMs: 60000
   - actor: owner
     act: 把鼠标悬停在公告上

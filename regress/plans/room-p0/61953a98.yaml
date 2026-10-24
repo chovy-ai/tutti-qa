@@ -17,10 +17,10 @@ setup:
     with:
       room: "{{room.name}}"
   - actor: owner
-    act: 点击房间公告入口，在编辑公告弹窗中输入「{{runId}} 唯一公告」，点击发布
+    act: 点击房间公告入口，在编辑公告弹窗中输入「{{tag}} 唯一公告」，点击发布
 steps:
   - actor: owner
     act: 尝试新建另一条公告：点击房间公告入口，寻找新建公告的入口
   - actor: owner
     n: 1
-    assert: 没有新建第二条公告的入口，只能在已有公告「{{runId}} 唯一公告」上编辑
+    assert: 没有新建第二条公告的入口，只能在已有公告「{{tag}} 唯一公告」上编辑

@@ -13,8 +13,8 @@ setup:
     flow: openCreateRoomDialog
 steps:
   - actor: owner
-    act: 在头像图标组中选择最后一个图案，把房间名称改为「{{runId}}-icon」，点击完成或创建
+    act: 在头像图标组中选择最后一个图案，把房间名称改为「{{tag}}-icon」，点击完成或创建
   - actor: owner
     n: 1
-    assert: 房间「{{runId}}-icon」创建成功，左侧列表中它的头像展示为一个图案图标（不是照片）
+    assert: 房间「{{tag}}-icon」创建成功，左侧列表中它的头像展示为一个图案图标（不是照片）
     waitMs: 60000

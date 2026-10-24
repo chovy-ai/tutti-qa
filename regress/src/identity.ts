@@ -2,7 +2,7 @@
 import { createHash } from "node:crypto";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import type { BrowserContext } from "playwright";
+import type { APIRequestContext, BrowserContext } from "playwright";
 import type { EnvProfile } from "./config.ts";
 
 const run = promisify(execFile);
@@ -13,6 +13,8 @@ export interface LoginCode {
   readonly code: string;
   readonly displayName: string;
 }
+
+export type SessionCookie = Parameters<BrowserContext["addCookies"]>[0][number];
 
 export interface Session {
   readonly sessionId: string;
@@ -73,8 +75,8 @@ export async function deleteLoginCode(env: EnvProfile, id: string): Promise<void
 }
 
 /** 与 account /auth/v1/verify_login_code_for_session 一致：用登录码换 sessionId。 */
-export async function exchangeSession(env: EnvProfile, context: BrowserContext, code: string): Promise<Session> {
-  const response = await context.request.post(`${env.accountApiOrigin}/auth/v1/verify_login_code_for_session`, {
+export async function verifyLoginCode(env: EnvProfile, request: APIRequestContext, code: string): Promise<Session> {
+  const response = await request.post(`${env.accountApiOrigin}/auth/v1/verify_login_code_for_session`, {
     data: { code, appId: env.accountAppId }
   });
   const body = (await response.json().catch(() => null)) as
@@ -84,8 +86,12 @@ export async function exchangeSession(env: EnvProfile, context: BrowserContext, 
   if (!response.ok() || body?.code !== 0 || !sessionId) {
     throw new Error(`登录码换 session 失败：HTTP ${response.status()} ${body?.code ?? ""} ${body?.errmsg ?? ""}`);
   }
-  // account 签发的 Cookie 形态：session_id 落在根域，另有一枚 __Host- 迁移标记证明浏览器收到过新 Cookie。
-  await context.addCookies([
+  return { sessionId, isNewUser: Boolean(body.data?.isNewUser) };
+}
+
+/** account 签发的 Cookie 形态：session_id 落在根域，另有一枚 __Host- 迁移标记证明浏览器收到过新 Cookie。 */
+export function sessionCookies(env: EnvProfile, sessionId: string): SessionCookie[] {
+  return [
     {
       name: "session_id",
       value: sessionId,
@@ -104,8 +110,13 @@ export async function exchangeSession(env: EnvProfile, context: BrowserContext, 
       secure: true,
       sameSite: "Lax"
     }
-  ]);
-  return { sessionId, isNewUser: Boolean(body.data?.isNewUser) };
+  ];
+}
+
+export async function exchangeSession(env: EnvProfile, context: BrowserContext, code: string): Promise<Session> {
+  const session = await verifyLoginCode(env, context.request, code);
+  await context.addCookies(sessionCookies(env, session.sessionId));
+  return session;
 }
 
 function findRecord(value: unknown): Record<string, unknown> | null {

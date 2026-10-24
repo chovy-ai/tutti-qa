@@ -13,11 +13,13 @@ actors:
 steps:
   - actor: owner
     act: 点击左侧房间分组标题旁的加号，在弹出的菜单中点击新建房间（如果没有菜单而是直接弹窗也可以）
+    cache: false
   - actor: owner
     n: 1
     assert: 弹出了新建房间弹窗（Create room / New room）
   - actor: owner
     act: 如果弹窗要求先选择房间类型，选择 My cloud rooms 并点击 Next；否则不操作
+    cache: false
   - actor: owner
     n: 2
     assert: 弹窗中包含房间头像图标组、房间背景色组与房间名称输入框，底部有取消与完成（或创建）按钮

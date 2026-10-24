@@ -17,7 +17,7 @@ setup:
     with:
       room: "{{room.name}}"
   - actor: owner
-    act: 点击房间公告入口，在编辑公告弹窗中输入「{{runId}} 待清空公告」，点击发布
+    act: 点击房间公告入口，在编辑公告弹窗中输入「{{tag}} 待清空公告」，点击发布
 steps:
   - actor: owner
     act: 打开房间公告，点击编辑公告，删除全部内容，点击发布

@@ -7,10 +7,20 @@ import { existsSync, readFileSync } from "node:fs";
 import { stringify } from "yaml";
 import { loadEnv, loadSuite, missingModelEnv, regressRoot, suitePlansDir } from "./config.ts";
 import { cleanupRun } from "./cleanup.ts";
+import { issueIdentities, loadIdentityBatch, releaseIdentities } from "./identities.ts";
 import { opsWhoami } from "./identity.ts";
+import { aiStep, createAgent, loadMidscene } from "./midscene.ts";
 import { loadPlans, validatePlan } from "./plan.ts";
-import { summarize, writeReport } from "./report.ts";
+import { describeCache, mergeSessionReports, summarize, writeReport } from "./report.ts";
 import { runSuite, suiteCases, type RunResult } from "./runner.ts";
+import {
+  connectSession,
+  listSessions,
+  sessionMidsceneDir,
+  sessionsRoot,
+  startSessions,
+  stopSession
+} from "./session.ts";
 
 const USAGE = `用法：
   regress doctor  --env <env>                         检查模型配置、tutti-ops 与环境入口
@@ -18,7 +28,20 @@ const USAGE = `用法：
   regress sync    --suite <suite> [--scaffold]        核对 .pos 与 Plan：缺失 / 过期 / 失效；--scaffold 为缺失用例生成待编译占位
   regress run     --env <env> --suite <suite> [--only id,id] [--timeout-min 10] [--concurrency 10]
   regress report  --run <runId>                       由 result.json 重新生成 report.html
-  regress cleanup --env <env> --run <runId>           按台账补清理房间并回收登录码`;
+  regress cleanup --env <env> --run <runId>           按台账补清理房间并回收登录码
+
+原子能力（不写 Plan，按步骤直接调用）：
+  regress identity create  --env <env> (--names a,b | --count N) [--batch <name>]   一键申请测试身份
+  regress identity release --batch <name>                                          回收该批次的登录码
+  regress session start  (--identity <batch>:<name> | --batch <name> [--names a,b]) [--headed] [--id <id>] [--concurrency N]
+                                                      启动独立浏览器进程并登录，常驻后台，输出 CDP 地址
+  regress session list                                列出会话及进程是否存活
+  regress session stop   (--session <id> | --all)     结束浏览器进程
+  regress session report --session <id>               合并该会话的 Midscene 回放
+  regress act    --session <id> "<操作>"              Midscene aiAct
+  regress assert --session <id> "<断言>"              Midscene aiAssert，退出码 1 表示断言不通过
+  regress wait   --session <id> "<条件>" [--timeout-sec 60]
+  regress query  --session <id> "<要提取的数据>"`;
 
 // 本地 .env：MIDSCENE_* 以本项目配置为准（覆盖 shell 全局导出的模型配置），其他变量只补充未设置的
 const dotenv = join(regressRoot, ".env");
@@ -38,7 +61,16 @@ const { positionals, values } = parseArgs({
     run: { type: "string" },
     scaffold: { type: "boolean" },
     "timeout-min": { type: "string" },
-    concurrency: { type: "string" }
+    concurrency: { type: "string" },
+    names: { type: "string" },
+    count: { type: "string" },
+    batch: { type: "string" },
+    identity: { type: "string" },
+    session: { type: "string" },
+    headed: { type: "boolean" },
+    all: { type: "boolean" },
+    "cache-id": { type: "string" },
+    "timeout-sec": { type: "string" }
   }
 });
 
@@ -124,6 +156,89 @@ switch (command) {
     process.exitCode = result.users.some((user) => user.error || user.leftovers.length) ? 1 : 0;
     break;
   }
+  case "identity": {
+    if (positionals[1] === "create") {
+      const batch = await issueIdentities(need("env"), identityNames(), values.batch);
+      // 只输出非敏感字段；session Cookie 留在批次文件里
+      console.log(
+        JSON.stringify(
+          {
+            batch: batch.batch,
+            env: batch.env,
+            expiresAt: batch.expiresAt,
+            file: join(".identities", batch.batch, "identities.json"),
+            identities: batch.identities.map(({ name, displayName, userId }) => ({ name, displayName, userId, ref: `${batch.batch}:${name}` }))
+          },
+          null,
+          2
+        )
+      );
+    } else if (positionals[1] === "release") {
+      const result = await releaseIdentities(need("batch"));
+      console.log(JSON.stringify(result, null, 2));
+      process.exitCode = result.errors.length ? 1 : 0;
+    } else usage();
+    break;
+  }
+  case "session": {
+    const sub = positionals[1];
+    if (sub === "start") {
+      const refs = values.identity
+        ? [values.identity]
+        : await loadIdentityBatch(need("batch")).then((batch) =>
+            batch.identities
+              .filter((item) => !values.names || values.names.split(",").includes(item.name))
+              .map((item) => `${batch.batch}:${item.name}`)
+          );
+      if (refs.length === 0) throw new Error("没有可启动的身份");
+      if (values.id && refs.length > 1) throw new Error("--id 只能在启动单个会话时使用");
+      const results = await startSessions(
+        refs.map((identity) => ({ identity, id: values.id, headed: values.headed })),
+        positiveInt(values.concurrency, refs.length, "--concurrency")
+      );
+      console.log(JSON.stringify(results, null, 2));
+      process.exitCode = results.some((item) => !item.ok) ? 1 : 0;
+    } else if (sub === "list") {
+      console.log(JSON.stringify(await listSessions(), null, 2));
+    } else if (sub === "stop") {
+      const ids = values.all ? (await listSessions()).filter((item) => item.alive).map((item) => item.id) : [need("session")];
+      for (const id of ids) await stopSession(id);
+      console.log(JSON.stringify({ stopped: ids }, null, 2));
+    } else if (sub === "report") {
+      const id = need("session");
+      const file = await mergeSessionReports(sessionMidsceneDir(id), join(sessionsRoot, id));
+      console.log(file ?? "该会话还没有 Midscene 报告");
+    } else usage();
+    break;
+  }
+  case "act":
+  case "assert":
+  case "wait":
+  case "query": {
+    const prompt = positionals.slice(1).join(" ").trim();
+    if (!prompt) usage();
+    const missing = missingModelEnv();
+    if (missing.length) throw new Error(`缺少模型配置：${missing.join(", ")}`);
+    const id = need("session");
+    await loadMidscene(sessionMidsceneDir(id));
+    const connected = await connectSession(id);
+    try {
+      const agent = createAgent(connected.page, {
+        id: values["cache-id"] ?? id,
+        groupName: id,
+        // 时间戳前缀保证 session report 按执行顺序合并
+        reportFileName: `${new Date().toISOString().replace(/[-:.]/gu, "")}-${command}`,
+        cache: { kind: "sessions", env: connected.record.env }
+      });
+      const timeoutMs = values["timeout-sec"] ? positiveInt(values["timeout-sec"], 60, "--timeout-sec") * 1000 : undefined;
+      const result = await aiStep(agent, command, prompt, { timeoutMs });
+      console.log(JSON.stringify({ ...result, report: agent.reportFile ?? null }, null, 2));
+      process.exitCode = result.pass ? 0 : 1;
+    } finally {
+      await connected.disconnect();
+    }
+    break;
+  }
   default:
     console.log(USAGE);
     process.exitCode = command ? 64 : 0;
@@ -143,7 +258,29 @@ function readConcurrency(): number {
   return value;
 }
 
-function need(key: "env" | "suite" | "run"): string {
+function identityNames(): string[] {
+  if (values.names) return values.names.split(",").map((item) => item.trim()).filter(Boolean);
+  const count = positiveInt(values.count, 0, "--count");
+  if (count === 0) usage();
+  return Array.from({ length: count }, (_item, index) => `user${index + 1}`);
+}
+
+function positiveInt(value: string | undefined, fallback: number, flag: string): number {
+  if (value === undefined) return fallback;
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed < 1) {
+    console.error(`${flag} 必须是正整数`);
+    process.exit(64);
+  }
+  return parsed;
+}
+
+function usage(): never {
+  console.error(USAGE);
+  process.exit(64);
+}
+
+function need(key: "env" | "suite" | "run" | "batch" | "session"): string {
   const value = values[key];
   if (!value) {
     console.error(`缺少 --${key}\n\n${USAGE}`);
@@ -159,6 +296,8 @@ function printSummary(runDir: string, result: RunResult): void {
       ? `整体阻塞：${result.blockedReason}`
       : `通过 ${counts.passed} · 失败 ${counts.failed} · 阻塞 ${counts.blocked} · 待复核 ${counts.uncertain} · 跳过 ${counts.skipped}`
   );
+  const cache = describeCache(result.cache?.stats);
+  if (cache) console.log(`缓存：${cache}`);
   console.log(`报告：${join(runDir, "report.html")}`);
 }
 

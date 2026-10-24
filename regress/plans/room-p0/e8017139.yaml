@@ -39,6 +39,7 @@ steps:
     reload: true
   - actor: owner
     act: 如果房间信息面板未打开，点击右上角成员头像组打开它
+    cache: false
   - actor: owner
     n: 2
     assert: 刷新后「允许新成员加入」开关为打开状态（以服务端最新状态为准，没有把过期的关闭状态写回）

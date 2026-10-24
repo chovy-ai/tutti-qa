@@ -27,6 +27,7 @@ setup:
 steps:
   - actor: owner
     act: 点击弹窗中的上传头像入口选择照片，如果出现裁剪或确认步骤就确认，然后点击保存
+    cache: false
   - actor: owner
     n: 1
     assert: 房间头像更新为一张红蓝相间的棋盘格图片

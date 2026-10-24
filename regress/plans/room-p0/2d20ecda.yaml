@@ -26,6 +26,7 @@ setup:
 steps:
   - actor: member
     act: 尝试打开房间信息编辑：点击房间左上角的房间头像；如果出现配色入口或颜色，点击任意一个
+    cache: false
   - actor: member
     n: 1
     assert: 成员无法修改配色：配色入口不可点击或没有打开配色面板，房间头像没有变化

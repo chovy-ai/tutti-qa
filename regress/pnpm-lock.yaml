@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@midscene/core':
+        specifier: 1.16.5
+        version: 1.16.5(ws@8.22.0)
       '@midscene/web':
         specifier: 1.16.5
         version: 1.16.5(playwright@1.64.1)

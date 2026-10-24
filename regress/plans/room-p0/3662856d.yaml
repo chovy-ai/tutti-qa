@@ -41,6 +41,7 @@ steps:
       link: "{{invite.link}}"
   - actor: member
     act: 如果落地页上有打开 Room 按钮就点击它
+    cache: false
   - actor: member
     n: 1
     assert: 直接进入了房间「{{room.name}}」，没有要求输入密码

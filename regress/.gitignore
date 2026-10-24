@@ -2,3 +2,6 @@ node_modules/
 .runs/
 midscene_run/
 .env
+.identities/
+.sessions/
+.cache/

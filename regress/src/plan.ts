@@ -20,6 +20,8 @@ export type CheckOp = "empty" | "nonEmpty" | "equals" | "notEquals" | "contains"
 export interface PlanStep {
   readonly actor?: string;
   readonly act?: string;
+  /** 仅用于 act：false 表示这一步不进缓存（带「如果…」分支的操作） */
+  readonly cache?: boolean;
   readonly flow?: string;
   readonly with?: Readonly<Record<string, string>>;
   readonly save?: string;
@@ -91,6 +93,7 @@ export function validatePlan(plan: Plan, source: PosCase | undefined): string[] 
     if (!kind) problems.push(`步骤必须且只能是 act / flow / reload / assert / check 之一：${JSON.stringify(step)}`);
     if (kind !== "check" && (!step.actor || !actors.has(step.actor))) problems.push(`步骤使用了未声明的 actor ${step.actor}`);
     if (kind === "flow" && !flowNames.includes(step.flow!)) problems.push(`未知 flow ${step.flow}`);
+    if (step.cache !== undefined && kind !== "act") problems.push(`cache 只能用于 act 步骤：${JSON.stringify(step)}`);
     if (kind === "assert" || kind === "check") {
       if (phase === "setup") problems.push("setup 中不能有断言");
       if (!step.n || step.n < 1 || step.n > source.expect.length) problems.push(`断言的 n 超出预期范围：${step.n}`);

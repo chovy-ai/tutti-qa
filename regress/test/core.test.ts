@@ -89,3 +89,20 @@ test("selectCases 支持 id 前缀，未匹配时报错", () => {
   assert.equal(selectCases([a, b], undefined).length, 2);
   assert.throws(() => selectCases([a, b], ["cccc"]), /没有匹配/u);
 });
+
+test("validatePlan：cache 只能用于 act 步骤", () => {
+  const plan: Plan = {
+    case: "case-1",
+    title: "t",
+    sourceHash: "h",
+    mode: "auto",
+    actors: ["owner"],
+    steps: [
+      { actor: "owner", act: "点击按钮", cache: false },
+      { actor: "owner", n: 1, assert: "按钮消失", cache: false },
+      { actor: "owner", n: 2, assert: "列表为空" }
+    ]
+  } as Plan;
+  const problems = validatePlan(plan, parseCase(node, [])!);
+  assert.equal(problems.filter((item) => item.includes("cache 只能用于 act")).length, 1);
+});
