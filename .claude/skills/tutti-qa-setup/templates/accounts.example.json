@@ -1,0 +1,29 @@
+{
+  "accounts": [
+    {
+      "name": "owner-pro",
+      "profile": "owner-pro",
+      "space": "owner-pro",
+      "env": "prod",
+      "roles": [
+        "owner"
+      ],
+      "capabilities": [
+        "computer",
+        "paid"
+      ],
+      "note": "示例：房主，绑定了本机 Computer、付费套餐"
+    },
+    {
+      "name": "member-1",
+      "profile": "member-1",
+      "space": "member-1",
+      "env": "prod",
+      "roles": [
+        "member"
+      ],
+      "capabilities": [],
+      "note": "示例：成员"
+    }
+  ]
+}
