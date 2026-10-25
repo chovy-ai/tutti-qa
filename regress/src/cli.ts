@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // tutti-regress：.pos P0 用例 → Plan → Midscene 执行 → 报告。
-import { access, readFile, writeFile } from "node:fs/promises";
-import { join, resolve } from "node:path";
+import { access, mkdir, readFile, writeFile } from "node:fs/promises";
+import { dirname, join, resolve } from "node:path";
 import { parseArgs, parseEnv } from "node:util";
 import { existsSync, readFileSync } from "node:fs";
 import { stringify } from "yaml";
@@ -42,7 +42,8 @@ const USAGE = `用法：
   regress act    --session <id> "<操作>"              Midscene aiAct
   regress assert --session <id> "<断言>"              Midscene aiAssert，退出码 1 表示断言不通过
   regress wait   --session <id> "<条件>" [--timeout-sec 60]
-  regress query  --session <id> "<要提取的数据>"`;
+  regress query  --session <id> "<要提取的数据>"
+  regress screenshot --session <id> --out <文件.jpg|.png> [--full-page]   截取会话当前页面`;
 
 // 本地 .env：MIDSCENE_* 以本项目配置为准（覆盖 shell 全局导出的模型配置），其他变量只补充未设置的
 const dotenv = join(regressRoot, ".env");
@@ -71,7 +72,9 @@ const { positionals, values } = parseArgs({
     headed: { type: "boolean" },
     all: { type: "boolean" },
     "cache-id": { type: "string" },
-    "timeout-sec": { type: "string" }
+    "timeout-sec": { type: "string" },
+    out: { type: "string" },
+    "full-page": { type: "boolean" }
   }
 });
 
@@ -240,6 +243,21 @@ switch (command) {
     }
     break;
   }
+  case "screenshot": {
+    const file = resolve(need("out"));
+    const type = /\.png$/iu.test(file) ? "png" : /\.jpe?g$/iu.test(file) ? "jpeg" : null;
+    if (!type) throw new Error("--out 需以 .jpg / .jpeg / .png 结尾");
+    const connected = await connectSession(need("session"));
+    try {
+      await mkdir(dirname(file), { recursive: true });
+      // jpeg 体积约为 png 的 1/5，截图要嵌进 review 页时用 jpeg
+      await connected.page.screenshot({ path: file, type, fullPage: values["full-page"] === true, ...(type === "jpeg" ? { quality: 75 } : {}) });
+      console.log(JSON.stringify({ file, url: connected.page.url() }, null, 2));
+    } finally {
+      await connected.disconnect();
+    }
+    break;
+  }
   default:
     console.log(USAGE);
     process.exitCode = command ? 64 : 0;
@@ -281,7 +299,7 @@ function usage(): never {
   process.exit(64);
 }
 
-function need(key: "env" | "suite" | "run" | "batch" | "session"): string {
+function need(key: "env" | "suite" | "run" | "batch" | "session" | "out"): string {
   const value = values[key];
   if (!value) {
     console.error(`缺少 --${key}\n\n${USAGE}`);

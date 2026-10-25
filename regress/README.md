@@ -85,6 +85,7 @@ node src/cli.ts cleanup --env prod --run <runId>       # 补清理：为台账�
 | 测试身份 | `identity create` / `identity release` | `.identities/<batch>/identities.json`（含 session Cookie，0600，已 gitignore）与 `ledger.jsonl` |
 | 浏览器会话 | `session start` / `list` / `stop` | 每个会话一个独立 Chromium 进程，常驻后台，`cdpUrl` 可供 Playwright `connectOverCDP` 或其他工具接入 |
 | 视觉操作与断言 | `act` / `assert` / `wait` / `query` | 每次调用一份 Midscene 报告，写在 `.sessions/<id>/midscene/report/` |
+| 截图 | `screenshot` | 会话当前页面的 jpg / png，写到 `--out` 指定的位置 |
 | 报告 | `session report`、`report --run` | Midscene 合并回放 `midscene-report.html` |
 
 ```bash
@@ -93,6 +94,7 @@ node src/cli.ts session start --batch demo                                      
 node src/cli.ts act    --session <id> "新建一个房间，名称为 demo"
 node src/cli.ts assert --session <id> "左侧房间列表中出现房间 demo"               # 断言不通过时退出码为 1
 node src/cli.ts query  --session <id> "左侧房间列表中所有房间的名称，字符串数组"
+node src/cli.ts screenshot --session <id> --out shots/01-room-list.jpg            # 加 --full-page 截整页
 node src/cli.ts session report --session <id>
 node src/cli.ts session stop --all && node src/cli.ts identity release --batch demo
 ```
