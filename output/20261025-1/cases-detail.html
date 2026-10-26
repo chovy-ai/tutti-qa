@@ -1,0 +1,166 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>用例确认 · 20261025-1</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--line:#e3e6ea;--muted:#6b7280;--txt:#111827;--acc:#2563eb;--p0:#dc2626;--p1:#ea580c;--p2:#ca8a04;--ins:#dcfce7;--del:#fee2e2}
+@media (prefers-color-scheme:dark){:root{--bg:#111418;--card:#1a1e24;--line:#2b313a;--muted:#9aa3ae;--txt:#e5e7eb;--acc:#60a5fa;--ins:#14361f;--del:#3b1517}}
+*{box-sizing:border-box}body{margin:0;font:14px/1.55 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--txt)}
+header{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:1px solid var(--line);padding:12px 20px}
+h1{font-size:17px;margin:0 0 4px}.sub{color:var(--muted);font-size:12px}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+button,select,input[type=search]{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--txt);border-radius:6px;padding:4px 10px}
+button{cursor:pointer}button.primary{background:var(--acc);border-color:var(--acc);color:#fff}button.on{outline:2px solid var(--acc)}
+.count{margin-left:auto;font-weight:600}
+main{padding:12px 20px 80px;max-width:1200px;margin:0 auto}
+h2{font-size:16px;margin:22px 0 8px}.host{color:var(--muted);font-size:12px;margin:4px 0 8px}
+.grp{border:1px solid var(--line);border-radius:8px;background:var(--card);margin:8px 0;padding:8px 12px}
+.grp .grp{background:transparent}
+.gh{display:flex;gap:8px;align-items:center;font-weight:600}.gh.scene{font-weight:500;color:var(--muted)}
+.desc{font-size:12px;color:var(--muted);background:var(--bg);border-radius:6px;padding:6px 8px;margin:6px 0;white-space:pre-wrap}
+.case{border-top:1px dashed var(--line);padding:8px 0 8px 26px;display:grid;grid-template-columns:22px 1fr;gap:6px}
+.case.off .ct{opacity:.45;text-decoration:line-through}
+.ct{font-weight:600}.badge{display:inline-block;font-size:12px;font-weight:700;border-radius:4px;padding:0 6px;margin-right:6px;color:#fff}
+.P0{background:var(--p0)}.P1{background:var(--p1)}.P2{background:var(--p2)}
+details{font-size:13px;margin-top:4px}summary{cursor:pointer;color:var(--muted)}
+.kv{margin:4px 0}.kv b{color:var(--muted);font-weight:500;margin-right:4px}
+ol{margin:4px 0;padding-left:22px}
+.tools{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.tools select{padding:2px 6px;font-size:12px}.note{flex:1;min-width:240px;font:inherit;font-size:12px;border:1px solid var(--line);border-radius:6px;padding:3px 8px;background:transparent;color:var(--txt)}
+.diff{font:12px/1.6 ui-monospace,Menlo,monospace;border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-top:6px;white-space:pre-wrap}
+.diff .ins{background:var(--ins)}.diff .del{background:var(--del)}.diff .same{color:var(--muted)}
+.hide{display:none!important}
+input[type=checkbox]{width:17px;height:17px}
+#out{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:9}
+#out .box{background:var(--card);width:min(900px,94vw);border-radius:10px;padding:16px}
+#out textarea{width:100%;height:50vh;font:12px/1.5 ui-monospace,Menlo,monospace;background:var(--bg);color:var(--txt);border:1px solid var(--line);border-radius:6px;padding:8px}
+.tip{color:var(--muted);font-size:12px;margin:6px 0}
+</style></head><body>
+<header>
+ <h1>用例确认 · 20261025-1</h1>
+ <div class="sub" id="sum"></div>
+ <div class="bar">
+  <span class="tip">筛选：</span><button data-p="">全部</button><button data-p="P0">P0</button><button data-p="P1">P1</button><button data-p="P2">P2</button>
+  <input type="search" id="q" placeholder="搜索标题 / 预期">
+  <button id="all">全选</button><button id="none">全不选</button><button id="expand">展开全部</button>
+  <span class="count" id="count"></span><button class="primary" id="export">导出确认结果</button>
+ </div>
+</header>
+<main id="main"></main>
+<div id="out"><div class="box"><b>确认结果</b>
+ <div class="tip">已自动复制到剪贴板；如未复制成功，点「复制」或手动全选复制，然后粘贴回对话。</div>
+ <textarea id="txt" readonly></textarea>
+ <div class="bar"><button class="primary" id="copy">复制</button><button id="dl">下载 .txt</button><button id="close">关闭</button><span class="tip" id="copied"></span></div>
+</div></div>
+<script>
+const D = {"batch": "20261025-1", "hash": "f6b41f89a61f11f6", "scope": {"add": [], "delete": []}, "adds": [], "updates": [{"k": "U0", "path": "房间管理 · Web 端 / 新建房间 / 新建入口 / 正常场景 / 🔴【P0】悬停 Rooms 旁的加号呼出菜单 / 前置：已登录并进入任一房间；角色：任意用户；入口：左侧 Rooms 分组旁的加号", "reason": "tutti#3582 / tutti#3608 / tutti#3562，main@34395906；浏览器过功能 output/20261025-1/walkthrough.md", "diff": "<div class=\"del\">− 前置：已登录并进入任一房间；角色：任意用户；入口：左侧 Rooms 分组旁的加号<\/div><div class=\"ins\">+ 前置：已登录并进入任一房间；角色：任意用户；入口：左侧「本地房间」或「云端房间」分组标题旁的 +<\/div>"}, {"k": "U1", "path": "房间管理 · Web 端 / 新建房间 / 新建入口 / 正常场景 / 🔴【P0】悬停 Rooms 旁的加号呼出菜单 / 操作：悬停并点击加号", "reason": "tutti#3582 / tutti#3608 / tutti#3562，main@34395906；浏览器过功能 output/20261025-1/walkthrough.md", "diff": "<div class=\"del\">− 操作：悬停并点击加号<\/div><div class=\"ins\">+ 操作：点击分组标题旁的 +<\/div>"}, {"k": "U2", "path": "房间管理 · Web 端 / 新建房间 / 新建入口 / 正常场景 / 🔴【P0】悬停 Rooms 旁的加号呼出菜单 / 预期：\n1) 菜单展示 ｜ 呼出增加方式菜单，包含新建房间与加入房间两项\n2) 视觉展示 ｜ 菜单不遮挡房间列表，点击外部可关闭", "reason": "tutti#3582 / tutti#3608 / tutti#3562，main@34395906；浏览器过功能 output/20261025-1/walkthrough.md", "diff": "<div class=\"same\">  预期：<\/div><div class=\"del\">− 1) 菜单展示 ｜ 呼出增加方式菜单，包含新建房间与加入房间两项<\/div><div class=\"ins\">+ 1) 菜单展示 ｜ 呼出增加方式菜单，包含「新建房间」与「加入房间」两项<\/div><div class=\"same\">  2) 视觉展示 ｜ 菜单不遮挡房间列表，点击外部可关闭<\/div>"}, {"k": "U3", "path": "房间管理 · Web 端 / 新建房间 / 新建房间弹窗 / 正常场景 / 🔴【P0】弹窗元素与默认值 / 前置：增加方式菜单已呼出；角色：任意用户；入口：菜单中的新建房间", "reason": "tutti#3582 / tutti#3608 / tutti#3562，main@34395906；浏览器过功能 output/20261025-1/walkthrough.md", "diff": "<div class=\"del\">− 前置：增加方式菜单已呼出；角色：任意用户；入口：菜单中的新建房间<\/div><div class=\"ins\">+ 前置：已从「云端房间」分组旁的 + 呼出增加方式菜单；角色：任意用户；入口：菜单中的「新建房间」<\/div>"}, {"k": "U4", "path": "房间管理 · Web 端 / 新建房间 / 新建房间弹窗 / 正常场景 / 🔴【P0】弹窗元素与默认值 / 操作：点击新建房间", "reason": "tutti#3582 / tutti#3608 / tutti#3562，main@34395906；浏览器过功能 output/20261025-1/walkthrough.md", "diff": "<div class=\"del\">− 操作：点击新建房间<\/div><div class=\"ins\">+ 操作：点击「新建房间」<\/div>"}, {"k": "U5", "path": "房间管理 · Web 端 / 新建房间 / 新建房间弹窗 / 正常场景 / 🔴【P0】弹窗元素与默认值 / 预期：\n1) 面板开关 ｜ 弹出 Create room 弹窗\n2) 列表展示 ｜ 包含房间头像图标组、房间背景色组与房间名称输入框，底部为取消与完成按钮\n3) 结果校验 ｜ 名称输入框预填系统默认名称，头像与背景色各有一项处于选中态", "reason": "tutti#3582 / tutti#3608 / tutti#3562，main@34395906；浏览器过功能 output/20261025-1/walkthrough.md；介绍区与说明：RoomTypeIntro.tsx、CloudRoomCreationDialog.tsx（线上未部署，按 main 代码写）", "diff": "<div class=\"same\">  预期：<\/div><div class=\"del\">− 1) 面板开关 ｜ 弹出 Create room 弹窗<\/div><div class=\"del\">− 2) 列表展示 ｜ 包含房间头像图标组、房间背景色组与房间名称输入框，底部为取消与完成按钮<\/div><div class=\"del\">− 3) 结果校验 ｜ 名称输入框预填系统默认名称，头像与背景色各有一项处于选中态<\/div><div class=\"ins\">+ 1) 面板开关 ｜ 直接弹出「创建云端房间」弹窗，不经过房间类型选择<\/div><div class=\"ins\">+ 2) 提示文案 ｜ 表单上方为云端房间介绍：标题「项目在云端」，「Agent｜云端 Agent，或电脑上的 Agent」，「适合｜电脑不用一直开机 · 成员可直接打开运行中的网站 · 做调研、文档、图片视频」<\/div><div class=\"ins\">+ 3) 提示文案 ｜ 底部按钮旁说明：「使用电脑上的 Agent 时，它在隔离虚拟机中运行，不会接触电脑上的其他文件。」<\/div><div class=\"ins\">+ 4) 列表展示 ｜ 包含头像预览（可换成自己的图片）、房间名称输入框、头像选项组（房间首字 + 8 个图标）与「配色」，以及「允许 root」勾选项<\/div><div class=\"ins\">+ 5) 按钮状态 ｜ 底部为「取消」与「创建房间」按钮<\/div><div class=\"ins\">+ 6) 结果校验 ｜ 名称输入框预填系统默认名称，头像选中「房间首字」，「允许 root」默认勾选<\/div>"}, {"k": "U6", "path": "房间管理 · Web 端 / 新建房间 / 新建房间弹窗 / 正常场景 / 🔴【P0】选择头像与背景色 / 前置：新建房间弹窗已打开；角色：任意用户；入口：头像与背景色选项", "reason": "tutti#3582 / tutti#3608 / tutti#3562，main@34395906；浏览器过功能 output/20261025-1/walkthrough.md", "diff": "<div class=\"del\">− 前置：新建房间弹窗已打开；角色：任意用户；入口：头像与背景色选项<\/div><div class=\"ins\">+ 前置：「创建云端房间」弹窗已打开；角色：任意用户；入口：头像选项组与「配色」<\/div>"}, {"k": "U7", "path": "房间管理 · Web 端 / 新建房间 / 新建房间弹窗 / 正常场景 / 🔴【P0】选择头像与背景色 / 操作：依次点选不同的头像图标与背景色，观察顶部预览", "reason": "tutti#3582 / tutti#3608 / tutti#3562，main@34395906；浏览器过功能 output/20261025-1/walkthrough.md", "diff": "<div class=\"del\">− 操作：依次点选不同的头像图标与背景色，观察顶部预览<\/div><div class=\"ins\">+ 操作：依次点选不同的头像图标与配色，再修改房间名称，观察左上角头像预览<\/div>"}, {"k": "U8", "path": "房间管理 · Web 端 / 新建房间 / 新建房间弹窗 / 正常场景 / 🔴【P0】选择头像与背景色 / 预期：\n1) 视觉展示 ｜ 顶部预览实时反映当前选中的图标与背景色\n2) 按钮状态 ｜ 同组内只能选中一项，选中态清晰可辨", "reason": "tutti#3582 / tutti#3608 / tutti#3562，main@34395906；浏览器过功能 output/20261025-1/walkthrough.md", "diff": "<div class=\"same\">  预期：<\/div><div class=\"del\">− 1) 视觉展示 ｜ 顶部预览实时反映当前选中的图标与背景色<\/div><div class=\"ins\">+ 1) 视觉展示 ｜ 头像预览实时反映当前选中的图标与配色<\/div><div class=\"ins\">+ 2) 视觉展示 ｜ 选中「房间首字」时，预览随名称首字实时变化<\/div><div class=\"del\">− 2) 按钮状态 ｜ 同组内只能选中一项，选中态清晰可辨<\/div><div class=\"ins\">+ 3) 按钮状态 ｜ 头像选项组内只能选中一项，选中态清晰可辨<\/div>"}, {"k": "U9", "path": "房间管理 · Web 端 / 新建房间 / 新建房间弹窗 / 正常场景 / 🔴【P0】使用默认名称创建 / 前置：新建房间弹窗已打开且名称未改；角色：任意用户；入口：完成按钮", "reason": "tutti#3582 / tutti#3608 / tutti#3562，main@34395906；浏览器过功能 output/20261025-1/walkthrough.md", "diff": "<div class=\"del\">− 前置：新建房间弹窗已打开且名称未改；角色：任意用户；入口：完成按钮<\/div><div class=\"ins\">+ 前置：「创建云端房间」弹窗已打开且名称未改；角色：任意用户；入口：「创建房间」按钮<\/div>"}, {"k": "U10", "path": "房间管理 · Web 端 / 新建房间 / 新建房间弹窗 / 正常场景 / 🔴【P0】使用默认名称创建 / 操作：直接点击完成", "reason": "tutti#3582 / tutti#3608 / tutti#3562，main@34395906；浏览器过功能 output/20261025-1/walkthrough.md", "diff": "<div class=\"del\">− 操作：直接点击完成<\/div><div class=\"ins\">+ 操作：直接点击「创建房间」<\/div>"}, {"k": "U11", "path": "房间管理 · Web 端 / 新建房间 / 新建房间弹窗 / 正常场景 / 🔴【P0】使用默认名称创建 / 预期：\n1) 列表展示 ｜ 房间创建成功并出现在左侧 Rooms 列表中\n2) 结果校验 ｜ 房间名为「用户昵称 + 创建日期」，日期按用户所在时区计算，月份与日期均为两位数字\n3) 视觉展示 ｜ 列表中的头像与背景色与所选一致", "reason": "tutti#3582 / tutti#3608 / tutti#3562，main@34395906；浏览器过功能 output/20261025-1/walkthrough.md", "diff": "<div class=\"same\">  预期：<\/div><div class=\"del\">− 1) 列表展示 ｜ 房间创建成功并出现在左侧 Rooms 列表中<\/div><div class=\"del\">− 2) 结果校验 ｜ 房间名为「用户昵称 + 创建日期」，日期按用户所在时区计算，月份与日期均为两位数字<\/div><div class=\"ins\">+ 1) 提示文案 ｜ 出现提示「房间已创建」<\/div><div class=\"ins\">+ 2) 列表展示 ｜ 进入新房间，并出现在左侧「云端房间」列表顶部且处于选中态<\/div><div class=\"ins\">+ 3) 结果校验 ｜ 房间名为「用户昵称 MMDD」（昵称与日期间一个空格，如「Tutti-Chovy 1025」），日期按本机时区计算，月份与日期均为两位数字<\/div><div class=\"del\">− 3) 视觉展示 ｜ 列表中的头像与背景色与所选一致<\/div><div class=\"ins\">+ 4) 视觉展示 ｜ 列表中的头像与配色与所选一致<\/div>"}, {"k": "U12", "path": "房间管理 · Web 端 / 新建房间 / 新建房间弹窗 / 正常场景 / 🔴【P0】使用自定义名称创建 / 操作：清空默认名并输入自定义名称后点击完成", "reason": "tutti#3582 / tutti#3608 / tutti#3562，main@34395906；浏览器过功能 output/20261025-1/walkthrough.md", "diff": "<div class=\"del\">− 操作：清空默认名并输入自定义名称后点击完成<\/div><div class=\"ins\">+ 操作：清空默认名并输入自定义名称后点击「创建房间」<\/div>"}, {"k": "U13", "path": "房间管理 · Web 端 / 新建房间 / 新建房间弹窗 / 正常场景 / 🟠【P1】取消新建 / 前置：新建房间弹窗已打开且已改过名称与头像；角色：任意用户；入口：取消按钮", "reason": "tutti#3582 / tutti#3608 / tutti#3562，main@34395906；浏览器过功能 output/20261025-1/walkthrough.md", "diff": "<div class=\"del\">− 前置：新建房间弹窗已打开且已改过名称与头像；角色：任意用户；入口：取消按钮<\/div><div class=\"ins\">+ 前置：「创建云端房间」弹窗已打开且已改过名称与头像；角色：任意用户；入口：「取消」按钮<\/div>"}, {"k": "U14", "path": "房间管理 · Web 端 / 新建房间 / 新建房间弹窗 / 正常场景 / 🟠【P1】取消新建 / 操作：点击取消", "reason": "tutti#3582 / tutti#3608 / tutti#3562，main@34395906；浏览器过功能 output/20261025-1/walkthrough.md", "diff": "<div class=\"del\">− 操作：点击取消<\/div><div class=\"ins\">+ 操作：点击「取消」<\/div>"}, {"k": "U15", "path": "房间管理 · Web 端 / 新建房间 / 新建房间弹窗 / 正常场景 / 🔴【P0】同日创建多个房间的序号 / 预期：\n1) 结果校验 ｜ 第二个起在默认名后追加序号，序号按用户与完整日期计数\n2) 持久化 ｜ 跨天后序号重新从头计数", "reason": "代码口径：RoomDetailsDialog.tsx buildDefaultRoomName；线上列表可见「Tutti-Chovy 1022 (3)」", "diff": "<div class=\"same\">  预期：<\/div><div class=\"del\">− 1) 结果校验 ｜ 第二个起在默认名后追加序号，序号按用户与完整日期计数<\/div><div class=\"ins\">+ 1) 结果校验 ｜ 第二个起在默认名后追加序号，格式为「用户昵称 MMDD (2)」「用户昵称 MMDD (3)」<\/div><div class=\"ins\">+ 2) 结果校验 ｜ 序号取当前房间列表中同名默认名的最大序号加一<\/div><div class=\"del\">− 2) 持久化 ｜ 跨天后序号重新从头计数<\/div><div class=\"ins\">+ 3) 持久化 ｜ 跨天后日期变化，序号重新从头计数<\/div>"}, {"k": "U16", "path": "房间管理 · Web 端 / 新建房间 / 新建房间弹窗 / 异常场景 / 🟡【P2】名称为空或只有空格 / 操作：清空名称或只输入空格后尝试完成", "reason": "tutti#3582 / tutti#3608 / tutti#3562，main@34395906；浏览器过功能 output/20261025-1/walkthrough.md", "diff": "<div class=\"del\">− 操作：清空名称或只输入空格后尝试完成<\/div><div class=\"ins\">+ 操作：清空名称，或只输入空格<\/div>"}, {"k": "U17", "path": "房间管理 · Web 端 / 新建房间 / 新建房间弹窗 / 异常场景 / 🟡【P2】名称为空或只有空格 / 预期：\n1) 按钮状态 ｜ 完成按钮不可点击，或点击后提示名称不能为空\n2) 副作用 ｜ 不创建房间", "reason": "QA 确认按线上实际收紧口径；浏览器过功能 walkthrough.md 01-#5", "diff": "<div class=\"same\">  预期：<\/div><div class=\"del\">− 1) 按钮状态 ｜ 完成按钮不可点击，或点击后提示名称不能为空<\/div><div class=\"ins\">+ 1) 按钮状态 ｜ 「创建房间」按钮不可点击<\/div><div class=\"ins\">+ 2) 提示文案 ｜ 不出现错误提示<\/div><div class=\"del\">− 2) 副作用 ｜ 不创建房间<\/div><div class=\"ins\">+ 3) 副作用 ｜ 不创建房间<\/div>"}, {"k": "U18", "path": "房间管理 · Web 端 / 新建房间 / 新建房间弹窗 / 异常场景 / 🟡【P2】名称超过 50 字符 / 预期：\n1) 输入框 ｜ 输入被限制在 50 字符以内，或超出时给出明确提示且不保存\n2) 副作用 ｜ 不出现保存成功但显示被截断的不一致", "reason": "QA 确认按线上实际收紧口径；浏览器过功能 walkthrough.md 01-#6；代码 maxLength={50}", "diff": "<div class=\"same\">  预期：<\/div><div class=\"del\">− 1) 输入框 ｜ 输入被限制在 50 字符以内，或超出时给出明确提示且不保存<\/div><div class=\"del\">− 2) 副作用 ｜ 不出现保存成功但显示被截断的不一致<\/div><div class=\"ins\">+ 1) 输入框 ｜ 输入被限制在 50 个字符，超出部分无法输入<\/div><div class=\"ins\">+ 2) 提示文案 ｜ 不出现超长提示<\/div><div class=\"ins\">+ 3) 结果校验 ｜ 创建后房间名与输入框中的 50 个字符完全一致<\/div>"}], "deletes": []};
+const KEY = "tutti-qa-cases:" + D.batch + ":" + D.hash;
+// 预览面板可能以沙箱运行、禁止 localStorage；不可用时只是不记住勾选状态，页面照常工作
+const store = (() => { try { const s = window.localStorage; s.getItem("_"); return s; } catch { return null; } })();
+let saved = {}; try { saved = JSON.parse((store && store.getItem(KEY)) || "{}"); } catch {}
+const st = {}; const meta = {};
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const save = () => { try { store && store.setItem(KEY, JSON.stringify(st)); } catch {} };
+function reg(k, m) { meta[k] = m; st[k] = saved[k] || {keep: true, prio: m.prio || "", note: ""}; }
+const main = document.getElementById("main");
+const sc = D.scope || {};
+let nAdd = 0;
+function itemTools(k, prio) {
+  return `<div class="tools">${prio ? `<select data-k="${k}" class="pr">${["P0","P1","P2"].map(p => `<option ${p===st[k].prio?"selected":""}>${p}</option>`).join("")}</select>` : ""}
+    <input class="note" data-k="${k}" placeholder="备注（可选）：要怎么改、为什么不要" value="${esc(st[k].note)}"></div>`;
+}
+function renderTree(nodes) {
+  return nodes.map(n => {
+    if (n.kind === "case") {
+      nAdd++; reg(n.k, {type: "新增", prio: n.prio, title: n.t, text: (n.t + " " + n.exp.join(" ")).toLowerCase()});
+      return `<div class="case item" data-k="${n.k}"><input type="checkbox" class="ck" data-k="${n.k}">
+        <div><div class="ct"><span class="badge ${st[n.k].prio}">${st[n.k].prio}</span>${esc(n.t)}</div>
+        <details><summary>前置 / 操作 / 预期${n.note ? " / 备注" : ""}</summary>
+         <div class="kv"><b>前置</b>${esc(n.pre)}</div><div class="kv"><b>操作</b>${esc(n.op)}</div>
+         <div class="kv"><b>预期</b><ol>${n.exp.map(e => `<li>${esc(e.replace(/^\d+\)\s*/, ""))}</li>`).join("")}</ol></div>
+         ${n.note ? `<div class="kv"><b>备注</b>${esc(n.note)}</div>` : ""}</details>
+        ${itemTools(n.k, true)}</div></div>`;
+    }
+    if (n.kind === "desc") return `<div class="desc">${esc(n.t)}</div>`;
+    return `<div class="grp" data-g="${n.k}"><div class="gh ${n.kind}"><input type="checkbox" class="gk" data-g="${n.k}">${esc(n.t)}</div>${renderTree(n.ch)}</div>`;
+  }).join("");
+}
+let h = "";
+if (D.adds.length) {
+  h += `<h2>新增</h2>`;
+  D.adds.forEach(a => { h += `<div class="host">挂载到：${esc(a.host)}</div>` + renderTree(a.tree); });
+}
+if (D.updates.length) {
+  h += `<h2>更新（${D.updates.length}）</h2>`;
+  D.updates.forEach(u => { reg(u.k, {type: "更新", title: u.path, text: (u.path + " " + u.reason).toLowerCase()});
+    h += `<div class="grp item" data-k="${u.k}"><div class="gh"><input type="checkbox" class="ck" data-k="${u.k}">${esc(u.path)}</div>
+      <div class="tip">依据：${esc(u.reason)}</div><div class="diff">${u.diff}</div>${itemTools(u.k, false)}</div>`; });
+}
+if (D.deletes.length) {
+  h += `<h2>删除（${D.deletes.length}）</h2>`;
+  D.deletes.forEach(x => { reg(x.k, {type: "删除", title: x.path, text: (x.path + " " + x.cases.join(" ")).toLowerCase()});
+    h += `<div class="grp item" data-k="${x.k}"><div class="gh"><input type="checkbox" class="ck" data-k="${x.k}">${esc(x.path)}（${x.nodes} 个节点，${x.cases.length} 条用例）</div>
+      <div class="tip">原因：${esc(x.reason)}</div><details><summary>包含的用例</summary><ol>${x.cases.map(c => `<li>${esc(c)}</li>`).join("")}</ol></details>${itemTools(x.k, false)}</div>`; });
+}
+main.innerHTML = h || "<p>spec 为空</p>";
+document.getElementById("sum").textContent =
+  `新增用例 ${nAdd} 条 · 更新 ${D.updates.length} 处 · 删除 ${D.deletes.length} 处　｜　授权新增：${(sc.add||[]).join("、")||"无"}；授权删除：${(sc.delete||[]).join("、")||"无"}　｜　spec ${D.hash}`;
+
+const boxes = () => [...main.querySelectorAll(".ck")];
+function sync() {
+  boxes().forEach(b => { b.checked = st[b.dataset.k].keep; b.closest(".item").classList.toggle("off", !b.checked); });
+  main.querySelectorAll(".gk").forEach(g => {
+    const cs = [...g.closest(".grp").querySelectorAll(".ck")];
+    g.checked = cs.length > 0 && cs.every(c => c.checked);
+    g.indeterminate = cs.some(c => c.checked) && !g.checked;
+  });
+  const keys = Object.keys(st), kept = keys.filter(k => st[k].keep).length;
+  const byP = {}; keys.filter(k => st[k].keep && meta[k].type === "新增").forEach(k => byP[st[k].prio] = (byP[st[k].prio]||0) + 1);
+  document.getElementById("count").textContent = `保留 ${kept} / ${keys.length}　P0 ${byP.P0||0} · P1 ${byP.P1||0} · P2 ${byP.P2||0}`;
+}
+main.addEventListener("change", e => {
+  const el = e.target;
+  if (el.classList.contains("ck")) st[el.dataset.k].keep = el.checked;
+  if (el.classList.contains("gk")) el.closest(".grp").querySelectorAll(".ck").forEach(c => st[c.dataset.k].keep = el.checked);
+  if (el.classList.contains("pr")) { st[el.dataset.k].prio = el.value; const b = el.closest(".item").querySelector(".badge"); b.className = "badge " + el.value; b.textContent = el.value; }
+  save(); sync();
+});
+main.addEventListener("input", e => { if (e.target.classList.contains("note")) { st[e.target.dataset.k].note = e.target.value; save(); } });
+let pf = "";
+function apply() {
+  const q = document.getElementById("q").value.trim().toLowerCase();
+  main.querySelectorAll(".item").forEach(el => { const k = el.dataset.k, m = meta[k];
+    el.classList.toggle("hide", (pf && m.type === "新增" && st[k].prio !== pf) || (pf && m.type !== "新增") || (q && !m.text.includes(q))); });
+}
+document.querySelectorAll("[data-p]").forEach(b => b.onclick = () => { pf = b.dataset.p;
+  document.querySelectorAll("[data-p]").forEach(x => x.classList.toggle("on", x === b)); apply(); });
+document.getElementById("q").oninput = apply;
+document.getElementById("all").onclick = () => { Object.values(st).forEach(s => s.keep = true); save(); sync(); };
+document.getElementById("none").onclick = () => { Object.values(st).forEach(s => s.keep = false); save(); sync(); };
+document.getElementById("expand").onclick = () => main.querySelectorAll("details").forEach(d => d.open = true);
+
+function buildText() {
+  const keys = Object.keys(st);
+  const L = [`【tutti-qa 用例确认】批次 ${D.batch}　spec ${D.hash}`];
+  for (const type of ["新增", "更新", "删除"]) {
+    const ks = keys.filter(k => meta[k].type === type); if (!ks.length) continue;
+    const kept = ks.filter(k => st[k].keep);
+    L.push(`${type}：保留 ${kept.length} / ${ks.length}`);
+    ks.filter(k => !st[k].keep).forEach(k => L.push(`  ✗ 不要：${meta[k].title}` + (st[k].note ? ` ｜ ${st[k].note}` : "")));
+    kept.filter(k => (meta[k].prio && st[k].prio !== meta[k].prio) || st[k].note).forEach(k =>
+      L.push(`  ✎ ${meta[k].title}` + (meta[k].prio && st[k].prio !== meta[k].prio ? ` ｜ 优先级 ${meta[k].prio}→${st[k].prio}` : "") + (st[k].note ? ` ｜ ${st[k].note}` : "")));
+  }
+  L.push("TUTTI-QA-CASES " + JSON.stringify({batch: D.batch, hash: D.hash,
+    decisions: keys.map(k => ({key: k, keep: st[k].keep, prio: (meta[k].prio && st[k].prio !== meta[k].prio) ? st[k].prio : undefined, note: st[k].note || undefined}))}));
+  return L.join("\n");
+}
+const out = document.getElementById("out"), txt = document.getElementById("txt");
+async function copy() {
+  try { await navigator.clipboard.writeText(txt.value); document.getElementById("copied").textContent = "已复制"; }
+  catch { txt.select(); try { document.execCommand("copy"); document.getElementById("copied").textContent = "已复制"; } catch { document.getElementById("copied").textContent = "请手动复制"; } }
+}
+document.getElementById("export").onclick = () => { txt.value = buildText(); out.style.display = "flex"; txt.focus(); txt.select(); copy(); };
+document.getElementById("copy").onclick = copy;
+document.getElementById("close").onclick = () => out.style.display = "none";
+document.getElementById("dl").onclick = () => { const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([txt.value], {type: "text/plain"})); a.download = `tutti-qa-cases-${D.batch}.txt`; a.click(); };
+sync();
+</script></body></html>

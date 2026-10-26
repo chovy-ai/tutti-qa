@@ -53,6 +53,7 @@ ego lite 的 Cookie 按 **profile** 隔离，同一 profile 下的 Space 共用�
 - `space`：Space 名称，唯一。ego lite 没有删除 Space 的接口，不要随意改名，否则旧 Space 会残留。`70-spaces` 检查后把 Space 交还给用户，未登录时人直接在这个 Space 的页面里登录。
 - `env`：对应 `regress/envs/<env>.json`，决定打开哪个入口检查登录态。
 - 账号文件只存非敏感字段；密码、登录码不写进任何文件，由人在浏览器里登录。
+- 可选：把账号的 `session_id` 写进 `~/.tutti-qa/secrets/<name>.session`（目录 700、文件 600，不入库），`70-spaces` 会把它注入为 `session_id` 与 `__Host-session-cookie-migrated` 两个 Cookie，免手动登录；失效时换一个新的。
 
 ## 升级
 
