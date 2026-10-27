@@ -5,3 +5,4 @@ midscene_run/
 .identities/
 .sessions/
 .local-cache/
+.service/

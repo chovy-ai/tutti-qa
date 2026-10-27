@@ -1,5 +1,7 @@
 # tutti-regress
 
+需要把本机账号与 AI 浏览器能力提供给其他 Agent、脚本或 CI 时，使用 [通用浏览器测试服务](SERVICE.md)：`pnpm service`，HTTP API + OpenAPI，不依赖用例 Plan。
+
 基于 Midscene 的功能回归：把 `baseline/*.pos` 里的 P0 用例编译成 Plan，在指定环境上用全新测试用户执行，产出报告。
 
 ```
