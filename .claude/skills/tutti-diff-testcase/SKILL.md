@@ -1,6 +1,6 @@
 ---
 name: tutti-diff-testcase
-description: 按 Tutti 代码仓库（tutti-lab/tutti、tutti-lab/tsh-web、tutti-lab/tutti-server）自基准 commit 以来的 diff 维护 ProcessOn .pos 用例库。流程是 QA 先声明新增 / 删除哪些模块，再直接阅读基准到 main 的 diff、相关 PR 和 commit，必要时补读代码和测试，并在浏览器里过一遍受影响的功能、截图；分析后向 QA 提问确认本批更新哪些模块及待确认口径，再生成用例，经 HTML 用例确认、合并校验并更新基准 commit。用户提到「根据 diff / commit / PR 更新用例」「同步最新代码到用例库」「这次改动要改哪些用例」「新增 / 删除某模块用例」时使用。
+description: 按 Tutti 代码仓库（tutti-lab/tutti、tutti-lab/tsh-web、tutti-lab/tutti-server）自基准 commit 以来的 diff 维护 ProcessOn .pos 用例库。流程是 QA 先声明新增 / 删除哪些模块，再直接阅读基准到 main 的 diff、相关 PR 和 commit，必要时补读代码和测试，并在浏览器里过一遍受影响的功能、截图；分析后向 QA 提问确认本批更新哪些模块及待确认口径，再生成用例，经 HTML 用例确认、合并校验并更新基准 commit。用户提到「根据 diff / commit / PR 更新用例」「同步最新代码到用例库」「这次改动要改哪些用例」「新增 / 删除某模块用例」或「用例勾选 HTML 思维导图」时使用。
 ---
 
 # 根据代码 diff 维护 Tutti 用例库
@@ -27,6 +27,7 @@ description: 按 Tutti 代码仓库（tutti-lab/tutti、tutti-lab/tsh-web、tutt
 | `collect_changes.py` | 从基准 commit 起收集各仓库 main 上的 commit 及关联 PR，写 `changes.json`；其中模块 / 噪音标签只作辅助信息，读取全部条目 |
 | `render_cases.py` | `spec.json` → **用例确认页** `cases.html`（QA 逐条 check 要新增 / 修改 / 删除的用例） |
 | `render_case_titles.py` | 默认交付的**标题树形确认页**：模块 / 子模块 / 用例勾选、默认全选、一键复制；复制结果兼容 `apply_case_confirm.py` |
+| `render_case_mindmap.py` | 用户要求思维导图时，用完整用例 JSON 生成紧凑 HTML 勾选导图；模板、输入及确认映射见 `references/case-mindmap.md` |
 | `apply_case_confirm.py` | 解析用例确认结果 → `spec.confirmed.json`（只含 QA 保留的内容，优先级按 QA 改的） |
 | `diff_digest.py` | 单个 diff 的摘要（改动位置、新增 / 删除文案、常量），深读 diff 时用 |
 
@@ -66,6 +67,12 @@ Computer 与 Agent 管理 / 云端电脑
 - 为使复制内容可直接粘回确认，末尾附 `TUTTI-QA-CASES` JSON，携带批次、原始 spec 指纹及全部确认项的 key/keep（包括未选项）。复制被浏览器限制时提供可手动复制的文本，不误报复制成功；页面不依赖 localStorage。
 - 这是展示格式；`.pos` 与 spec 仍保留原有层级、优先级及完整用例内容。
 - 标题树形页可直接承担下文的人工确认；用户粘回复制结果并通过指纹、条目校验后才算确认。仅生成页面、默认全选或点击复制本身不代表已确认。纯文本标题清单只作浏览。
+
+## HTML 勾选思维导图模板
+
+用户要求「思维导图」「完整用例导图」或复用已确认的 HTML 模板时，读取 [references/case-mindmap.md](references/case-mindmap.md)，使用 `scripts/render_case_mindmap.py` 和 `assets/case-mindmap/` 生成。每个节点前是「是否使用」复选框，父节点操作联动全部后代，部分选中显示半选。采用紧凑卡片和实际高度重排，保留搜索、展开、详情及勾选导出；这是用例选用功能。全量导图应覆盖指定模块的全部有效用例，而非仅本批变更。导出可合并确认时必须绑定原 spec 指纹和完整 key 映射，真实确认仍按下文流程处理。
+
+仅把已有用例转换为导图时，按本节读取输入并生成展示，保留业务内容与原基准；需要变更或合并用例时再进入对应的 diff 与 QA 确认流程。
 
 ## 两次 QA 确认（硬规则）
 

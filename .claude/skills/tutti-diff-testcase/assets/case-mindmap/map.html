@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>__TITLE__ · 勾选思维导图</title><style>__STYLE__</style></head><body>
+<header><div><h1>__TITLE__ · 勾选思维导图</h1><div class="subtitle">每个节点前均可勾选；取消父节点会取消全部后代，部分选中显示半选。</div></div></header>
+<div class="toolbar">
+  <input id="search" type="search" aria-label="搜索全部用例内容" placeholder="搜索用例、步骤、预期或模块">
+  <label class="filter-label">类型<select id="kind"><option value="">全部</option><option>功能回归</option><option>专项验证</option></select></label>
+  <label class="filter-label">优先级<select id="priority"><option value="">全部</option><option>P0</option><option>P1</option><option>P2</option></select></label>
+  <button id="select-all">全部勾选</button><button id="select-none">全部取消</button>
+  <button id="overview">模块总览</button><button id="expand-all">全部展开</button><button id="fit-top">适应画布</button>
+  <button id="export-selection">一键复制勾选结果</button><button id="save-html">保存勾选版 HTML</button>
+</div>
+<div class="selection-bar"><output id="selection-summary" aria-live="polite"></output><span id="save-notice" role="status"></span><output id="result"></output></div>
+<div class="selection-help">分支勾选作用于全部后代，包括折叠或被搜索筛选隐藏的用例；展开、收起不会改变勾选。</div>
+<div class="workspace">
+  <div id="viewport" tabindex="0" aria-label="用例思维导图，拖动平移，滚轮缩放，0 键适应画布">
+    <div class="world" id="world"><svg class="links" id="links" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg><div id="nodes"></div></div>
+    <div id="empty" hidden>没有匹配用例，清空搜索或调整筛选即可恢复。</div>
+    <div class="zoom"><button id="zoom-out" aria-label="缩小">−</button><output id="zoom-value">100%</output><button id="zoom-in" aria-label="放大">＋</button><button id="fit-bottom" aria-label="适应画布">⤢</button></div>
+    <div class="hint">复选框：是否使用 · 标题：展开或看详情 · 拖动：平移</div>
+  </div>
+  <div id="mobile-shade" hidden></div>
+  <aside id="detail" hidden aria-label="完整用例详情"><div class="detail-header"><strong>完整用例</strong><div class="detail-controls"><button id="previous-case">上一条</button><button id="next-case">下一条</button><button id="close-detail">关闭</button></div></div><div id="detail-body" class="detail-body"></div></aside>
+</div>
+<div id="selection-dialog" hidden role="dialog" aria-modal="true" aria-label="导出勾选结果"><h2>勾选结果</h2><p id="export-notice" role="status"></p><textarea id="selection-text" readonly aria-label="勾选确认文本"></textarea><div class="actions"><button id="copy-selection">复制</button><button id="download-selection">下载文本</button><button id="close-export">关闭</button></div></div>
+<script id="suite-data" type="application/json">__DATA__</script><script>__SELECTION_MODEL__
+__SCRIPT__</script></body></html>
