@@ -2,9 +2,41 @@
 
 HTTP JSON API 是稳定入口，OpenAPI 3.1 契约可从 `GET /v1/openapi.json` 获取。调用方可以是其他设备上的 Agent、脚本、CI 或应用，不依赖 `.pos`、Plan、Tutti 房间或特定模型名称。
 
+主要入口是目标级工作流：外部 [CLI](../cli/README.md) 或 HTTP 提交目标，主机负责账号选择、规划、执行、验证、证据整理和回收。
+
+| mode | 内部执行 | 判定 |
+|---|---|---|
+| `walkthrough` | Codex + ego lite，按页面观测逐步走查、截图 | `completed` / `blocked`，不声称测试通过 |
+| `test` | Midscene + ego lite，先规划动作与检查点，再执行并断言 | `passed` / `failed` / `blocked` |
+
+两条路径都使用 `~/.tutti-qa/accounts.json` 原账号池的 `profile/space` 信息，不创建用户、不注入另一套身份。主机会在现有 profile 中创建工作流专属 Space，保留原有用户标签页，完成后关闭本次 Space；人工接管或其他任务控制同一 profile 时不抢占。账号锁沿用同一个 leaseDir，和下述兼容会话接口互斥。
+
+Codex 通过结构化输出给出受约束的单步决策，由主机的固定 ego 适配器执行，不执行模型生成的脚本。实现参考 [OpenAI 官方非交互模式](https://developers.openai.com/codex/noninteractive/)。Midscene 使用公开的自定义设备接口，把视觉操作映射到 ego lite 的截图与键鼠 API，不为目标工作流启动 Playwright Chromium。
+
+执行机需安装并运行 ego lite/ego-browser；walkthrough 还需已登录的 Codex CLI，test 需现有 Midscene 模型配置。缺少依赖、登录、前置状态或可观察的验收条件时返回 blocked。未提供 expectations 时，测试可推导检查点并标明 `source: inferred`；调用方给出的 expectations 不会被推导结果替换。
+
+```json
+{
+  "mode": "test",
+  "goal": "验证普通成员不能删除房间",
+  "selector": { "roles": ["member"] },
+  "target": "https://tutti.sh/platform/",
+  "expectations": ["普通成员无法访问房间删除操作"],
+  "constraints": ["没有适合的测试数据就返回阻塞"],
+  "maxSteps": 12,
+  "timeoutSeconds": 600
+}
+```
+
+`POST /v1/runs`（Bearer + Idempotency-Key）返回 202 和工作流句柄；`GET /v1/runs` 列出自己的任务，`GET /v1/runs/{id}` 查询进度，`POST /v1/runs/{id}/cancel`（请求体 `{}`）请求取消。截图/回放仍通过 `GET /v1/artifacts/{id}` 下载。轮询到 `finishedAt` 后读取最终状态、checks、observations、uncovered 与 cleanup；回收未确认不会报告成功。
+
+工作流当前串行，账号租约自动续期，超时/取消后停止后续步骤并回收。状态/幂等缓存在内存，结果落在 `.service/workflows/`，重启不恢复句柄或重放任务。目标站点必须能从执行机访问，并满足主机和账号的 allowedOrigins。其他已运行的 profile 任务也会造成阻塞。
+
+以下会话/步骤 API 保留兼容，供内部工具和既有客户端使用：
+
 数据流：调用方 Bearer token → HTTP 校验与幂等 → 账号独占租约/会话 → 会话串行队列 → `BrowserProvider` → 独立 Chromium → Playwright 操作或 Midscene AI → 作业结果/产物。
 
-第一版 provider 是 Playwright。已有 ego lite 的账号会读取主机保存的凭据，注入新的独立浏览器，不接管原有 profile/Space。`BrowserProvider` 是后续接入其他浏览器运行时的边界，当前没有通过接口控制 ego lite 的实现。
+兼容会话接口使用 Playwright provider，读取主机保存的账号凭据并注入新的独立浏览器，不接管原有 profile/Space。上面的目标工作流通过同一个 `BrowserProvider` 边界接入 ego lite，复用原有 profile 的登录态。
 
 ## 启动
 

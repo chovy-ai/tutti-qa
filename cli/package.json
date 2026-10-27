@@ -1,0 +1,14 @@
+{
+  "name": "tutti-qa-cli",
+  "version": "0.1.0",
+  "description": "Remote CLI for the Browser Test Service",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "bin": { "tutti-qa": "bin/tutti-qa.mjs" },
+  "files": ["bin/", "src/", "examples/", "README.md"],
+  "scripts": {
+    "check": "node --check bin/tutti-qa.mjs && node --check src/client.mjs && node --check src/commands.mjs",
+    "test": "node --test test/*.test.mjs"
+  }
+}

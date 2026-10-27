@@ -7,6 +7,8 @@ import { loadConfig } from "./config.ts";
 import { createHttpServer } from "./http.ts";
 import { PlaywrightProvider } from "./provider.ts";
 import { BrowserService } from "./service.ts";
+import { EgoBrowserProvider } from "./ego.ts";
+import { GoalWorkflows } from "./workflows.ts";
 
 const { values } = parseArgs({ options: { config: { type: "string" }, "env-file": { type: "string" }, help: { type: "boolean" } } });
 if (values.help) {
@@ -24,7 +26,9 @@ if (values.help) {
     await writeFile(resolve(lock, "owner.json"), JSON.stringify({ pid: process.pid, startedAt: new Date().toISOString() }) + "\n", { mode: 0o600 });
     const accounts = await loadAccounts(config.accountsFile, config.legacySecretsDir);
     const service = new BrowserService(config, accounts, new PlaywrightProvider(config));
-    const server = createHttpServer(service, config);
+    const ego = new EgoBrowserProvider(config);
+    const workflows = new GoalWorkflows(config, { browsers: new BrowserService(config, accounts, ego), pages: ego });
+    const server = createHttpServer(service, config, workflows);
     await new Promise<void>((ok, fail) => {
       server.once("error", fail);
       server.listen(config.port, config.host, () => { server.off("error", fail); ok(); });
@@ -37,7 +41,8 @@ if (values.help) {
       stopping = true;
       // 先拒绝新连接，再取消作业和关闭浏览器；只有确认清理成功才删除锁。
       server.close();
-      const clean = await service.shutdown();
+      const goalsClean = await workflows.shutdown();
+      const clean = await service.shutdown() && goalsClean;
       server.closeAllConnections();
       if (clean) await rm(lock, { recursive: true });
       else { console.error("Browser cleanup is uncertain; server.lock was retained for host inspection"); process.exitCode = 1; }

@@ -131,7 +131,9 @@ export class BrowserService {
         try { await this.releaseLease(session); session.status = "closed"; }
         catch { session.status = "quarantined"; }
       }
-      throw error instanceof ServiceError ? error : new ServiceError(503, "BROWSER_START_FAILED", "Browser could not start; check host configuration");
+      const failure = error instanceof ServiceError ? error : new ServiceError(503, "BROWSER_START_FAILED", "Browser could not start; check host configuration");
+      failure.sessionId = session.id;
+      throw failure;
     }
   }
 

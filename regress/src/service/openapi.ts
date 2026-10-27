@@ -17,13 +17,19 @@ const operation = (operationId: string, schema: object, options: { input?: objec
 
 export const OPENAPI = {
   openapi: "3.1.0",
-  info: { title: "Browser Test Service", version: "1.0.0", description: "Generic browser sessions, account leases and deterministic/AI test steps. All /v1 endpoints require a host-configured bearer token." },
+  info: { title: "Browser Test Service", version: "1.1.0", description: "Goal workflows: Codex + ego lite walkthroughs and Midscene + ego lite tests, using the existing host account pool. Also retains session/step APIs. All /v1 endpoints require bearer authentication." },
   security: [{ bearerAuth: [] }],
   paths: {
     "/health": { get: { operationId: "health", security: [], responses: { "200": { description: "Process is listening" } } } },
     "/v1/openapi.json": { get: { operationId: "openapi", responses: { "200": { description: "This OpenAPI document" } } } },
     "/v1/capabilities": { get: operation("capabilities", { type: "object" }) },
     "/v1/accounts": { get: operation("listAccounts", { type: "array", items: ref("Account") }) },
+    "/v1/runs": {
+      get: operation("listGoalRuns", { type: "array", items: ref("GoalRun") }),
+      post: operation("submitGoalRun", ref("GoalRun"), { input: ref("GoalInput"), code: "202" })
+    },
+    "/v1/runs/{id}": { get: operation("getGoalRun", ref("GoalRun"), { pathId: true }) },
+    "/v1/runs/{id}/cancel": { post: operation("cancelGoalRun", ref("GoalRun"), { pathId: true, input: { type: "object", additionalProperties: false } }) },
     "/v1/sessions": {
       get: operation("listSessions", { type: "array", items: ref("Session") }),
       post: operation("createSession", ref("Session"), { input: ref("CreateSession"), code: "201" })
@@ -41,6 +47,35 @@ export const OPENAPI = {
   components: {
     securitySchemes: { bearerAuth: { type: "http", scheme: "bearer" } },
     schemas: {
+      GoalInput: {
+        type: "object", additionalProperties: false, required: ["mode", "goal"],
+        description: "Submit a goal, not browser steps. The host chooses an existing permitted account when accountId/selector are omitted. accountId and selector are mutually exclusive.",
+        not: { required: ["accountId", "selector"] },
+        properties: {
+          mode: { enum: ["walkthrough", "test"] }, goal: { type: "string", minLength: 1, maxLength: 10_000 },
+          target: { type: "string", format: "uri", maxLength: 2000 }, accountId: { type: "string", minLength: 1, maxLength: 255 },
+          selector: { $ref: "#/components/schemas/CreateSession/properties/selector" },
+          ...Object.fromEntries(["expectations", "constraints"].map((key) => [key, { type: "array", maxItems: 20, items: { type: "string", minLength: 1, maxLength: 2000 } }])),
+          maxSteps: { type: "integer", minimum: 1, maximum: 30, default: 12 },
+          timeoutSeconds: { type: "integer", minimum: 1, maximum: 3600, default: 600 }
+        }
+      },
+      GoalRun: {
+        type: "object", required: ["id", "mode", "goal", "agent", "browser", "status", "phase", "createdAt", "checks", "observations", "artifacts", "uncovered"],
+        properties: {
+          id: { type: "string" }, mode: { enum: ["walkthrough", "test"] }, goal: { type: "string" },
+          agent: { enum: ["codex", "midscene"] }, browser: { const: "ego-lite" },
+          status: { enum: ["queued", "running", "completed", "passed", "failed", "blocked", "cancelled", "timed_out"] },
+          phase: { enum: ["queued", "account", "planning", "executing", "verifying", "cleanup", "finished"] },
+          createdAt: { type: "string", format: "date-time" }, startedAt: { type: "string", format: "date-time" }, finishedAt: { type: "string", format: "date-time" },
+          accountId: { type: "string" }, summary: { type: "string" }, uncovered: { type: "array", items: { type: "string" } },
+          cleanup: { type: "object", properties: { status: { enum: ["closed", "unknown", "not_started"] } } },
+          checks: { type: "array", items: { type: "object", properties: { expectation: { type: "string" }, pass: { type: "boolean" }, detail: { type: "string" }, source: { enum: ["requested", "inferred"] } } } },
+          observations: { type: "array", items: { type: "object", properties: { step: { type: "integer" }, summary: { type: "string" }, url: { type: "string" }, title: { type: "string" } } } },
+          artifacts: { type: "array", items: { type: "object", properties: { id: { type: "string" }, contentType: { enum: ["image/png", "text/html"] } } } },
+          error: { type: "object", properties: { code: { type: "string" }, message: { type: "string" } } }
+        }
+      },
       Account: { type: "object", properties: { id: { type: "string" }, env: { type: "string" }, roles: { type: "array", items: { type: "string" } }, capabilities: { type: "array", items: { type: "string" } }, tags: { type: "array", items: { type: "string" } }, status: { enum: ["available", "busy"] } } },
       CreateSession: {
         type: "object", additionalProperties: false,

@@ -16,6 +16,7 @@ export interface Account {
   tags: string[];
   url?: string;
   allowedOrigins?: string[];
+  ego?: { profile: string; space?: string };
   // 故意不保留原始账号对象，避免 loginCode/note 等字段流入接口。
   loadState(): Promise<StorageState>;
 }
@@ -54,6 +55,7 @@ export async function loadAccounts(file: string, legacySecretsDir: string): Prom
       capabilities: item.capabilities === undefined ? [] : strings(item.capabilities),
       tags: item.tags === undefined ? [] : strings(item.tags),
       url,
+      ...(item.profile ? { ego: { profile: text(item.profile, "profile", 255), ...(item.space ? { space: text(item.space, "space", 255) } : {}) } } : {}),
       allowedOrigins: item.allowedOrigins === undefined ? (url ? [new URL(url).origin] : undefined) : strings(item.allowedOrigins),
       async loadState() {
         try {

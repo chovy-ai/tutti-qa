@@ -6,11 +6,13 @@ import { OPENAPI } from "./openapi.ts";
 import { readArtifact } from "./provider.ts";
 import { BrowserService } from "./service.ts";
 import { ServiceError, integer, object, parseJob, parseSession, stepKeys, type Client } from "./protocol.ts";
+import { parseGoal } from "./workflow-protocol.ts";
+import type { GoalWorkflows } from "./workflows.ts";
 
 interface Reply { status: number; data: unknown }
 
 /** 一次进程生命周期内，缓存包括正在执行的请求，防止并发重试重复创建资源。 */
-export function createHttpServer(service: BrowserService, config: ServiceConfig) {
+export function createHttpServer(service: BrowserService, config: ServiceConfig, workflows?: GoalWorkflows) {
   const requests = new Map<string, { hash: string; reply: Promise<Reply> }>();
   const server = createServer({ requestTimeout: 30_000, headersTimeout: 10_000 }, (req, res) => {
     void handle(req, res).catch((error: unknown) => {
@@ -29,7 +31,11 @@ export function createHttpServer(service: BrowserService, config: ServiceConfig)
       if (path === "/v1/openapi.json") { send(res, 200, OPENAPI); return; }
       if (path === "/v1/capabilities") {
         send(res, 200, { data: {
-          version: "1.0.0", provider: "playwright", modelConfigured: missingModelEnv().length === 0,
+          version: "1.1.0", provider: "playwright", modelConfigured: missingModelEnv().length === 0,
+          goalWorkflows: workflows ? [
+            { mode: "walkthrough", agent: "codex", browser: "ego-lite" },
+            { mode: "test", agent: "midscene", browser: "ego-lite" }
+          ] : [],
           steps: Object.keys(stepKeys),
           maxSessions: config.maxSessions, maxConcurrentJobs: config.maxConcurrentJobs,
           defaultTtlSeconds: config.defaultTtlSeconds, maxTtlSeconds: config.maxTtlSeconds, maxJobSeconds: config.maxJobSeconds,
@@ -38,6 +44,9 @@ export function createHttpServer(service: BrowserService, config: ServiceConfig)
         } }); return;
       }
       if (path === "/v1/accounts") { send(res, 200, { data: service.listAccounts(client) }); return; }
+      if (path === "/v1/runs") { send(res, 200, { data: needWorkflows().list(client.id) }); return; }
+      const run = path.match(/^\/v1\/runs\/([\w-]+)$/u);
+      if (run) { send(res, 200, { data: needWorkflows().get(client.id, run[1]!) }); return; }
       if (path === "/v1/sessions") { send(res, 200, { data: service.listSessions(client.id) }); return; }
       const session = path.match(/^\/v1\/sessions\/([\w-]+)$/u);
       if (session) { send(res, 200, { data: service.getSession(client.id, session[1]!) }); return; }
@@ -45,7 +54,12 @@ export function createHttpServer(service: BrowserService, config: ServiceConfig)
       if (job) { send(res, 200, { data: service.getJob(client.id, job[1]!) }); return; }
       const artifact = path.match(/^\/v1\/artifacts\/([\w.-]+)$/u);
       if (artifact) {
-        const record = service.artifact(client.id, artifact[1]!);
+        let record;
+        try { record = service.artifact(client.id, artifact[1]!); }
+        catch (error) {
+          if (!(error instanceof ServiceError) || error.status !== 404 || !workflows) throw error;
+          record = workflows.artifact(client.id, artifact[1]!);
+        }
         const content = await readArtifact(config, record);
         res.writeHead(200, {
           "content-type": record.contentType, "content-length": content.length,
@@ -60,7 +74,7 @@ export function createHttpServer(service: BrowserService, config: ServiceConfig)
       if (match) { await service.close(client.id, match[1]!); send(res, 200, { data: service.getSession(client.id, match[1]!) }); return; }
     }
     if (req.method === "POST") {
-      const isRoute = path === "/v1/sessions" || /^\/v1\/sessions\/[\w-]+\/(renew|jobs)$/u.test(path) || /^\/v1\/jobs\/[\w-]+\/cancel$/u.test(path);
+      const isRoute = path === "/v1/runs" || /^\/v1\/runs\/[\w-]+\/cancel$/u.test(path) || path === "/v1/sessions" || /^\/v1\/sessions\/[\w-]+\/(renew|jobs)$/u.test(path) || /^\/v1\/jobs\/[\w-]+\/cancel$/u.test(path);
       if (isRoute) {
         const key = req.headers["idempotency-key"];
         if (typeof key !== "string" || !/^[\x21-\x7e]{1,128}$/u.test(key)) throw new ServiceError(400, "IDEMPOTENCY_KEY_REQUIRED", "POST requires an Idempotency-Key header (1–128 printable ASCII characters)");
@@ -83,6 +97,9 @@ export function createHttpServer(service: BrowserService, config: ServiceConfig)
   }
 
   async function mutate(client: Client, path: string, input: unknown): Promise<Reply> {
+    if (path === "/v1/runs") return { status: 202, data: needWorkflows().submit(client, parseGoal(input)) };
+    const cancelRun = path.match(/^\/v1\/runs\/([\w-]+)\/cancel$/u);
+    if (cancelRun) { object(input, []); return { status: 200, data: await needWorkflows().cancel(client.id, cancelRun[1]!) }; }
     if (path === "/v1/sessions") return { status: 201, data: await service.create(client, parseSession(input, config.defaultTtlSeconds, config.maxTtlSeconds)) };
     const match = path.match(/^\/v1\/sessions\/([\w-]+)\/(jobs|renew)$/u);
     if (match) {
@@ -93,6 +110,10 @@ export function createHttpServer(service: BrowserService, config: ServiceConfig)
     const cancel = path.match(/^\/v1\/jobs\/([\w-]+)\/cancel$/u);
     if (cancel) { object(input, []); return { status: 200, data: await service.cancelJob(client.id, cancel[1]!) }; }
     throw new ServiceError(404, "NOT_FOUND", "Endpoint not found");
+  }
+  function needWorkflows(): GoalWorkflows {
+    if (!workflows) throw new ServiceError(503, "WORKFLOWS_UNAVAILABLE", "Goal workflows are not configured on this host");
+    return workflows;
   }
   return server;
 }
