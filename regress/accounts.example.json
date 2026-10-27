@@ -1,0 +1,15 @@
+{
+  "accounts": [
+    {
+      "id": "app-staging-owner",
+      "resourceKey": "app-staging-user-001",
+      "env": "staging",
+      "roles": ["owner"],
+      "capabilities": ["paid"],
+      "tags": ["example-app"],
+      "url": "https://example.org/",
+      "allowedOrigins": ["https://example.org"],
+      "storageStateFile": "secrets/app-staging-owner.storage-state.json"
+    }
+  ]
+}

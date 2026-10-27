@@ -11,6 +11,8 @@ const AI_CONTEXT = [
 ].join("\n");
 
 export interface AgentOptions {
+  /** 其他浏览器测试入口可提供自己的领域上下文；既有回归流程保留默认值。 */
+  readonly context?: string;
   /** 报告与缓存的稳定标识，同一用例同一 actor 每次 Run 保持一致才能命中缓存 */
   readonly id: string;
   readonly groupName: string;
@@ -31,7 +33,7 @@ export function createAgent(page: Page, options: AgentOptions): PlaywrightAgent 
     generateReport: true,
     autoPrintReportMsg: false,
     // AI_CONTEXT 是每条缓存键的一部分，改动它会让全部缓存失效
-    aiContexts: { default: AI_CONTEXT },
+    aiContexts: { default: options.context ?? AI_CONTEXT },
     ...(cache ? { cache } : {})
   });
   if (options.stats) instrumentCache(agent, options.stats);

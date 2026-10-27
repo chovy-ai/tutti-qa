@@ -1,0 +1,14 @@
+{
+  "host": "127.0.0.1",
+  "port": 4318,
+  "stateDir": ".service",
+  "allowedOrigins": ["https://example.org"],
+  "allowAnonymous": true,
+  "headless": true,
+  "maxSessions": 6,
+  "maxConcurrentJobs": 2,
+  "maxQueuedJobs": 100,
+  "defaultTtlSeconds": 900,
+  "maxTtlSeconds": 3600,
+  "maxJobSeconds": 600
+}
