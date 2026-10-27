@@ -1,0 +1,9 @@
+{
+  "mode": "test",
+  "goal": "Verify that a normal room member cannot delete the room.",
+  "target": "https://tutti.sh/platform/",
+  "selector": { "roles": ["member"] },
+  "expectations": ["The normal member cannot access a room deletion action."],
+  "constraints": ["Do not modify other users' existing rooms. Report a blocked prerequisite if no suitable test room exists."],
+  "timeoutSeconds": 600
+}

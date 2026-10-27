@@ -2,6 +2,8 @@
 export class ServiceError extends Error {
   readonly status: number;
   readonly code: string;
+  /** 仅供内部工作流确认启动失败后的回收状态，不进入 HTTP 错误响应。 */
+  sessionId?: string;
   constructor(status: number, code: string, message: string) {
     super(message);
     this.status = status;

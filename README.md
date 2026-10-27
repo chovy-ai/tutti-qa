@@ -14,6 +14,7 @@ Tutti 测试用例库与用例生成工具。
 - `.claude/skills/tutti-qa-setup/`：执行机初始化（工具链、regress 依赖、模型、ego lite、账号 profile 与 Space），入口 `scripts/setup.sh`，详见其 `SKILL.md`
 - `regress/`：基于 Midscene 的回归工具、执行 Plan 与本地校验，详见 `regress/README.md`
 - `regress/SERVICE.md`：本机账号池与通用浏览器测试 HTTP API（会话租约、确定性/AI 步骤、作业与产物）
+- `cli/`：独立外部 CLI，提交目标，由执行机运行 Codex + ego lite 走查或 Midscene + ego lite 测试，详见 `cli/README.md`
 
 ## 用法
 
