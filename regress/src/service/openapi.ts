@@ -54,7 +54,7 @@ export const OPENAPI = {
           target: { type: "string", format: "uri", maxLength: 2000 }, accountId: { type: "string", minLength: 1, maxLength: 255 },
           selector: { $ref: "#/components/schemas/CreateSession/properties/selector" },
           ...Object.fromEntries(["expectations", "constraints"].map((key) => [key, { type: "array", maxItems: 20, items: { type: "string", minLength: 1, maxLength: 2000 } }])),
-          maxSteps: { type: "integer", minimum: 1, maximum: 30, default: 12, description: "walkthrough: requested native-browser operation budget (model-guided); test: host-enforced plan step limit" },
+          maxSteps: { type: "integer", minimum: 1, maximum: 1000, default: 1000, description: "walkthrough: requested native-browser operation budget (model-guided); test: host-enforced plan step limit" },
           timeoutSeconds: { type: "integer", minimum: 1, maximum: 3600, default: 600 }
         }
       },

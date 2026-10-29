@@ -19,7 +19,7 @@ Node.js >=22; no local browser/model dependencies. Results are JSON.
   artifact get ID --out FILE
 
 Goals: --constraints TEXT (repeatable), --env NAME, --capabilities a,b, --tags a,b
-Budgets: --max-steps N (12), --timeout-seconds N (600)
+Budgets: --max-steps N (1000; maximum 1000), --timeout-seconds N (600)
 Client: --wait-seconds N (900), --poll-ms N (1000), --http-timeout-seconds N (30)
 Output: --out-dir DIR (download evidence), --request-id ID (reuse unchanged on retries)
 
@@ -97,7 +97,7 @@ export async function goalBody(values, alias, positionalGoal, stdin) {
   }
   if (values.expect) body.expectations = values.expect;
   if (values.constraints) body.constraints = values.constraints;
-  if (values["max-steps"] !== undefined) body.maxSteps = number(values["max-steps"], undefined, "--max-steps", 30);
+  if (values["max-steps"] !== undefined) body.maxSteps = number(values["max-steps"], undefined, "--max-steps", 1000);
   if (values["timeout-seconds"] !== undefined) body.timeoutSeconds = number(values["timeout-seconds"], undefined, "--timeout-seconds", 3600);
   if (!["walkthrough", "test"].includes(body.mode)) fail("Choose mode walkthrough or test");
   required(body.goal, "goal");

@@ -4,6 +4,6 @@
   "target": "https://tutti.sh/platform/",
   "selector": { "roles": ["owner"] },
   "constraints": ["Use the existing account. Do not send invitations to real users."],
-  "maxSteps": 12,
+  "maxSteps": 1000,
   "timeoutSeconds": 600
 }

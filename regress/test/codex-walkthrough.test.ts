@@ -64,6 +64,7 @@ test("走查提交完整目标与 Ego skill，不再传下一步动作 schema，
   assert.deepEqual(turn.params!.sandboxPolicy, { type: "dangerFullAccess" });
   assert.equal(turn.params!.input[1]!.type, "skill"); assert.equal(turn.params!.input[1]!.name, "ego-browser");
   assert.match(turn.params!.input[0]!.text, /Observe chat/); assert.match(turn.params!.input[0]!.text, /Read only/);
+  assert.match(turn.params!.input[0]!.text, /"operationBudget":1000/);
   assert.equal(turn.params!.outputSchema.properties.action, undefined);
   assert.ok(messages.some((v) => v.method === "thread/unsubscribe"));
 });

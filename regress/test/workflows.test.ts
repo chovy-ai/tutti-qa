@@ -66,10 +66,25 @@ async function finished(goals: GoalWorkflows, owner: string, id: string) {
 test("目标协议只接收目标/用途/约束，拒绝浏览器步骤和无界预算", () => {
   assert.throws(() => parseGoal({ mode: "test", goal: "x", steps: [] }));
   assert.throws(() => parseGoal({ mode: "other", goal: "x" }));
-  assert.throws(() => parseGoal({ mode: "test", goal: "x", maxSteps: 999 }));
+  assert.throws(() => parseGoal({ mode: "test", goal: "x", maxSteps: 1001 }));
   assert.throws(() => parseGoal({ mode: "test", goal: "x", accountId: "a", selector: {} }));
   assert.deepEqual(parseGoal({ mode: "walkthrough", goal: "Inspect a feature" }).selector, {});
   assert.throws(() => parseTestPlan({ actions: ["1", "2"], checks: [], blockedReason: "" }, 1));
+});
+
+test("两种工作流默认预算为 1000，接受边界并保留调用方的数据修改约束", () => {
+  for (const mode of ["walkthrough", "test"]) {
+    const defaults = parseGoal({ mode, goal: "Update a chat announcement" });
+    assert.equal(defaults.maxSteps, 1000);
+    assert.deepEqual(defaults.constraints, []);
+    assert.equal(defaults.timeoutSeconds, 600);
+    const constraints = ["Only modify the announcement in the specified room"];
+    const explicit = parseGoal({ mode, goal: defaults.goal, maxSteps: 1000, constraints });
+    assert.equal(explicit.maxSteps, 1000);
+    assert.deepEqual(explicit.constraints, constraints);
+    assert.equal(parseGoal({ mode, goal: defaults.goal, maxSteps: 1 }).maxSteps, 1);
+    for (const maxSteps of [0, -1, 1.5, 1001]) assert.throws(() => parseGoal({ mode, goal: defaults.goal, maxSteps }));
+  }
 });
 
 test("走查将整个目标交给同一执行会话，宿主只保存首尾状态与最终报告", async (t) => {
