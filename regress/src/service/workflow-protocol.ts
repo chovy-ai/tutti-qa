@@ -26,7 +26,7 @@ export function parseGoal(raw: unknown): GoalInput {
     ...(session.accountId ? { accountId: session.accountId } : { selector: session.selector ?? {} }),
     expectations: body.expectations === undefined ? [] : longStrings(body.expectations),
     constraints: body.constraints === undefined ? [] : longStrings(body.constraints),
-    maxSteps: integer(body.maxSteps, 12, 30, "maxSteps"),
+    maxSteps: integer(body.maxSteps, 1000, 1000, "maxSteps"),
     timeoutSeconds: integer(body.timeoutSeconds, 600, 3600, "timeoutSeconds")
   };
 }

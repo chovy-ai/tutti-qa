@@ -86,6 +86,17 @@ test("run submit only submits a high-level goal, returns accepted without openin
   assert.deepEqual(JSON.parse(calls[0].body), { mode: "test", goal: "Verify permissions", accountId: "existing-member" });
 });
 
+test("CLI accepts a 1000-step budget and preserves explicit data constraints", async () => {
+  for (const mode of ["walkthrough", "test"]) {
+    const body = await goalBody({ "max-steps": "1000", constraints: ["Only update the specified room"] }, mode, "Update an announcement");
+    assert.equal(body.maxSteps, 1000);
+    assert.deepEqual(body.constraints, ["Only update the specified room"]);
+    assert.equal((await goalBody({ "max-steps": "1" }, mode, "Observe")).maxSteps, 1);
+    for (const value of ["0", "-1", "1.5", "1001"]) await assert.rejects(goalBody({ "max-steps": value }, mode, "Observe"), (e) => e.code === "INVALID_ARGUMENT");
+    assert.equal((await goalBody({}, mode, "Update an announcement")).constraints, undefined);
+  }
+});
+
 test("waiting requires finishedAt, returns assertion failure as exit 1 and preserves evidence", async (t) => {
   const dir = await temp(t);
   let polls = 0;
