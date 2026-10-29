@@ -21,7 +21,7 @@ async function fixture(t: { after(fn: () => Promise<unknown>): void }, mode = "n
   const page = { spaceId: 23, account: { allowedOrigins: ["https://example.org"] }, validate(url: string) { checkUrl(url, config.allowedOrigins); } } as unknown as EgoPage;
   const agent = new CodexWalkthroughAgent(server, config, "run-1", controller.signal);
   t.after(async () => { controller.abort(new Error("Test finished")); await agent.close().catch(() => {}); await server.close(); await rm(dir, { recursive: true, force: true }); });
-  const messages = async () => (await readFile(log, "utf8")).trim().split("\n").map((line) => JSON.parse(line) as { id?: number; method?: string; params?: { developerInstructions: string; input: { type: string; name: string; text: string }[]; outputSchema: { properties: Record<string, unknown> } }; error?: unknown });
+  const messages = async () => (await readFile(log, "utf8")).trim().split("\n").map((line) => JSON.parse(line) as { id?: number; method?: string; params?: { sandbox: string; sandboxPolicy: { type: string }; approvalPolicy: string; developerInstructions: string; input: { type: string; name: string; text: string }[]; outputSchema: { properties: Record<string, unknown> } }; error?: unknown });
   return { dir, server, controller, page, agent, messages };
 }
 
@@ -56,8 +56,12 @@ test("走查提交完整目标与 Ego skill，不再传下一步动作 schema，
   await f.agent.close();
   const messages = await f.messages();
   const thread = messages.find((v) => v.method === "thread/start")!;
+  // Ego's macOS bootstrap requires host IPC access; neither request may restore the Codex sandbox.
+  assert.equal(thread.params!.sandbox, "danger-full-access");
+  assert.equal(thread.params!.approvalPolicy, "never");
   assert.match(thread.params!.developerInstructions, /TaskSpace 23/);
   const turn = messages.find((v) => v.method === "turn/start")!;
+  assert.deepEqual(turn.params!.sandboxPolicy, { type: "dangerFullAccess" });
   assert.equal(turn.params!.input[1]!.type, "skill"); assert.equal(turn.params!.input[1]!.name, "ego-browser");
   assert.match(turn.params!.input[0]!.text, /Observe chat/); assert.match(turn.params!.input[0]!.text, /Read only/);
   assert.equal(turn.params!.outputSchema.properties.action, undefined);
