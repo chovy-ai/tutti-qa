@@ -6,7 +6,7 @@ import { ClientError } from "./client.mjs";
 
 export const HELP = `tutti-qa — submit browser goals to workflows on the execution host
 
-Connection: --server URL (or BROWSER_TEST_SERVER), --token-file FILE (or BROWSER_TEST_TOKEN)
+Connection: --server URL (or BROWSER_TEST_SERVER); no authentication token required
 Node.js >=22; no local browser/model dependencies. Results are JSON.
 
   walkthrough "goal" [--target URL] [--account ID | --roles owner,member]
@@ -29,7 +29,7 @@ Use --help or --version offline. See README.md for installation and input contra
 
 export const OPTIONS = {
   help: { type: "boolean", short: "h" }, version: { type: "boolean" },
-  server: { type: "string" }, "token-file": { type: "string" },
+  server: { type: "string" },
   mode: { type: "string" }, goal: { type: "string" }, target: { type: "string" },
   expect: { type: "string", multiple: true }, constraints: { type: "string", multiple: true },
   account: { type: "string" }, roles: { type: "string" }, env: { type: "string" },
@@ -51,7 +51,7 @@ export function number(value, fallback, name, max = 86400) {
   return parsed;
 }
 function only(values, allowed) {
-  const global = ["help", "version", "server", "token-file", "http-timeout-seconds"];
+  const global = ["help", "version", "server", "http-timeout-seconds"];
   if (Object.keys(values).some((key) => !global.includes(key) && !allowed.includes(key))) fail("Option is not supported for this command");
 }
 const WAIT_OPTIONS = ["wait-seconds", "poll-ms", "out-dir"];

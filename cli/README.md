@@ -39,14 +39,14 @@ ssh -N -L 14318:127.0.0.1:4318 user@execution-host
 export BROWSER_TEST_SERVER=http://127.0.0.1:14318
 ```
 
-从执行机管理员获取自己的 Bearer token，通过 `BROWSER_TEST_TOKEN` 环境变量或 `--token-file /path/to/token` 提供。token 文件支持纯文本或主机的 `{"token":"..."}` 格式；显式文件优先于环境变量。没有把 token 放到命令行参数的选项。
+服务无需 token，所有请求使用同一个服务身份。可直接检查连接：
 
 ```bash
-tutti-qa --token-file ./browser-access.json capabilities
-tutti-qa --token-file ./browser-access.json accounts list
+tutti-qa capabilities
+tutti-qa accounts list
 ```
 
-`--server` 优先于 `BROWSER_TEST_SERVER`，默认 `http://127.0.0.1:4318`。不同调用方应配置不同 token；共用 token 就是同一个服务身份。目标 URL 从执行机访问，外部设备自己的 `localhost` 不是执行机的 `localhost`。
+`--server` 优先于 `BROWSER_TEST_SERVER`，默认 `http://127.0.0.1:4318`。调用方共享账号池、任务和产物；重试沿用原 request-id，独立操作使用不同 request-id。目标 URL 从执行机访问，外部设备自己的 `localhost` 不是执行机的 `localhost`。
 
 ## 按目标执行
 

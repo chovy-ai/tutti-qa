@@ -45,7 +45,7 @@ try {
   const modes = values.mode === "both" ? ["walkthrough", "test"] : [values.mode!];
   for (const mode of modes) {
     const cli = resolve("../cli/bin/tutti-qa.mjs");
-    const args = [cli, "--server", `http://127.0.0.1:${endpoint.port}`, "--token-file", config.tokenFile!, mode,
+    const args = [cli, "--server", `http://127.0.0.1:${endpoint.port}`, mode,
       "Click Show details, observe the expanded details panel, and capture screenshots of the initial and expanded states.",
       "--target", target, "--account", account.id, "--max-steps", "3", "--timeout-seconds", "480", "--wait-seconds", "550", "--poll-ms", "100", "--out-dir", join(root, "downloads", mode)];
     if (mode === "test") args.push("--expect", "The Details expanded heading and details panel are visible after clicking Show details.");

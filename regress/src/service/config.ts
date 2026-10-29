@@ -1,10 +1,9 @@
-import { randomBytes } from "node:crypto";
-import { chmod, mkdir, readFile, writeFile } from "node:fs/promises";
+import { chmod, mkdir, readFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { dirname, resolve } from "node:path";
 import { parseEnv } from "node:util";
 import { regressRoot } from "../core/config.ts";
-import { integer, strings, text, type Client } from "./protocol.ts";
+import { integer, strings, text } from "./protocol.ts";
 
 export interface ServiceConfig {
   host: string;
@@ -24,8 +23,6 @@ export interface ServiceConfig {
   maxTtlSeconds: number;
   maxJobSeconds: number;
   aiContext: string;
-  clients: Client[];
-  tokenFile?: string;
 }
 
 export async function loadConfig(file?: string, envFile?: string): Promise<ServiceConfig> {
@@ -53,8 +50,7 @@ export async function loadConfig(file?: string, envFile?: string): Promise<Servi
     defaultTtlSeconds: integer(raw.defaultTtlSeconds, 900, 86400, "defaultTtlSeconds"),
     maxTtlSeconds: integer(raw.maxTtlSeconds, 3600, 86400, "maxTtlSeconds"),
     maxJobSeconds: integer(raw.maxJobSeconds, 600, 3600, "maxJobSeconds"),
-    aiContext: raw.aiContext === undefined ? "You are testing a web application. Follow the requested steps and report only observed results." : text(raw.aiContext, "aiContext"),
-    clients: []
+    aiContext: raw.aiContext === undefined ? "You are testing a web application. Follow the requested steps and report only observed results." : text(raw.aiContext, "aiContext")
   };
   if (config.defaultTtlSeconds > config.maxTtlSeconds) throw new Error("defaultTtlSeconds exceeds maxTtlSeconds");
   if (!config.headless && config.maxConcurrentJobs > 1) throw new Error("Headed mode requires maxConcurrentJobs: 1 to avoid shared clipboard interference");
@@ -64,25 +60,6 @@ export async function loadConfig(file?: string, envFile?: string): Promise<Servi
   }
   await mkdir(config.stateDir, { recursive: true, mode: 0o700 });
   await chmod(config.stateDir, 0o700);
-  if (raw.clients !== undefined) {
-    if (!Array.isArray(raw.clients) || !raw.clients.length) throw new Error("clients must be nonempty");
-    config.clients = raw.clients.map((entry: Record<string, unknown>): Client => {
-      const id = text(entry.id, "client id", 255);
-      const token = process.env[text(entry.tokenEnv, "tokenEnv", 255)];
-      if (!token || token.length < 32) throw new Error("Each client token environment variable must contain at least 32 characters");
-      return { id, token, accountIds: entry.accountIds === undefined ? undefined : strings(entry.accountIds) };
-    });
-  } else {
-    config.tokenFile = resolve(config.stateDir, "access.json");
-    try {
-      await writeFile(config.tokenFile, JSON.stringify({ token: randomBytes(32).toString("hex") }) + "\n", { mode: 0o600, flag: "wx" });
-    } catch (error) { if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error; }
-    await chmod(config.tokenFile, 0o600);
-    const { token } = JSON.parse(await readFile(config.tokenFile, "utf8")) as { token: string };
-    if (typeof token !== "string" || token.length < 32) throw new Error("Invalid local access token file");
-    config.clients = [{ id: "local", token }];
-  }
-  if (new Set(config.clients.map((c) => c.id)).size !== config.clients.length || new Set(config.clients.map((c) => c.token)).size !== config.clients.length) throw new Error("Client ids and tokens must be unique");
   return config;
 }
 

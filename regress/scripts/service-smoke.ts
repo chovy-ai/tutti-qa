@@ -44,7 +44,7 @@ try {
   const base = `http://127.0.0.1:${endpoint.port}`;
   const call = async (path: string, method = "GET", body?: unknown, key?: string) => {
     const response = await fetch(base + path, {
-      method, headers: { authorization: `Bearer ${config.clients[0]!.token}`, "content-type": "application/json", ...(key ? { "idempotency-key": key } : {}) },
+      method, headers: { "content-type": "application/json", ...(key ? { "idempotency-key": key } : {}) },
       ...(body ? { body: JSON.stringify(body) } : {})
     });
     if (!response.ok) throw new Error(`API returned HTTP ${response.status}: ${await response.text()}`);

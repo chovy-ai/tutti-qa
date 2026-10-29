@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { parseArgs } from "node:util";
-import { BrowserClient, ClientError, readToken } from "../src/client.mjs";
+import { BrowserClient, ClientError } from "../src/client.mjs";
 import { executeCommand, HELP, OPTIONS, number } from "../src/commands.mjs";
 
 const controller = new AbortController();
@@ -18,7 +18,6 @@ try {
   } else {
     const client = new BrowserClient({
       server: args.values.server ?? process.env.BROWSER_TEST_SERVER,
-      token: await readToken(args.values["token-file"], process.env.BROWSER_TEST_TOKEN),
       timeoutMs: number(args.values["http-timeout-seconds"], 30, "--http-timeout-seconds", 3600) * 1000
     });
     const result = await executeCommand(client, args.positionals, args.values, { signal: controller.signal });

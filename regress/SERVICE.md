@@ -28,13 +28,13 @@ Codex 通过结构化输出给出受约束的单步决策，由主机的固定 e
 }
 ```
 
-`POST /v1/runs`（Bearer + Idempotency-Key）返回 202 和工作流句柄；`GET /v1/runs` 列出自己的任务，`GET /v1/runs/{id}` 查询进度，`POST /v1/runs/{id}/cancel`（请求体 `{}`）请求取消。截图/回放仍通过 `GET /v1/artifacts/{id}` 下载。轮询到 `finishedAt` 后读取最终状态、checks、observations、uncovered 与 cleanup；回收未确认不会报告成功。
+`POST /v1/runs`（Idempotency-Key）返回 202 和工作流句柄；`GET /v1/runs` 列出服务任务，`GET /v1/runs/{id}` 查询进度，`POST /v1/runs/{id}/cancel`（请求体 `{}`）请求取消。截图/回放仍通过 `GET /v1/artifacts/{id}` 下载。轮询到 `finishedAt` 后读取最终状态、checks、observations、uncovered 与 cleanup；回收未确认不会报告成功。
 
 工作流当前串行，账号租约自动续期，超时/取消后停止后续步骤并回收。状态/幂等缓存在内存，结果落在 `.service/workflows/`，重启不恢复句柄或重放任务。目标站点必须能从执行机访问，并满足主机和账号的 allowedOrigins。其他已运行的 profile 任务也会造成阻塞。
 
 以下会话/步骤 API 保留兼容，供内部工具和既有客户端使用：
 
-数据流：调用方 Bearer token → HTTP 校验与幂等 → 账号独占租约/会话 → 会话串行队列 → `BrowserProvider` → 独立 Chromium → Playwright 操作或 Midscene AI → 作业结果/产物。
+数据流：HTTP 参数校验与幂等 → 账号独占租约/会话 → 会话串行队列 → `BrowserProvider` → 独立 Chromium → Playwright 操作或 Midscene AI → 作业结果/产物。
 
 兼容会话接口使用 Playwright provider，读取主机保存的账号凭据并注入新的独立浏览器，不接管原有 profile/Space。上面的目标工作流通过同一个 `BrowserProvider` 边界接入 ego lite，复用原有 profile 的登录态。
 
@@ -53,18 +53,7 @@ pnpm service --config service.example.json --env-file /absolute/path/to/model.en
 
 默认监听 `127.0.0.1:4318`；默认账号目录为 `~/.tutti-qa/accounts.json`，session 目录为 `~/.tutti-qa/secrets`。启动只读取账号，不创建线上用户。状态和产物写入 `regress/.service/`，该目录不入库。
 
-首次启动自动生成 `.service/access.json`（0600），其中的 `token` 是默认调用方凭据。启动输出只给文件路径，不打印 token。给不同调用方配置独立身份：
-
-```json
-{
-  "clients": [
-    { "id": "ci", "tokenEnv": "CI_BROWSER_TOKEN", "accountIds": ["app-staging-owner"] },
-    { "id": "developer", "tokenEnv": "DEV_BROWSER_TOKEN" }
-  ]
-}
-```
-
-每个 token 至少 32 字符，由主机环境提供。`accountIds` 未设置表示可用全部账号，空数组表示无账号权限。会话、作业、产物按调用方隔离。此接口授权浏览器测试操作，不应向不可信用户分发 token。
+服务不使用 token 鉴权，不生成或读取 `access.json`，也不读取旧 `clients/tokenEnv` 配置。所有 HTTP 请求统一使用 `local` 身份，共享账号池、会话、任务和产物，不再按调用方隔离。旧凭据文件保留但不再使用。默认仍监听 `127.0.0.1`；能连接该服务的调用者都可执行测试操作。
 
 其他设备可以经 SSH 隧道访问：
 
@@ -90,7 +79,7 @@ ssh -N -L 4318:127.0.0.1:4318 user@execution-host
 
 ## 调用协议
 
-除 `/health` 外均需 `Authorization: Bearer <token>`。JSON 成功响应是 `{ "data": ... }`；错误响应是 `{ "error": { "code", "message" }, "requestId" }`。所有 POST 都需 `Content-Type: application/json` 和 `Idempotency-Key`（1–128 个非空 ASCII 可打印字符）。重试同一操作必须沿用同一个 key 和请求体；请求体变化返回 409。幂等范围为调用方 + 路由 + 当前服务生命周期，包括仍在执行中的请求；DELETE 关闭会话本身可重复调用。
+所有接口均无需 `Authorization` 请求头。JSON 成功响应是 `{ "data": ... }`；错误响应是 `{ "error": { "code", "message" }, "requestId" }`。所有 POST 都需 `Content-Type: application/json` 和 `Idempotency-Key`（1–128 个非空 ASCII 可打印字符）。重试同一操作必须沿用同一个 key 和请求体；请求体变化返回 409。幂等范围为路由 + 当前服务生命周期（所有调用方共享），包括仍在执行中的请求；DELETE 关闭会话本身可重复调用。
 
 | 方法/路径 | 能力 |
 |---|---|

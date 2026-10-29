@@ -1,4 +1,4 @@
-import { createHash, randomUUID, timingSafeEqual } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { missingModelEnv } from "../core/config.ts";
 import type { ServiceConfig } from "./config.ts";
@@ -13,6 +13,7 @@ interface Reply { status: number; data: unknown }
 
 /** 一次进程生命周期内，缓存包括正在执行的请求，防止并发重试重复创建资源。 */
 export function createHttpServer(service: BrowserService, config: ServiceConfig, workflows?: GoalWorkflows) {
+  const client: Client = { id: "local" };
   const requests = new Map<string, { hash: string; reply: Promise<Reply> }>();
   const server = createServer({ requestTimeout: 30_000, headersTimeout: 10_000 }, (req, res) => {
     void handle(req, res).catch((error: unknown) => {
@@ -26,7 +27,6 @@ export function createHttpServer(service: BrowserService, config: ServiceConfig,
     const url = new URL(req.url ?? "/", "http://localhost");
     const path = url.pathname;
     if (req.method === "GET" && path === "/health") { send(res, 200, { status: "ok" }); return; }
-    const client = authenticate(req, config.clients);
     if (req.method === "GET") {
       if (path === "/v1/openapi.json") { send(res, 200, OPENAPI); return; }
       if (path === "/v1/capabilities") {
@@ -116,14 +116,6 @@ export function createHttpServer(service: BrowserService, config: ServiceConfig,
     return workflows;
   }
   return server;
-}
-
-function authenticate(req: IncomingMessage, clients: readonly Client[]): Client {
-  const match = req.headers.authorization?.match(/^Bearer (.+)$/u);
-  const digest = createHash("sha256").update(match?.[1] ?? "").digest();
-  const client = clients.find((c) => timingSafeEqual(digest, createHash("sha256").update(c.token).digest()));
-  if (!match || !client) throw new ServiceError(401, "UNAUTHORIZED", "A valid bearer token is required");
-  return client;
 }
 
 async function readJson(req: IncomingMessage): Promise<unknown> {

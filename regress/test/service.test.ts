@@ -11,8 +11,8 @@ import { ServiceError, parseJob, parseSession, type Client, type StepResult } fr
 import type { BrowserProvider } from "../src/service/provider.ts";
 import { BrowserService } from "../src/service/service.ts";
 
-const alice: Client = { id: "alice", token: "a".repeat(40) };
-const bob: Client = { id: "bob", token: "b".repeat(40) };
+const alice: Client = { id: "alice" };
+const bob: Client = { id: "bob" };
 const sessionInput = { ttlSeconds: 30 };
 const snapshotJob = { steps: [{ type: "snapshot" as const }], timeoutSeconds: 5 };
 
@@ -21,7 +21,6 @@ async function fixture(t: { after: (fn: () => Promise<unknown>) => void }, provi
   const configFile = join(dir, "config.json");
   await writeFile(configFile, JSON.stringify({ stateDir: dir, accountsFile: join(dir, "accounts.json"), leaseDir: join(dir, "leases") }));
   const config = await loadConfig(configFile);
-  config.clients = [alice, bob];
   const service = new BrowserService(config, accounts, provider ?? {
     async open() { return { async execute(step) { return { type: step.type, pass: true, data: "observed" }; }, async close() {} }; }
   });
@@ -65,6 +64,19 @@ test("通用和旧账号目录：凭据延迟读取，敏感字段不进入归�
   assert.deepEqual(await accounts[1]!.loadState(), { cookies: [], origins: [] });
   await rm(join(dir, "secrets", "legacy.session"));
   await assert.rejects(accounts[0]!.loadState(), (e: ServiceError) => e.code === "ACCOUNT_AUTH_UNAVAILABLE" && !e.message.includes("private-cookie"));
+});
+
+test("启动无需 token 配置，不再生成或读取 access.json", async (t) => {
+  const { dir } = await fixture(t);
+  const path = join(dir, "access.json");
+  await assert.rejects(readFile(path), { code: "ENOENT" });
+  await writeFile(path, "obsolete invalid credentials");
+  const file = join(dir, "config.json");
+  await writeFile(file, JSON.stringify({ stateDir: dir, clients: [{ id: "old", tokenEnv: "UNCONFIGURED_LEGACY_TOKEN" }] }));
+  const config = await loadConfig(file);
+  assert.equal(Object.hasOwn(config, "clients"), false);
+  assert.equal(Object.hasOwn(config, "tokenFile"), false);
+  assert.equal(await readFile(path, "utf8"), "obsolete invalid credentials");
 });
 
 test("协议拒绝路径/脚本能力、未知字段和非法数量；来源策略精确匹配", () => {
@@ -174,40 +186,43 @@ test("超时先关闭浏览器；晚到结果不改写作业，账号随后可�
   assert.equal(service.listAccounts(alice)[0]?.status, "available");
 });
 
-test("HTTP 鉴权、并发幂等、不同请求体冲突、跨调用方隔离与产物权限", async (t) => {
+test("HTTP 无 token 共享身份，并发幂等、请求体冲突和产物读取保持有效", async (t) => {
   let opens = 0;
-  const { config, service } = await fixture(t, { async open() { opens++; await delay(10); return {
+  const { config, service, dir } = await fixture(t, { async open() { opens++; await delay(10); return {
     async execute(step) { return { type: step.type, pass: true, artifacts: [{ id: "test.png", contentType: "image/png" }] }; }, async close() {}
   }; } });
+  await mkdir(join(dir, "artifacts"));
+  await writeFile(join(dir, "artifacts/test.png"), new Uint8Array([1, 2, 3]));
   const server = createHttpServer(service, config);
   await new Promise<void>((ok) => server.listen(0, "127.0.0.1", ok));
   t.after(() => new Promise<void>((ok, fail) => { server.close((e) => e ? fail(e) : ok()); server.closeAllConnections(); }));
   const address = server.address(); assert.ok(address && typeof address !== "string");
   const url = `http://127.0.0.1:${address.port}`;
-  const call = (path: string, client = alice, method = "GET", body?: unknown, key?: string) => fetch(url + path, {
-    method, headers: { authorization: `Bearer ${client.token}`, "content-type": "application/json", ...(key ? { "idempotency-key": key } : {}) },
+  const call = (path: string, method = "GET", body?: unknown, key?: string) => fetch(url + path, {
+    method, headers: { "content-type": "application/json", ...(key ? { "idempotency-key": key } : {}) },
     ...(body === undefined ? {} : { body: JSON.stringify(body) })
   });
   assert.equal((await fetch(url + "/health")).status, 200);
-  assert.equal((await fetch(url + "/v1/accounts")).status, 401);
-  assert.equal((await call("/v1/sessions", alice, "POST", {})).status, 400);
-  const [a, b] = await Promise.all([call("/v1/sessions", alice, "POST", {}, "create-1"), call("/v1/sessions", alice, "POST", {}, "create-1")]);
+  assert.equal((await call("/v1/accounts")).status, 200);
+  assert.equal((await call("/v1/capabilities")).status, 200);
+  assert.equal((await call("/v1/sessions", "POST", {})).status, 400);
+  const [a, b] = await Promise.all([call("/v1/sessions", "POST", {}, "create-1"), call("/v1/sessions", "POST", {}, "create-1")]);
   assert.equal(a.status, 201); assert.equal(b.status, 201);
   const created = await a.json() as { data: { id: string } };
   assert.deepEqual(await b.json(), created); assert.equal(opens, 1);
-  assert.equal((await call("/v1/sessions", alice, "POST", { url: "https://example.org" }, "create-1")).status, 409);
-  assert.equal((await call(`/v1/sessions/${created.data.id}`, bob)).status, 404);
-  assert.equal((await call(`/v1/sessions/${created.data.id}`, bob, "DELETE")).status, 404);
-  const submission = await call(`/v1/sessions/${created.data.id}/jobs`, alice, "POST", snapshotJob, "job-1");
+  assert.equal((await call("/v1/sessions", "POST", { url: "https://example.org" }, "create-1")).status, 409);
+  assert.equal((await fetch(url + `/v1/sessions/${created.data.id}`, { headers: { authorization: "Bearer obsolete" } })).status, 200);
+  const submission = await call(`/v1/sessions/${created.data.id}/jobs`, "POST", snapshotJob, "job-1");
   assert.equal(submission.status, 202);
   const job = (await submission.json() as { data: { id: string } }).data;
-  await finished(service, alice.id, job.id);
-  assert.equal((await call(`/v1/jobs/${job.id}`, bob)).status, 404);
-  assert.equal((await call("/v1/artifacts/test.png", bob)).status, 404);
-  assert.throws(() => service.artifact(bob.id, "test.png"));
-  assert.equal(service.artifact(alice.id, "test.png").contentType, "image/png");
-  assert.equal((await call("/v1/openapi.json")).status, 200);
-  assert.equal((await call(`/v1/sessions/${created.data.id}`, alice, "DELETE")).status, 200);
+  await finished(service, "local", job.id);
+  assert.equal((await call(`/v1/jobs/${job.id}`)).status, 200);
+  const artifact = await call("/v1/artifacts/test.png");
+  assert.equal(artifact.status, 200);
+  assert.equal((await artifact.arrayBuffer()).byteLength, 3);
+  const spec = await (await call("/v1/openapi.json")).json() as Record<string, unknown>;
+  assert.equal(Object.hasOwn(spec, "security"), false);
+  assert.equal((await call(`/v1/sessions/${created.data.id}`, "DELETE")).status, 200);
 });
 
 test("排队取消不执行；运行中取消销毁会话并取消其余作业", async (t) => {

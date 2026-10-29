@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 import { mkdtemp, mkdir, writeFile, rm, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -15,8 +17,8 @@ import { parseGoal, parseTestPlan } from "../src/service/workflow-protocol.ts";
 import { parseDecision, type TestAgent, type WalkthroughAgent } from "../src/service/workflow-agents.ts";
 import { GoalWorkflows } from "../src/service/workflows.ts";
 
-const alice: Client = { id: "alice", token: "a".repeat(40) };
-const bob: Client = { id: "bob", token: "b".repeat(40) };
+const alice: Client = { id: "alice" };
+const bob: Client = { id: "bob" };
 const input = (mode: "walkthrough" | "test" = "test") => parseGoal({ mode, goal: "Check an observable feature", expectations: ["Expected outcome"] });
 const decision = (action = "done") => parseDecision({ action, selector: "#show", value: "", url: "", x: 0, y: 0, summary: "Observed the requested feature", uncovered: [] });
 
@@ -24,7 +26,6 @@ async function fixture(t: { after: (fn: () => Promise<unknown>) => void }, optio
   const dir = await mkdtemp(join(tmpdir(), "goal-workflow-test-"));
   await writeFile(join(dir, "config.json"), JSON.stringify({ stateDir: dir, accountsFile: join(dir, "accounts.json"), leaseDir: join(dir, "leases") }));
   const config = await loadConfig(join(dir, "config.json"));
-  config.clients = [alice, bob];
   const accounts: Account[] = ["one", "two"].map((id) => ({ id, resourceKey: id, roles: ["owner"], env: "test", capabilities: [], tags: [], ego: { profile: id }, async loadState() { throw new Error("Workflow must reuse ego login, not create an identity"); } }));
   const actions: unknown[] = [];
   const pages = new Map<string, EgoPage>();
@@ -203,20 +204,31 @@ test("清理不确定时，测试通过也转为 blocked 并保持账号占用",
   assert.equal(f.browsers.listAccounts(alice)[0]?.status, "busy");
 });
 
-test("HTTP 目标入口保留幂等与调用方隔离，既有步骤协议仍可用", async (t) => {
+test("HTTP 目标入口无 token 可提交、查询和下载，保留幂等冲突检查", async (t) => {
   const f = await fixture(t);
   const server = createHttpServer(f.browsers, f.config, f.goals);
   await new Promise<void>((ok, fail) => { server.once("error", fail); server.listen(0, "127.0.0.1", ok); });
   t.after(() => new Promise<void>((ok) => { server.close(() => ok()); server.closeAllConnections(); }));
   const address = server.address(); assert.ok(address && typeof address !== "string");
   const base = `http://127.0.0.1:${address.port}`;
-  const call = (path: string, client = alice, method = "GET", body?: unknown) => fetch(base + path, { method, headers: { authorization: `Bearer ${client.token}`, "content-type": "application/json", "idempotency-key": "same-goal" }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
-  const [a, b] = await Promise.all([call("/v1/runs", alice, "POST", input()), call("/v1/runs", alice, "POST", input())]);
+  const call = (path: string, method = "GET", body?: unknown) => fetch(base + path, { method, headers: { "content-type": "application/json", "idempotency-key": "same-goal" }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
+  const [a, b] = await Promise.all([call("/v1/runs", "POST", input()), call("/v1/runs", "POST", input())]);
   assert.equal(a.status, 202); assert.equal(b.status, 202);
   const created = await a.json() as { data: { id: string } }; assert.deepEqual(await b.json(), created);
-  const result = await finished(f.goals, alice.id, created.data.id);
-  assert.equal((await call(`/v1/runs/${result.id}`, bob)).status, 404);
-  assert.equal((await call(`/v1/artifacts/${result.artifacts[0]!.id}`, bob)).status, 404);
+  const result = await finished(f.goals, "local", created.data.id);
+  assert.equal((await call(`/v1/runs/${result.id}`)).status, 200);
+  assert.equal((await call("/v1/runs")).status, 200);
   const artifact = await call(`/v1/artifacts/${result.artifacts[0]!.id}`); assert.equal(artifact.status, 200); assert.equal((await artifact.arrayBuffer()).byteLength, 3);
-  assert.equal((await call("/v1/runs", alice, "POST", { ...input(), goal: "Different" })).status, 409);
+  const cli = new URL("../../cli/bin/tutti-qa.mjs", import.meta.url).pathname;
+  const execute = promisify(execFile);
+  const env = { ...process.env, BROWSER_TEST_TOKEN: "", TUTTI_QA_TOKEN_FILE: "" };
+  const invoke = (...args: string[]) => execute(process.execPath, [cli, "--server", base, ...args], { env });
+  const capabilities = JSON.parse((await invoke("capabilities")).stdout) as { data: { version: string } };
+  assert.equal(capabilities.data.version, "1.1.0");
+  const queried = JSON.parse((await invoke("run", "get", result.id)).stdout) as { data: { id: string } };
+  assert.equal(queried.data.id, result.id);
+  const output = join(f.dir, "download.png");
+  await invoke("artifact", "get", result.artifacts[0]!.id, "--out", output);
+  assert.equal((await readFile(output)).length, 3);
+  assert.equal((await call("/v1/runs", "POST", { ...input(), goal: "Different" })).status, 409);
 });
