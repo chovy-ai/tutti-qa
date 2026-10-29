@@ -5,7 +5,9 @@ import type { ServiceConfig } from "./config.ts";
 import type { EgoPage } from "./ego.ts";
 import { ServiceError, type Artifact, type Client } from "./protocol.ts";
 import { BrowserService, type SessionRecord } from "./service.ts";
-import { CodexWalkthroughAgent, createTestAgent, decisionAction, type TestAgent, type WalkthroughAgent } from "./workflow-agents.ts";
+import { createTestAgent, type TestAgent } from "./workflow-agents.ts";
+import { CodexAppServer } from "./codex-app-server.ts";
+import { CodexWalkthroughAgent, type WalkthroughAgent } from "./codex-walkthrough.ts";
 import type { GoalInput } from "./workflow-protocol.ts";
 
 export interface GoalRun {
@@ -45,6 +47,7 @@ export class GoalWorkflows {
   private queue: Run[] = [];
   private active: Promise<void> | undefined;
   private stopping = false;
+  private codex = new CodexAppServer();
   constructor(config: ServiceConfig, deps: Dependencies) { this.config = config; this.deps = deps; }
 
   submit(client: Client, input: GoalInput): GoalRun {
@@ -87,7 +90,9 @@ export class GoalWorkflows {
     this.stopping = true;
     await Promise.all([...this.runs.values()].filter((r) => !r.record.finishedAt).map((r) => this.cancel(r.client.id, r.record.id)));
     await this.active;
-    return this.deps.browsers.shutdown();
+    const clean = await this.deps.browsers.shutdown();
+    await this.codex.close();
+    return clean;
   }
   private owned(owner: string, id: string): Run {
     const run = this.runs.get(id);
@@ -153,30 +158,23 @@ export class GoalWorkflows {
       const shot = async () => { ensure(); const artifact = await page.screenshot(`${r.id}-${r.artifacts.length + 1}`); ensure(); r.artifacts.push(artifact); return resolve(this.config.stateDir, "artifacts", artifact.id); };
       let observation = await page.observe(); ensure();
       r.observations.push({ step: 0, summary: "Initial page", url: observation.url, title: observation.title });
-      let screenshotPath = await shot();
+      await shot();
       r.phase = "planning";
       if (run.input.mode === "walkthrough") {
-        const walker = this.deps.walkthrough?.(resolve(this.config.stateDir, "workflows", r.id), run.input, signal) ?? new CodexWalkthroughAgent(resolve(this.config.stateDir, "workflows", r.id), run.input, signal);
+        const walker = this.deps.walkthrough?.(resolve(this.config.stateDir, "workflows", r.id), run.input, signal)
+          ?? new CodexWalkthroughAgent(this.codex, this.config, r.id, signal);
         agent = walker;
-        const history: string[] = [];
-        for (let n = 0; n <= run.input.maxSteps; n++) {
-          ensure();
-          const decision = await walker.decide(observation, screenshotPath, history); ensure();
-          if (decision.action === "blocked" || decision.action === "done") {
-            r.uncovered = decision.uncovered;
-            r.status = decision.action === "done" && !decision.uncovered.length ? "completed" : "blocked";
-            r.summary = decision.summary;
-            return;
-          }
-          if (n === run.input.maxSteps) break;
-          r.phase = "executing";
-          await page.action(decisionAction(decision)); ensure();
-          observation = await page.observe(); ensure();
-          screenshotPath = await shot();
-          history.push(decision.summary);
-          r.observations.push({ step: n + 1, summary: decision.summary, url: observation.url, title: observation.title });
-        }
-        throw new ServiceError(409, "ACTION_BUDGET", "Walkthrough did not finish within its step budget");
+        const result = await walker.run(page, run.input, () => { if (!signal.aborted) r.phase = "executing"; });
+        ensure();
+        r.artifacts.push(...result.artifacts);
+        for (const observation of result.observations) r.observations.push({ step: r.observations.length, ...observation });
+        const final = await page.observe(); ensure();
+        await shot();
+        r.observations.push({ step: r.observations.length, summary: "Final page", url: final.url, title: final.title });
+        r.status = result.status === "completed" && result.uncovered.length ? "blocked" : result.status;
+        r.summary = result.summary;
+        r.uncovered = result.uncovered;
+        return;
       }
       const tester = await (this.deps.test ?? createTestAgent)(page, this.config, r.id, run.input);
       if (signal.aborted) { await tester.close(); ensure(); }
@@ -234,7 +232,13 @@ export class GoalWorkflows {
           Promise.resolve(agent?.close()).then(() => true, () => false),
           new Promise<boolean>((ok) => { stopTimer = setTimeout(() => ok(false), 10_000).unref(); })
         ]);
-        if (!stopped) r.uncovered.push("Agent shutdown could not be confirmed; late browser actions are rejected");
+        if (!stopped) {
+          if (run.input.mode === "walkthrough") {
+            r.uncovered.push("Agent shutdown could not be confirmed");
+            if (["completed"].includes(r.status)) r.status = "blocked";
+            r.error = { code: "AGENT_SHUTDOWN_UNCONFIRMED", message: "Agent shutdown could not be confirmed" };
+          } else r.uncovered.push("Agent shutdown could not be confirmed; late browser actions are rejected");
+        }
       } finally { clearTimeout(stopTimer); }
       if (!terminal.has(r.status)) r.status = "blocked";
       r.phase = "finished"; r.finishedAt = new Date().toISOString();

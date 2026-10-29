@@ -14,13 +14,14 @@ import { ServiceError, type Client } from "../src/service/protocol.ts";
 import type { BrowserProvider } from "../src/service/provider.ts";
 import { BrowserService } from "../src/service/service.ts";
 import { parseGoal, parseTestPlan } from "../src/service/workflow-protocol.ts";
-import { parseDecision, type TestAgent, type WalkthroughAgent } from "../src/service/workflow-agents.ts";
+import type { TestAgent } from "../src/service/workflow-agents.ts";
+import type { WalkthroughAgent, WalkthroughResult } from "../src/service/codex-walkthrough.ts";
 import { GoalWorkflows } from "../src/service/workflows.ts";
 
 const alice: Client = { id: "alice" };
 const bob: Client = { id: "bob" };
 const input = (mode: "walkthrough" | "test" = "test") => parseGoal({ mode, goal: "Check an observable feature", expectations: ["Expected outcome"] });
-const decision = (action = "done") => parseDecision({ action, selector: "#show", value: "", url: "", x: 0, y: 0, summary: "Observed the requested feature", uncovered: [] });
+const walkthroughResult = (): WalkthroughResult => ({ status: "completed", summary: "Observed the requested feature", uncovered: [], observations: [{ summary: "Feature observed", url: "https://example.org", title: "Fixture" }], artifacts: [] });
 
 async function fixture(t: { after: (fn: () => Promise<unknown>) => void }, options: { test?: (page: EgoPage, ...args: unknown[]) => Promise<TestAgent>; walkthrough?: () => WalkthroughAgent; close?: () => Promise<void>; open?: (id: string, account?: Account) => Promise<void> } = {}) {
   const dir = await mkdtemp(join(tmpdir(), "goal-workflow-test-"));
@@ -34,6 +35,8 @@ async function fixture(t: { after: (fn: () => Promise<unknown>) => void }, optio
     await options.open?.(id, account);
     const page = {
       budget() {},
+      spaceId: 7, account,
+      validate() {},
       async observe() { return { url: "https://example.org", title: "Fixture", snapshot: "@1 button Show details" }; },
       async action(action: unknown) { actions.push(action); },
       async screenshot(name: string) {
@@ -48,7 +51,7 @@ async function fixture(t: { after: (fn: () => Promise<unknown>) => void }, optio
   const browsers = new BrowserService(config, accounts, provider);
   const goals = new GoalWorkflows(config, {
     browsers, pages: { page(id) { return pages.get(id)!; } },
-    walkthrough: options.walkthrough ?? (() => ({ async decide() { return decision(); }, async close() {} })),
+    walkthrough: options.walkthrough ?? (() => ({ async run() { return walkthroughResult(); }, async close() {} })),
     test: options.test ?? (async () => ({ async plan() { return { actions: [{ type: "act", instruction: "Open the feature" }], checks: ["Derived result"], blockedReason: "" }; }, async act(instruction) { actions.push(instruction); }, async assert() { return { pass: true, detail: "Observed" }; }, async artifacts() { return []; }, async close() {} }))
   });
   t.after(async () => { await goals.shutdown(); await rm(dir, { recursive: true, force: true }); });
@@ -67,17 +70,43 @@ test("目标协议只接收目标/用途/约束，拒绝浏览器步骤和无界
   assert.throws(() => parseGoal({ mode: "test", goal: "x", accountId: "a", selector: {} }));
   assert.deepEqual(parseGoal({ mode: "walkthrough", goal: "Inspect a feature" }).selector, {});
   assert.throws(() => parseTestPlan({ actions: ["1", "2"], checks: [], blockedReason: "" }, 1));
-  assert.throws(() => parseDecision({ ...decision(), action: "shell" }));
 });
 
-test("走查使用 Codex 决策和 ego 页面，返回 completed 而非测试 passed", async (t) => {
+test("走查将整个目标交给同一执行会话，宿主只保存首尾状态与最终报告", async (t) => {
   let calls = 0;
-  const f = await fixture(t, { walkthrough: () => ({ async decide() { return ++calls === 1 ? decision("click") : decision(); }, async close() {} }), test: async () => { throw new Error("Wrong engine"); } });
+  const f = await fixture(t, { walkthrough: () => ({ async run(page, goal, progress) {
+    calls++; assert.equal(page.spaceId, 7); assert.equal(goal.goal, input("walkthrough").goal);
+    progress(); return walkthroughResult();
+  }, async close() {} }), test: async () => { throw new Error("Wrong engine"); } });
   const run = f.goals.submit(alice, input("walkthrough"));
   const result = await finished(f.goals, alice.id, run.id);
   assert.equal(result.agent, "codex"); assert.equal(result.browser, "ego-lite"); assert.equal(result.status, "completed");
-  assert.equal(result.artifacts.length, 2); assert.equal(result.observations.length, 2); assert.deepEqual(result.checks, []);
-  assert.equal(f.closed(), 1); assert.equal(f.actions.length, 1); assert.equal(result.cleanup?.status, "closed");
+  assert.equal(calls, 1); assert.equal(f.actions.length, 0);
+  assert.equal(result.artifacts.length, 2); assert.equal(result.observations.length, 3); assert.deepEqual(result.checks, []);
+  assert.equal(f.closed(), 1); assert.equal(result.cleanup?.status, "closed");
+});
+
+test("走查取消先回收浏览器，晚到的原生执行结果不能把 cancelled 改为 completed", async (t) => {
+  let entered: () => void = () => {};
+  let release: (value: WalkthroughResult) => void = () => {};
+  const started = new Promise<void>((resolve) => { entered = resolve; });
+  const f = await fixture(t, { walkthrough: () => ({
+    run: () => new Promise<WalkthroughResult>((resolve) => { release = resolve; entered(); }),
+    async close() { assert.equal(f.closed(), 1); }
+  }) });
+  const run = f.goals.submit(alice, input("walkthrough")); await started;
+  await f.goals.cancel(alice.id, run.id);
+  const result = await finished(f.goals, alice.id, run.id);
+  assert.equal(result.status, "cancelled"); assert.equal(result.cleanup?.status, "closed");
+  release(walkthroughResult()); await delay(20);
+  assert.deepEqual(f.goals.get(alice.id, run.id), result);
+});
+
+test("走查 Agent 关闭未确认时，不报告 completed", async (t) => {
+  const f = await fixture(t, { walkthrough: () => ({ async run() { return walkthroughResult(); }, async close() { throw new Error("Still running"); } }) });
+  const run = f.goals.submit(alice, input("walkthrough"));
+  const result = await finished(f.goals, alice.id, run.id);
+  assert.equal(result.status, "blocked"); assert.equal(result.error?.code, "AGENT_SHUTDOWN_UNCONFIRMED");
 });
 
 test("测试执行和验证由 Midscene 完成，调用方给出的预期不会被模型改写", async (t) => {

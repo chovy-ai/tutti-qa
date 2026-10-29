@@ -6,14 +6,20 @@ HTTP JSON API 是稳定入口，OpenAPI 3.1 契约可从 `GET /v1/openapi.json` 
 
 | mode | 内部执行 | 判定 |
 |---|---|---|
-| `walkthrough` | Codex + ego lite，按页面观测逐步走查、截图 | `completed` / `blocked`，不声称测试通过 |
+| `walkthrough` | Codex app-server 持续会话 + ego-browser 原生工具，自主走查、截图 | `completed` / `blocked`，不声称测试通过 |
 | `test` | Midscene + ego lite，先规划动作与检查点，再执行并断言 | `passed` / `failed` / `blocked` |
 
 两条路径都使用 `~/.tutti-qa/accounts.json` 原账号池的 `profile/space` 信息，不创建用户、不注入另一套身份。主机会在现有 profile 中创建工作流专属 Space，保留原有用户标签页，完成后关闭本次 Space；人工接管或其他任务控制同一 profile 时不抢占。账号锁沿用同一个 leaseDir，和下述兼容会话接口互斥。
 
-Codex 通过结构化输出给出受约束的单步决策，由主机的固定 ego 适配器执行，不执行模型生成的脚本。实现参考 [OpenAI 官方非交互模式](https://developers.openai.com/codex/noninteractive/)。Midscene 使用公开的自定义设备接口，把视觉操作映射到 ego lite 的截图与键鼠 API，不为目标工作流启动 Playwright Chromium。
+走查服务按需启动一个常驻 `codex app-server`（stdio JSON-RPC），每个任务创建独立的临时 thread。模型沿用旧走查忽略全局模型配置的行为，从 app-server 的 `model/list` 选择其标记的默认模型，并记录在任务的 `codex-session.json`，不修改全局 Codex 配置。主机把完整目标、约束、预算、已分配的 Ego TaskSpace 和 `ego-browser` skill 交给同一 thread，由 Codex 在 turn 内连续调用原生 Ego 工具完成观察、等待、刷新和页面操作，不再要求输出逐步 `Decision` 或由主机翻译动作。后续 turn 可在同一 thread 保留工具上下文；当前 HTTP 工作流仍是一项输入对应一次完整走查，不新增聊天接口。接入协议参考 [OpenAI app-server 文档](https://developers.openai.com/codex/app-server/)。
 
-执行机需安装并运行 ego lite/ego-browser；walkthrough 还需已登录的 Codex CLI，test 需现有 Midscene 模型配置。缺少依赖、登录、前置状态或可观察的验收条件时返回 blocked。未提供 expectations 时，测试可推导检查点并标明 `source: inferred`；调用方给出的 expectations 不会被推导结果替换。
+主机仅收集最终结构化走查报告，检查截图是本任务目录中的 PNG 后导入标准产物目录，并另行记录首尾页面截图。`completed` 必须有观测与截图且无未覆盖项；缺失或无效证据、需要人工交互、模型会话失败均返回 blocked。取消时向活动 turn 发送 `turn/interrupt`，关闭本次 Space，并确认 Agent 结束后再结束任务。服务关闭时同时停止 app-server。
+
+`maxSteps` 在原生走查中作为提示词中的浏览器操作预算，由 Codex 遵守；主机不再计数、拦截每个原生动作，不能将它视为逐动作硬上限。`timeoutSeconds` 仍由主机强制执行。`allowedOrigins` 对初始导航、报告中的 URL 及最终页面做代码校验，并传给 Codex 约束中间操作；原生 Ego 调用期间的每次导航不再经过旧适配器的逐动作检查。若部署需要对所有中途导航做强制网络隔离，应在原生浏览器或网络层实施。
+
+Midscene 测试路径继续使用公开的自定义设备接口，把视觉操作映射到 ego lite 的截图与键鼠 API，不为目标工作流启动 Playwright Chromium。
+
+执行机需安装并运行 ego lite/ego-browser；walkthrough 还需支持 app-server 的已登录 Codex CLI，以及已启用的 ego-browser skill，test 需现有 Midscene 模型配置。缺少依赖、登录、前置状态或可观察的验收条件时返回 blocked。未提供 expectations 时，测试可推导检查点并标明 `source: inferred`；调用方给出的 expectations 不会被推导结果替换。
 
 ```json
 {
@@ -30,13 +36,22 @@ Codex 通过结构化输出给出受约束的单步决策，由主机的固定 e
 
 `POST /v1/runs`（Idempotency-Key）返回 202 和工作流句柄；`GET /v1/runs` 列出服务任务，`GET /v1/runs/{id}` 查询进度，`POST /v1/runs/{id}/cancel`（请求体 `{}`）请求取消。截图/回放仍通过 `GET /v1/artifacts/{id}` 下载。轮询到 `finishedAt` 后读取最终状态、checks、observations、uncovered 与 cleanup；回收未确认不会报告成功。
 
-工作流当前串行，账号租约自动续期，超时/取消后停止后续步骤并回收。状态/幂等缓存在内存，结果落在 `.service/workflows/`，重启不恢复句柄或重放任务。目标站点必须能从执行机访问，并满足主机和账号的 allowedOrigins。其他已运行的 profile 任务也会造成阻塞。
+工作流当前串行，账号租约自动续期，超时/取消后停止后续步骤并回收。状态/幂等缓存在内存，结果落在 `.service/workflows/`，重启不恢复句柄或重放任务。目标站点必须能从执行机访问；原生走查的域名约束与校验范围见上文。其他已运行的 profile 任务也会造成阻塞。
 
 以下会话/步骤 API 保留兼容，供内部工具和既有客户端使用：
 
 数据流：HTTP 参数校验与幂等 → 账号独占租约/会话 → 会话串行队列 → `BrowserProvider` → 独立 Chromium → Playwright 操作或 Midscene AI → 作业结果/产物。
 
 兼容会话接口使用 Playwright provider，读取主机保存的账号凭据并注入新的独立浏览器，不接管原有 profile/Space。上面的目标工作流通过同一个 `BrowserProvider` 边界接入 ego lite，复用原有 profile 的登录态。
+
+## 会话接入验证
+
+```bash
+cd regress
+node scripts/codex-session-smoke.ts
+```
+
+这项真实 app-server 检查会调用已安装的 `ego-browser skill` 读取版本，再在同一 thread 的第二个 turn 回忆前一轮信息，验证原生工具调用与上下文保持。它不打开浏览器，也不操作业务页面。完整浏览器链路继续使用 `scripts/workflow-smoke.ts`。
 
 ## 启动
 
