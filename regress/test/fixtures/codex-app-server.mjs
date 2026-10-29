@@ -9,6 +9,7 @@ let initialized = false;
 let count = 0;
 const turns = new Map();
 const histories = new Map();
+const workdirs = new Map();
 const lines = createInterface({ input: process.stdin });
 let pending = Promise.resolve();
 lines.on("line", (line) => { pending = pending.then(() => receive(line)); });
@@ -26,6 +27,7 @@ async function receive(line) {
   if (method === "model/list") { response(id, { data: [{ model: "host-default-model", isDefault: true }] }); return; }
   if (method === "thread/start") {
     const threadId = `thread-${++count}`; histories.set(threadId, 0);
+    workdirs.set(threadId, params.cwd);
     response(id, { thread: { id: threadId } }); return;
   }
   if (method === "thread/unsubscribe") { response(id, { status: "unsubscribed" }); return; }
@@ -53,7 +55,7 @@ async function receive(line) {
   }
   let report = { answer: "Native tool work completed", round };
   if (params.outputSchema?.properties?.status) {
-    const screenshots = join(params.sandboxPolicy.writableRoots[0], "screenshots");
+    const screenshots = join(params.cwd ?? workdirs.get(threadId), "screenshots");
     await mkdir(screenshots, { recursive: true });
     if (mode === "parent-symlink") {
       const outside = join(screenshots, "..", "outside"); await mkdir(outside);

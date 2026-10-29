@@ -20,7 +20,7 @@ try {
   const model = (models.data as { model: string; isDefault: boolean }[]).find((model) => model.isDefault)?.model;
   assert.ok(model, "Codex must advertise a default model");
   const started = await server.request("thread/start", {
-    cwd: dir, model, ephemeral: true, sandbox: "read-only", approvalPolicy: "never",
+    cwd: dir, model, ephemeral: true, sandbox: "danger-full-access", approvalPolicy: "never",
     developerInstructions: "This is a metadata-only integration smoke. Run ego-browser skill to read the installed guide. Do not create, inspect or operate any browser spaces or webpages, read credentials, or change configuration."
   });
   threadId = (started.thread as { id: string }).id;
@@ -32,7 +32,7 @@ try {
       { type: "text", text: `$ego-browser Remember marker ${marker}. Run ego-browser skill once using the shell tool. Return the marker and installed guide version. Do not run ego-browser nodejs, access a page or open a browser.` },
       { type: "skill", name: skill.name, path: skill.path }
     ],
-    sandboxPolicy: { type: "workspaceWrite", writableRoots: [dir], networkAccess: true }, outputSchema
+    sandboxPolicy: { type: "dangerFullAccess" }, outputSchema
   }, controller.signal, () => { events++; });
   const initial = JSON.parse(first.text) as { marker: string; guideVersion: string };
   assert.equal(initial.marker, marker); assert.ok(initial.guideVersion);

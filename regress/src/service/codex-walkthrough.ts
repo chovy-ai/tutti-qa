@@ -96,8 +96,9 @@ export class CodexWalkthroughAgent implements WalkthroughAgent {
       "Your final JSON is a walkthrough report, not a next-action instruction. completed means the requested walkthrough was observed and captured; it never means a test passed.",
       "Include the actual URL, title, observation and a screenshot filename for each recorded state. If anything remains unobserved, return blocked and list it in uncovered."
     ].join("\n");
+    // Ego connects through macOS host IPC, which the Codex sandbox blocks even with network access.
     const started = await this.server.request("thread/start", {
-      cwd: this.dir, model, ephemeral: true, sandbox: "read-only", approvalPolicy: "never", developerInstructions: instructions,
+      cwd: this.dir, model, ephemeral: true, sandbox: "danger-full-access", approvalPolicy: "never", developerInstructions: instructions,
       config: { project_doc_max_bytes: 0, web_search: "disabled" }
     });
     const thread = started.thread as { id?: string } | undefined;
@@ -110,7 +111,7 @@ export class CodexWalkthroughAgent implements WalkthroughAgent {
         { type: "text", text: "$ego-browser Complete this walkthrough using the assigned browser session.\n" + JSON.stringify({ goal: input.goal, target: input.target, constraints: input.constraints, expectations: input.expectations, operationBudget: input.maxSteps, timeoutSeconds: input.timeoutSeconds }) },
         { type: "skill", name: skill.name, path: skill.path }
       ],
-      sandboxPolicy: { type: "workspaceWrite", writableRoots: [this.dir], networkAccess: true },
+      sandboxPolicy: { type: "dangerFullAccess" },
       outputSchema: REPORT_SCHEMA
     }, this.signal, onProgress).catch(async (error: unknown) => {
       if (error instanceof Error && error.cause) {

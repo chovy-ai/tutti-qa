@@ -11,6 +11,8 @@ HTTP JSON API 是稳定入口，OpenAPI 3.1 契约可从 `GET /v1/openapi.json` 
 
 两条路径都使用 `~/.tutti-qa/accounts.json` 原账号池的 `profile/space` 信息，不创建用户、不注入另一套身份。主机会在现有 profile 中创建工作流专属 Space，保留原有用户标签页，完成后关闭本次 Space；人工接管或其他任务控制同一 profile 时不抢占。账号锁沿用同一个 leaseDir，和下述兼容会话接口互斥。
 
+走查的 Codex thread 使用 `sandbox: "danger-full-access"`，turn 使用 `sandboxPolicy: { type: "dangerFullAccess" }`。macOS 上 Ego CLI 需要连接本机 Mach IPC 服务，`workspaceWrite` 沙箱即使开启网络也会阻止该连接；因此走查不启用 Codex 命令执行沙箱。工具拥有执行服务当前用户的文件、网络及本机 IPC 权限，任务目录和仅运行 Ego 的提示词不是操作系统隔离。此配置仅作用于走查会话，不修改全局 Codex 配置，也不授予 root 或绕过 macOS 系统授权。`approvalPolicy: "never"` 仅控制交互审批；需要人工登录、CAPTCHA 或 2FA 时仍返回 blocked。
+
 走查服务按需启动一个常驻 `codex app-server`（stdio JSON-RPC），每个任务创建独立的临时 thread。模型沿用旧走查忽略全局模型配置的行为，从 app-server 的 `model/list` 选择其标记的默认模型，并记录在任务的 `codex-session.json`，不修改全局 Codex 配置。主机把完整目标、约束、预算、已分配的 Ego TaskSpace 和 `ego-browser` skill 交给同一 thread，由 Codex 在 turn 内连续调用原生 Ego 工具完成观察、等待、刷新和页面操作，不再要求输出逐步 `Decision` 或由主机翻译动作。后续 turn 可在同一 thread 保留工具上下文；当前 HTTP 工作流仍是一项输入对应一次完整走查，不新增聊天接口。接入协议参考 [OpenAI app-server 文档](https://developers.openai.com/codex/app-server/)。
 
 主机仅收集最终结构化走查报告，检查截图是本任务目录中的 PNG 后导入标准产物目录，并另行记录首尾页面截图。`completed` 必须有观测与截图且无未覆盖项；缺失或无效证据、需要人工交互、模型会话失败均返回 blocked。取消时向活动 turn 发送 `turn/interrupt`，关闭本次 Space，并确认 Agent 结束后再结束任务。服务关闭时同时停止 app-server。
