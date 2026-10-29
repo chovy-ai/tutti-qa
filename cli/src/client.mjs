@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { mkdir, open, readFile, rm } from "node:fs/promises";
+import { mkdir, open, rm } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 
@@ -11,28 +11,14 @@ export class ClientError extends Error {
   }
 }
 
-export async function readToken(file, envToken) {
-  if (!file) return envToken?.trim();
-  let value;
-  try { value = (await readFile(resolve(file), "utf8")).trim(); }
-  catch { throw new ClientError("TOKEN_FILE_ERROR", "Could not read the token file"); }
-  if (value.startsWith("{")) {
-    try { value = JSON.parse(value).token; }
-    catch { throw new ClientError("TOKEN_FILE_ERROR", "Token JSON must contain a token string"); }
-  }
-  if (typeof value !== "string" || !value.trim()) throw new ClientError("TOKEN_FILE_ERROR", "Token file is empty or invalid");
-  return value.trim();
-}
-
 export class BrowserClient {
-  constructor({ server = "http://127.0.0.1:4318", token, timeoutMs = 30_000, retries = 2, fetchImpl = fetch } = {}) {
+  constructor({ server = "http://127.0.0.1:4318", timeoutMs = 30_000, retries = 2, fetchImpl = fetch } = {}) {
     let url;
     try { url = new URL(server); } catch { throw new ClientError("INVALID_SERVER", "Server must be an absolute HTTP(S) URL"); }
     if (!["http:", "https:"].includes(url.protocol) || url.username || url.password || url.search || url.hash) {
       throw new ClientError("INVALID_SERVER", "Server must use HTTP(S) without URL credentials, query or fragment");
     }
     this.server = url.href.replace(/\/+$/u, "");
-    this.token = token;
     this.timeoutMs = timeoutMs;
     this.retries = retries;
     this.fetch = fetchImpl;
@@ -81,11 +67,7 @@ export class BrowserClient {
 
   async perform(method, path, options, consume, retryRead = true) {
     if (!path.startsWith("/") || path.startsWith("//")) throw new ClientError("INVALID_PATH", "Invalid API path");
-    if (!options.publicEndpoint && (!this.token || !/^[\x21-\x7e]+$/u.test(this.token))) {
-      throw new ClientError("TOKEN_REQUIRED", "Set BROWSER_TEST_TOKEN or use --token-file");
-    }
     const headers = { accept: "application/json" };
-    if (!options.publicEndpoint) headers.authorization = `Bearer ${this.token}`;
     if (options.key) headers["idempotency-key"] = options.key;
     if (options.payload !== undefined) headers["content-type"] = "application/json";
     let attempts = 0;
@@ -106,7 +88,7 @@ export class BrowserClient {
             await delay(200 * attempts, undefined, { signal: options.signal });
             continue;
           }
-          throw new ClientError(code, this.redact(message), { status: response.status, ...(options.key ? { requestId: options.key } : {}), operationState: "rejected" });
+          throw new ClientError(code, message, { status: response.status, ...(options.key ? { requestId: options.key } : {}), operationState: "rejected" });
         }
         return await consume(response);
       } catch (error) {
@@ -123,6 +105,4 @@ export class BrowserClient {
       }
     }
   }
-
-  redact(message) { return this.token ? message.split(this.token).join("[redacted]") : message; }
 }

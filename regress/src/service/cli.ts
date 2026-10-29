@@ -34,7 +34,7 @@ if (values.help) {
       server.listen(config.port, config.host, () => { server.off("error", fail); ok(); });
     });
     running = true;
-    console.log(JSON.stringify({ status: "listening", host: config.host, port: config.port, accounts: accounts.length, tokenFile: config.tokenFile, stateDir: config.stateDir }));
+    console.log(JSON.stringify({ status: "listening", host: config.host, port: config.port, accounts: accounts.length, stateDir: config.stateDir }));
     let stopping = false;
     const stop = async () => {
       if (stopping) return;

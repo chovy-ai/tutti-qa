@@ -6,7 +6,7 @@ const json = (schema: object) => ({ "application/json": { schema } });
 const response = (schema: object) => ({ description: "Success", content: json(envelope(schema)) });
 const body = (schema: object) => ({ required: true, content: json(schema) });
 const id = { name: "id", in: "path", required: true, schema: { type: "string" } };
-const idem = { name: "Idempotency-Key", in: "header", required: true, description: "Reuse the same key and JSON body on retries. Keys are scoped to caller and route for this service lifetime.", schema: { type: "string", minLength: 1, maxLength: 128 } };
+const idem = { name: "Idempotency-Key", in: "header", required: true, description: "Reuse the same key and JSON body on retries. Keys are scoped to route for this service lifetime; all callers share one service identity.", schema: { type: "string", minLength: 1, maxLength: 128 } };
 const error = { description: "Request rejected or operation failed", content: json({ type: "object", properties: { error: { type: "object", properties: { code: { type: "string" }, message: { type: "string" } } }, requestId: { type: "string" } } }) };
 const operation = (operationId: string, schema: object, options: { input?: object; pathId?: boolean; code?: string } = {}) => ({
   operationId,
@@ -17,8 +17,7 @@ const operation = (operationId: string, schema: object, options: { input?: objec
 
 export const OPENAPI = {
   openapi: "3.1.0",
-  info: { title: "Browser Test Service", version: "1.1.0", description: "Goal workflows: Codex + ego lite walkthroughs and Midscene + ego lite tests, using the existing host account pool. Also retains session/step APIs. All /v1 endpoints require bearer authentication." },
-  security: [{ bearerAuth: [] }],
+  info: { title: "Browser Test Service", version: "1.1.0", description: "Goal workflows: Codex + ego lite walkthroughs and Midscene + ego lite tests, using the existing host account pool. Also retains session/step APIs. No authentication; all requests share the local service identity." },
   paths: {
     "/health": { get: { operationId: "health", security: [], responses: { "200": { description: "Process is listening" } } } },
     "/v1/openapi.json": { get: { operationId: "openapi", responses: { "200": { description: "This OpenAPI document" } } } },
@@ -42,10 +41,9 @@ export const OPENAPI = {
     "/v1/sessions/{id}/jobs": { post: operation("submitJob", ref("Job"), { pathId: true, code: "202", input: ref("SubmitJob") }) },
     "/v1/jobs/{id}": { get: operation("getJob", ref("Job"), { pathId: true }) },
     "/v1/jobs/{id}/cancel": { post: operation("cancelJob", ref("Job"), { pathId: true, input: { type: "object", additionalProperties: false } }) },
-    "/v1/artifacts/{id}": { get: { operationId: "downloadArtifact", parameters: [id], responses: { "200": { description: "Artifact owned by this caller", content: { "image/png": { schema: { type: "string", format: "binary" } }, "text/html": { schema: { type: "string" } } } }, default: error } } }
+    "/v1/artifacts/{id}": { get: { operationId: "downloadArtifact", parameters: [id], responses: { "200": { description: "Service artifact", content: { "image/png": { schema: { type: "string", format: "binary" } }, "text/html": { schema: { type: "string" } } } }, default: error } } }
   },
   components: {
-    securitySchemes: { bearerAuth: { type: "http", scheme: "bearer" } },
     schemas: {
       GoalInput: {
         type: "object", additionalProperties: false, required: ["mode", "goal"],

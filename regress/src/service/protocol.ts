@@ -85,7 +85,6 @@ export interface StepResult {
 
 export interface Client {
   id: string;
-  token: string;
   accountIds?: readonly string[];
 }
 
