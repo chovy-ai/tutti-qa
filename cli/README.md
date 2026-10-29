@@ -4,7 +4,7 @@
 
 | 用途 | 命令 | 执行机内部实现 | 结果 |
 |---|---|---|---|
-| 过一遍功能、截图 | `tutti-qa walkthrough` | Codex 决策 + ego lite | `completed`、过程记录、截图、未覆盖项 |
+| 过一遍功能、截图 | `tutti-qa walkthrough` | Codex 持续会话 + Ego 原生工具 | `completed`、过程记录、截图、未覆盖项 |
 | 做测试 | `tutti-qa test` | Midscene 规划/执行/断言 + ego lite | `passed/failed/blocked`、逐项判定、截图、回放 |
 
 两条工作流都使用主机原有账号池及其 ego lite profile。CLI 不接收浏览器点击步骤，不携带账号 Cookie，不在外部设备启动浏览器或调用模型。
@@ -75,9 +75,9 @@ tutti-qa test "验证普通成员不能删除房间" \
 
 `--expect`、`--constraints` 可以重复。账号可使用 `--account auto-test-account-1` 精确指定，或通过 `--roles`、`--env`、`--capabilities`、`--tags` 筛选；省略时服务从原有允许使用的账号中选择，不新建用户。
 
-默认测试目标最长执行 600 秒、最多 12 个工作流步骤；可用 `--timeout-seconds`（最大 3600）和 `--max-steps`（最大 30）设置预算。走查步骤是 Codex 的离散决策；测试步骤是 Midscene 生成的 action，底层键鼠动作也有有限预算。两种计数不等于模型调用次数。
+默认任务限时 600 秒，操作预算为 12 步；可用 `--timeout-seconds`（最大 3600）和 `--max-steps`（最大 30）设置预算。走查的 `maxSteps` 是交给 Codex 的操作预算，不是主机逐动作强制计数；Codex 在同一会话中使用 Ego 原生工具完成走查。测试步骤仍是 Midscene 生成的 action，底层键鼠动作也有有限预算。两种计数不等于模型调用次数；服务端超时限制始终强制执行。
 
-服务还必须遵守配置的站点限制和 profile 的真实控制权。账号占用、登录失效、前置数据不足或人工接管会返回阻塞/待确认，不能当作测试通过。
+原生走查会校验初始目标、报告 URL 和最终页面的站点范围，并把范围传给 Codex；中途原生操作的强制隔离需浏览器或网络层支持。服务遵守 profile 的真实控制权。账号占用、登录失效、前置数据不足或人工接管会返回阻塞/待确认，不能当作测试通过。
 
 ## 文件输入和异步任务
 
