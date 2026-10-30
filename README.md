@@ -4,7 +4,8 @@ Tutti 用例生成工具。用例库在 tutti.sh 用例管理平台上，通过 
 
 ## 目录
 
-- `baseline/commits.json`：各仓库的基准 commit（diff 起点），只通过 `case_tool.py baseline set` 修改
+- 平台模块 `syncBaseline`：各模块的仓库基准 commit（diff 起点）；通过 `case_tool.py baseline get/set` 读写，按模块前移
+- `baseline/commits.json`：仅作首次初始化输入；全量初始化并回读成功前保留，不再作为日常 diff 起点。迁移步骤见 [同步基准迁移](.claude/skills/tutti-diff-testcase/references/sync-baseline.md)
 - `baseline/*.pos`、`baseline/archive/`：迁移到平台前的 ProcessOn 用例库，已冻结，仅作历史记录和 `regress/` 的用例来源
 - `output/<日期>-<序号>/`：每批的变更清单、走查截图、平台快照、确认页、spec、写入日志、核对结果与说明
 - `.claude/skills/tutti-diff-testcase/`：按代码 diff 维护平台用例库的 skill

@@ -28,6 +28,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("spec")
     ap.add_argument("--text-file")
+    ap.add_argument("--snapshot", help="spec 含 baseline 时必填，用于排除未完整确认的模块")
     a = ap.parse_args()
     if a.text_file:
         with open(a.text_file, encoding="utf-8") as f:
@@ -47,6 +48,8 @@ def main():
     want = confirmation_keys(spec)
     if set(dec) != set(want) or len(dec) != len(conf["decisions"]):
         sys.exit(f"确认项与 spec 不对应：缺 {sorted(set(want) - set(dec))}，多 {sorted(set(dec) - set(want))}")
+    if spec.get("baseline") and not a.snapshot:
+        sys.exit("含 baseline 的 spec 需要 --snapshot，才能安全排除取消了部分用例的模块")
 
     notes, dropped, reprio = [], [], []
     out = copy.deepcopy(spec)
@@ -68,6 +71,16 @@ def main():
         out[kind] = kept
     used = {c["moduleId"] for c in out.get("create", [])}
     out["modules"] = [m for m in spec.get("modules", []) if m["id"] in used]
+    if spec.get("baseline"):
+        from case_tool import action_modules, load_snapshot
+        snap = load_snapshot(a.snapshot)
+        original = action_modules(spec, snap)
+        deferred = {original[key] for key, d in dec.items() if not d.get("keep", True)}
+        touched = set(action_modules(out, snap).values())
+        out["baseline_modules"] = [mid for mid in spec.get("baseline_modules", []) if mid in touched - deferred]
+        if not out["baseline_modules"]:
+            out.pop("baseline", None)
+            out.pop("baseline_note", None)
     out["confirmed_from"] = {"batch": conf.get("batch"), "spec_hash": h}
     dst = os.path.join(os.path.dirname(os.path.abspath(a.spec)), "spec.confirmed.json")
     with open(dst, "w", encoding="utf-8") as f:

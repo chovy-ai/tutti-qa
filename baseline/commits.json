@@ -1,11 +1,28 @@
 {
- "_说明": "用例库的基准 commit：上次完成分析并写入用例管理平台时各仓库 main 的 SHA。只通过 case_tool.py baseline set 修改。",
+ "_说明": "仅供 baseline init 首次迁移的冻结输入；日常 diff 起点读取平台模块 syncBaseline。全部模块初始化并回读成功前保留本文件。",
  "repos": {
-  "tutti-lab/tutti": {"sha": "073e06fc68c9ed1c0e6500bd3cdf9dc4f10fb3fe", "branch": "main", "updated": "2026-10-23"},
-  "tutti-lab/tsh-web": {"sha": "40f111b3dc560808ae5d9f448e24b1ee07604cde", "branch": "main", "updated": "2026-10-23"},
-  "tutti-lab/tutti-server": {"sha": "f876eb0cfbc4abc72eccf2109a4fc5041b9bd999", "branch": "main", "updated": "2026-10-23"}
+  "tutti-lab/tutti": {
+   "sha": "073e06fc68c9ed1c0e6500bd3cdf9dc4f10fb3fe",
+   "branch": "main",
+   "updated": "2026-10-23"
+  },
+  "tutti-lab/tsh-web": {
+   "sha": "40f111b3dc560808ae5d9f448e24b1ee07604cde",
+   "branch": "main",
+   "updated": "2026-10-23"
+  },
+  "tutti-lab/tutti-server": {
+   "sha": "f876eb0cfbc4abc72eccf2109a4fc5041b9bd999",
+   "branch": "main",
+   "updated": "2026-10-23"
+  }
  },
  "history": [
-  {"date": "2026-10-30", "note": "从 baseline/Tutti新框架_20261021.pos 的「📌 基准 Commit」节点迁移，SHA 不变", "from": {}, "to": {}}
+  {
+   "date": "2026-10-30",
+   "note": "从 baseline/Tutti新框架_20261021.pos 的「📌 基准 Commit」节点迁移，SHA 不变",
+   "from": {},
+   "to": {}
+  }
  ]
 }

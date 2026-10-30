@@ -29,7 +29,7 @@
   <rect width="1000" height="1420" fill="#ffffff"/>
   <text x="40" y="40" font-size="22" font-weight="700" fill="#0f172a">tutti-qa 测试用例生成工作流程 · 用例管理平台版</text>
   <text x="40" y="64" class="n">用例库：tutti.sh 用例管理平台（brand 233749，按模块存储、每次写入自动生成模块版本）· 操作入口：tutti-ops test-management</text>
-  <text x="40" y="82" class="n">代码来源：tutti-lab/tutti、tsh-web、tutti-server 的 main（first-parent）· 基准 commit：baseline/commits.json · baseline/*.pos 已冻结</text>
+  <text x="40" y="82" class="n">代码来源：tutti-lab/tutti、tsh-web、tutti-server 的 main（first-parent）· 基准：平台模块 syncBaseline · baseline/*.pos 已冻结</text>
 
   <g transform="translate(560,100)">
     <rect width="18" height="12" class="step"/><text x="24" y="11" class="n">本地步骤</text>
@@ -141,7 +141,7 @@
   <text x="652" y="356" class="n">固定收集时刻 origin/main 为 head SHA</text>
   <text x="652" y="374" class="n">git diff base..head · gh pr view · diff_digest.py</text>
   <text x="652" y="392" class="n">必要时补读实现、测试、i18n（sparse worktree）</text>
-  <text x="652" y="410" class="n">基准：baseline/commits.json（baseline get）</text>
+  <text x="652" y="410" class="n">模块基准 → 按 first-parent 取最旧 SHA</text>
 
   <line x1="570" y1="484" x2="640" y2="484" class="link"/>
   <rect x="640" y="440" width="340" height="88" rx="8" class="note"/>
@@ -162,7 +162,7 @@
   <rect x="640" y="680" width="340" height="80" rx="8" class="note"/>
   <text x="652" y="700" class="n">先写回 changes.json：impact / modules / checked</text>
   <text x="652" y="718" class="n">选项首项「全部模块（推荐）」</text>
-  <text x="652" y="738" class="n">未覆盖全部受影响模块 → 延期，不前移基准</text>
+  <text x="652" y="738" class="n">延期或取消部分用例 → 仅该模块不前移</text>
 
   <line x1="604" y1="843" x2="640" y2="843" class="link"/>
   <rect x="640" y="790" width="340" height="104" rx="8" class="note"/>
@@ -190,8 +190,8 @@
   <line x1="570" y1="1196" x2="640" y2="1196" class="link"/>
   <rect x="640" y="1150" width="340" height="92" rx="8" class="note"/>
   <text x="652" y="1170" class="cv">case_tool.py verify  # 回读 → verify.json</text>
-  <text x="652" y="1188" class="cv">case_tool.py baseline set  # 核对通过才前移</text>
+  <text x="652" y="1188" class="cv">case_tool.py baseline set … [--yes]</text>
   <text x="652" y="1208" class="n">回滚：versions list / restore（取代 .pos 归档）</text>
-  <text x="652" y="1228" class="n">commits.json 与 output/ 产物一起提 PR</text>
+  <text x="652" y="1228" class="n">已写且核对的模块前移；日志随 output/ 提 PR</text>
   </g>
 </svg>

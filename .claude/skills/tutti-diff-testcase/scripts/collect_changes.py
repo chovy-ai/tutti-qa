@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""从 baseline/commits.json 里的基准 commit 起，收集各仓库 main 上的变更，生成待分析的 changes.json。
+"""从平台模块的 syncBaseline 快照起，收集各仓库 main 上的变更，生成待分析的 changes.json。
 
 用法：
-  python3 collect_changes.py --out output/<batch>/changes.json [--baseline baseline/commits.json] \
+  python3 collect_changes.py --out output/<batch>/changes.json --baseline output/<batch>/baselines.json \
       [--repo tutti-lab/tutti ...] [--head tutti-lab/tutti=<sha> ...] [--cache ~/.cache/tutti-qa/repos]
 
-- 基准 commit 从 baseline/commits.json 读（case_tool.py baseline get）；新增仓库先在该文件 repos 里登记一行。
+- 基准来自 case_tool.py baseline get；每仓库按 main 的 first-parent 祖先关系取所选模块最旧 SHA，缺失或分叉即停止。
 - head 默认是收集时刻 origin/main 的 SHA，写进 changes.json，后续合并后基准就更新到这个 SHA（不是更新时的最新 main）。
 - 以 main 的 first-parent 为单位列条目：一个 PR 的 merge commit 或 squash commit 算一条。
 - PR 标题、描述、标签走 gh；文件列表与行数走本地 blobless clone（首次自动 clone 到 --cache）。
@@ -23,7 +23,6 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 MAP = os.path.join(HERE, "..", "references", "module-map.json")
-BASELINE = os.path.abspath(os.path.join(HERE, "..", "..", "..", "..", "baseline", "commits.json"))
 PR_RE = re.compile(r"Merge pull request #(\d+)|\(#(\d+)\)\s*$")
 TYPE_RE = re.compile(r"^(\w+)(\([^)]*\))?!?:")
 
@@ -47,6 +46,33 @@ def ensure_clone(repo, cache):
 def load_map():
     with open(MAP, encoding="utf-8") as f:
         return json.load(f)
+
+
+def oldest_baseline(path, shas, head):
+    """Timestamps need not be monotonic. Every baseline must be on head's first-parent chain."""
+    chain = {sha: i for i, sha in enumerate(sh("git", "rev-list", "--first-parent", head, cwd=path).splitlines())}
+    missing = set(shas) - set(chain)
+    if missing:
+        sys.exit(f"基准不在 head 的 main first-parent 历史中，停止（可能回退、分叉或选错 head）：{sorted(missing)}")
+    return max(shas, key=chain.__getitem__)
+
+
+def module_baselines(data, mids=None):
+    from case_tool import baseline_repos
+    mods = data.get("modules") or {}
+    selected = mids or list(mods)
+    if not selected or any(mid not in mods for mid in selected):
+        sys.exit("基准快照缺少指定模块，请重新 baseline get")
+    repos = {}
+    for mid in selected:
+        current = mods[mid].get("syncBaseline")
+        if not current:
+            sys.exit(f"模块 {mid} 缺少 syncBaseline，先初始化")
+        repos[mid] = baseline_repos(current.get("repos"))
+    names = set().union(*(set(r) for r in repos.values()))
+    if any(set(r) != names for r in repos.values()):
+        sys.exit("模块的仓库基准不完整，请先补齐；不能只忽略缺失项")
+    return {repo: {mid: repos[mid][repo]["sha"] for mid in selected} for repo in sorted(names)}
 
 
 def match_noise_path(p, pats):
@@ -96,7 +122,8 @@ def fetch_prs(repo, since_iso):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--baseline", default=BASELINE)
+    ap.add_argument("--baseline", required=True, help="baseline get 生成的平台模块快照")
+    ap.add_argument("--modules", nargs="+", help="只收集这些模块的基准，默认快照内全部模块")
     ap.add_argument("--out", required=True)
     ap.add_argument("--repo", action="append", help="只收集指定仓库，默认基准节点里的全部仓库")
     ap.add_argument("--head", action="append", default=[], help="repo=sha，固定 head；默认 origin/main")
@@ -104,22 +131,27 @@ def main():
     a = ap.parse_args()
 
     with open(a.baseline, encoding="utf-8") as f:
-        base = json.load(f)["repos"]
+        baseline = json.load(f)
+    base = module_baselines(baseline, a.modules)
     repos = a.repo or list(base)
     heads = dict(h.split("=", 1) for h in a.head)
     m = load_map()
     result = {"batch": os.path.basename(os.path.dirname(os.path.abspath(a.out))),
               "generated_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
-              "baseline": a.baseline, "repos": {}, "items": [], "scope": {"add": [], "update": "auto", "delete": []}}
+              "baseline": a.baseline, "brand_id": baseline["brand_id"], "baseline_modules": baseline["modules"],
+              "repos": {}, "items": [], "scope": {"add": [], "update": "auto", "delete": []}}
 
     for repo in repos:
         if repo not in base:
-            sys.exit(f"{a.baseline} 里没有 {repo}，先在 repos 里登记")
+            sys.exit(f"{a.baseline} 里没有 {repo}，先为平台模块补齐基准")
         path = ensure_clone(repo, a.cache)
-        b = base[repo]["sha"]
         h = heads.get(repo) or sh("git", "rev-parse", "origin/main", cwd=path).strip()
+        if not re.fullmatch(r"[0-9a-f]{40}", h):
+            sys.exit(f"head 须为 40 位完整 SHA：{h}")
+        oldest_baseline(path, [h], "origin/main")
+        b = oldest_baseline(path, list(base[repo].values()), h)
         b_date = sh("git", "show", "-s", "--format=%cI", b, cwd=path).strip()
-        result["repos"][repo] = {"base": b, "head": h, "base_date": b_date}
+        result["repos"][repo] = {"base": b, "head": h, "base_date": b_date, "module_bases": base[repo]}
         by_num, by_oid = fetch_prs(repo, b_date)
         log = sh("git", "log", "--first-parent", "--reverse", "--format=%H%x1f%P%x1f%an%x1f%cI%x1f%s",
                  f"{b}..{h}", cwd=path)
