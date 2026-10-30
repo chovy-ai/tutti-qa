@@ -1,6 +1,6 @@
 ---
 name: tutti-diff-testcase
-description: 按 Tutti 代码仓库（tutti-lab/tutti、tutti-lab/tsh-web、tutti-lab/tutti-server）自基准 commit 以来的 diff 维护 ProcessOn .pos 用例库。流程是 QA 先声明新增 / 删除哪些模块，再直接阅读基准到 main 的 diff、相关 PR 和 commit，必要时补读代码和测试，并在浏览器里过一遍受影响的功能、截图；分析后向 QA 提问确认本批更新哪些模块及待确认口径，再生成用例，经 HTML 用例确认、合并校验并更新基准 commit。用户提到「根据 diff / commit / PR 更新用例」「同步最新代码到用例库」「这次改动要改哪些用例」「新增 / 删除某模块用例」或「用例勾选 HTML 思维导图」时使用。
+description: 按 Tutti 代码仓库（tutti-lab/tutti、tutti-lab/tsh-web、tutti-lab/tutti-server）自基准 commit 以来的 diff 维护用例管理平台（tutti-ops test-management）上的用例库。流程是 QA 先声明新增 / 删除哪些模块，再直接阅读基准到 main 的 diff、相关 PR 和 commit，必要时补读代码和测试，并在浏览器里过一遍受影响的功能、截图；分析后向 QA 提问确认本批更新哪些模块及待确认口径，再生成用例，经 HTML 用例确认后通过 tutti-ops 写入平台、回读核对并更新基准 commit。用户提到「根据 diff / commit / PR 更新用例」「同步最新代码到用例库」「这次改动要改哪些用例」「新增 / 删除某模块用例」或「用例勾选 HTML 思维导图」时使用。
 ---
 
 # 根据代码 diff 维护 Tutti 用例库
@@ -13,33 +13,34 @@ description: 按 Tutti 代码仓库（tutti-lab/tutti、tutti-lab/tsh-web、tutt
 
 | 项 | 约定 |
 |---|---|
-| 仓库 | `tutti-lab/tutti`（Web 客户端、Agent GUI、Computer 守护进程）、`tutti-lab/tsh-web`（登录、官网、商业化、分享页）、`tutti-lab/tutti-server`（服务端：权限、房间、会话执行、任务、站点等），只看 `main`；以 first-parent 为单位，一个 PR 算一条。收集哪些仓库以「📌 基准 Commit」节点里登记的为准，新增仓库先用 `merge` 的 `baseline` 字段登记一行 |
-| 宿主库 | `baseline/` 下的 `.pos`（只有一份当前版本；历史版本在 `baseline/archive/`） |
-| 基准 commit | 存在宿主库根下的「📌 基准 Commit」节点，每个仓库一行 `owner/repo ｜ 完整 SHA ｜ main ｜ 更新于 日期`，下挂「更新记录」。**只能通过 `merge` 的 `baseline` 字段改**，不要手改 |
-| 批次目录 | `output/<YYYYMMDD>-<序号>/`，放 `changes.json`、`walkthrough.md`、`walkthrough/`、`spec.json`、`cases.html`、`spec.confirmed.json`、产物 `.pos` 和说明 `.md` |
+| 仓库 | `tutti-lab/tutti`（Web 客户端、Agent GUI、Computer 守护进程）、`tutti-lab/tsh-web`（登录、官网、商业化、分享页）、`tutti-lab/tutti-server`（服务端：权限、房间、会话执行、任务、站点等），只看 `main`；以 first-parent 为单位，一个 PR 算一条。收集仓库来自平台模块的 `syncBaseline.repos`；新增仓库先经 QA 确认，为所选模块补齐基准 |
+| 用例库 | tutti.sh 用例管理平台，brand `233749`（Tutti）。按模块存储，用例层级为 模块 → `category` / `group` → `scene`；每次写入平台自动生成模块新版本，可 `versions list / restore` 回溯。**只通过 `tutti-ops test-management` 读写**，需 `test_management:read/write` 权限（`tutti-ops auth status` 查看） |
+| 基准 commit | 平台每个模块元信息里的 `syncBaseline`，结构为 `{repos: {"owner/repo": {sha, branch}}, batch, note, updatedBy, updatedAt}`。**通过 `case_tool.py baseline set` 改**；只保留当前值，前移历史在批次说明和 `baseline-log.json` 中。初始化见 [同步基准迁移](references/sync-baseline.md) |
+| 旧 `.pos` | `baseline/*.pos` 已冻结，只作历史记录和 `regress/` 的用例来源，本 skill 不再读写 |
+| 批次目录 | `output/<YYYYMMDD>-<序号>/`，放 `baselines.json`、`changes.json`、`baseline-log.json`、`walkthrough.md`、`walkthrough/`、`snapshot/`（平台导出快照）、`spec.json`、`cases.html`、`spec.confirmed.json`、`apply-log.json`、`verify.json` 和说明 `.md` |
 | 本地仓库缓存 | `~/.cache/tutti-qa/repos/<repo>`（blobless clone，脚本自动 clone / fetch） |
 
-脚本在 `.claude/skills/tutti-diff-testcase/scripts`（下文记作 `$S`），都只依赖 Python 3 标准库、`git`、`gh`：
+脚本在 `.claude/skills/tutti-diff-testcase/scripts`（下文记作 `$S`），都只依赖 Python 3 标准库、`git`、`gh`、`tutti-ops`：
 
 | 脚本 | 用途 |
 |---|---|
-| `pos_tool.py` | `tree / search / stats / cases` 浏览；`merge` 新增 / 更新 / 删除 / 更新基准；`validate` 校验；`baseline get / init` |
-| `collect_changes.py` | 从基准 commit 起收集各仓库 main 上的 commit 及关联 PR，写 `changes.json`；其中模块 / 噪音标签只作辅助信息，读取全部条目 |
-| `render_cases.py` | `spec.json` → **用例确认页** `cases.html`（QA 逐条 check 要新增 / 修改 / 删除的用例） |
+| `case_tool.py` | `baseline get / set`；`modules` 列平台模块；`pull` 导出模块快照；`validate` 本地校验 spec；`apply` 写入平台（默认只 `--dry-run`，`--yes` 才写）；`verify` 回读核对 |
+| `collect_changes.py` | 从平台模块快照起，按 first-parent 祖先关系取每仓库最旧基准，收集 main 上的 commit 及关联 PR，写 `changes.json`；其中模块 / 噪音标签只作辅助信息，读取全部条目 |
+| `render_cases.py` | `spec.json` + 快照 → **用例详细确认页**（前置 / 操作 / 预期、改前改后对比，可改级、写备注） |
 | `render_case_titles.py` | 默认交付的**标题树形确认页**：模块 / 子模块 / 用例勾选、默认全选、一键复制；复制结果兼容 `apply_case_confirm.py` |
 | `render_case_mindmap.py` | 用户要求思维导图时，用完整用例 JSON 生成紧凑 HTML 勾选导图；模板、输入及确认映射见 `references/case-mindmap.md` |
-| `apply_case_confirm.py` | 解析用例确认结果 → `spec.confirmed.json`（只含 QA 保留的内容，优先级按 QA 改的） |
+| `apply_case_confirm.py` | 解析用例确认结果 → `spec.confirmed.json`（只含 QA 保留的内容，优先级按 QA 改的）；`apply` 只接受这个文件 |
 | `diff_digest.py` | 单个 diff 的摘要（改动位置、新增 / 删除文案、常量），深读 diff 时用 |
 
 ## 三种场景的边界（硬规则）
 
 | 场景 | 谁决定范围 | 能做什么 |
 |---|---|---|
-| **新增** | **QA 明确指出模块**。没指出 = 不新增任何节点 | 只在 QA 指出的模块子树下新增分组 / 用例 |
-| **更新** | **diff 驱动**，直接阅读基准到 main 的 diff、相关 PR 和 commit | 只改已有用例（标题、前置、操作、预期、备注），保留 id；不新增、不删除节点 |
-| **删除** | **QA 明确指出模块或节点** | 只删 QA 指出范围内的节点 |
+| **新增** | **QA 明确指出模块或分组**。没指出 = 不新增任何用例 | 只在 QA 指出的模块（或模块下 `group` 前缀）内新增用例；QA 要求时新建模块 |
+| **更新** | **diff 驱动**，直接阅读基准到 main 的 diff、相关 PR 和 commit | 只改已有用例的内容（标题、分组、场景、优先级、前置、操作、预期、备注），保留 id 和所属模块；不新增、不归档 |
+| **删除** | **QA 明确指出模块、分组或用例** | 只归档 QA 指出范围内的用例（`archived=true`，平台软删除，可恢复） |
 
-这三条由 `merge` 的 `scope` 强制：`add` 挂载点不在 `scope.add` 子树内、`delete` 目标不在 `scope.delete` 子树内，整份 spec 拒绝执行、不写文件。
+这三条由 `case_tool.py validate`（`apply` 前会再跑一次）按 spec 的 `scope` 强制：`scope.add` / `scope.delete` 的每项是 `<模块id>` 或 `<模块id>/<group 前缀>`；新增落点、归档目标不在范围内时整份 spec 拒绝，不发任何写请求。
 
 diff 里看到的需要新增或删除、但 QA 没授权的内容，**不要自己扩范围**：列进说明里的「建议新增（未授权）/ 建议删除（未授权）」表，并在回复里问 QA 要不要把这些模块加进本批范围。QA 同意后把模块加进 `scope`，再继续。
 
@@ -65,7 +66,7 @@ Computer 与 Agent 管理 / 云端电脑
 - 每条用例默认全选；支持按模块、子模块、场景或单条选择，父级随子项显示全选、半选或未选，并提供全选、全不选。
 - 提供「一键复制」：只复制勾选用例及其所属模块、子模块、场景，保持原顺序与四级缩进；排除未选用例及空分组、空场景。工具栏可显示已选数量，目录正文仍只显示标题。
 - 为使复制内容可直接粘回确认，末尾附 `TUTTI-QA-CASES` JSON，携带批次、原始 spec 指纹及全部确认项的 key/keep（包括未选项）。复制被浏览器限制时提供可手动复制的文本，不误报复制成功；页面不依赖 localStorage。
-- 这是展示格式；`.pos` 与 spec 仍保留原有层级、优先级及完整用例内容。
+- 这是展示格式；spec 与平台上的用例仍保留完整字段（优先级、前置、操作、预期、备注）。
 - 标题树形页可直接承担下文的人工确认；用户粘回复制结果并通过指纹、条目校验后才算确认。仅生成页面、默认全选或点击复制本身不代表已确认。纯文本标题清单只作浏览。
 
 ## HTML 勾选思维导图模板
@@ -79,11 +80,11 @@ Computer 与 Agent 管理 / 云端电脑
 | 时机 | 方式 | QA 确认内容 |
 |---|---|---|
 | 第 5 步：读完 diff、过完功能、对照已有用例之后，写 spec 之前 | 提问（AskUserQuestion 等交互式提问工具） | 本批更新哪些模块；待确认的口径、开关和范围授权 |
-| 第 7 步：spec 写好、预校验通过之后，正式合并之前 | `cases.html` 页面导出 | 保留哪些新增 / 更新 / 删除项；需要查看详情、改级或备注时使用详细确认页 |
+| 第 7 步：spec 写好、预校验通过之后，写入平台之前 | `cases.html` 页面导出 | 保留哪些新增 / 更新 / 归档项；需要查看详情、改级或备注时使用详细确认页 |
 
 两次都要等 QA 的真实回答，不能替 QA 选默认项。
 
-**任何用例改动（新增、更新、删除）都必须经过用例确认页，QA 导出确认结果后才能合并进 `.pos`。** 没有确认结果就不合并，也不回写 `baseline/`。QA 只是在对话里口头说「可以」不算，必须用页面导出。
+**任何用例改动（新增、更新、归档）都必须经过用例确认页，QA 导出确认结果后才能写入平台。** 没有确认结果就不执行 `case_tool.py apply --yes`，也不前移模块的 `syncBaseline`。QA 只是在对话里口头说「可以」不算，必须用页面导出。
 
 ## 流程
 
@@ -91,29 +92,35 @@ Computer 与 Agent 管理 / 云端电脑
 1 QA 声明范围 → 2 直接阅读 diff、相关 PR 和 commit，必要时补读代码和测试
 → 3 在浏览器里过一遍功能并截图 → 4 对照已有用例，确定改动与覆盖缺口
 → 5 提问 QA 本批更新哪些模块及待确认项 → 6 写 spec 并预校验
-→ 7 用例确认页，等 QA 逐条 check 导出 → 8 按确认结果合并、校验 → 9 回写 baseline 并交付
+→ 7 用例确认页，等 QA 逐条 check 导出 → 8 按确认结果写入平台 → 9 回读核对、前移基准并交付
 ```
 
-**只有新增或删除、不涉及代码变更的批次**（例如 QA 说「把游客模式加到用例里」）：跳过第 2 步的变更收集，仍按第 3 步在浏览器里过一遍要新增或删除的功能，再按现有实现和宿主库确定改动，进入第 5 步；第 6–9 步都要执行。没有收集变更时保留原基准 commit。按现有代码写新增用例时，读代码的方法见第 2 步。
+**只有新增或删除、不涉及代码变更的批次**（例如 QA 说「把游客模式加到用例里」）：跳过第 2 步的变更收集，仍按第 3 步在浏览器里过一遍要新增或删除的功能，再按现有实现和平台上的已有用例确定改动，进入第 5 步；第 6–9 步都要执行（第 4 步照样先 `pull` 快照）。没有收集变更时保留原基准 commit。按现有代码写新增用例时，读代码的方法见第 2 步。
 
 ### 1. QA 声明范围
 
 开始前确认三件事（QA 在消息里已经说了的就不再问）：
 
-- **新增**：要在哪些模块下新增？写模块路径（如 `房间/公开房间`）。要新建的模块还不存在时，`scope.add` 填新模块的完整路径（如顶层模块 `游客模式`），spec 里 `parent_id` 填它的父节点（顶层为 `root`），节点标题与路径末段一致；`merge` 只放行新建这个模块本身及其子树。可以是「无」。
-- **删除**：要删哪些模块或节点？同样写路径。可以是「无」。
+- **新增**：要在哪些模块下新增？对应到平台模块 id，需要更细时加 `group` 前缀（如 `room-split-…/站点`）。要新建的模块还不存在时，在 spec 的 `modules` 里写新模块 `{id, name, description}`，并把新模块 id 加进 `scope.add`。可以是「无」。
+- **删除**：要归档哪些模块、分组或用例？同样写模块 id 或 `模块id/group 前缀`。可以是「无」。
 - **更新**：默认按 diff 自动识别，不用声明；QA 指定了要更新的模块时记下来，分析时聚焦这些模块，并记录范围外的变更，第 5 步不再问更新哪些模块。
 
-QA 给的名字和库里对不上时，用 `pos_tool.py search` / `tree` 找出候选让 QA 选，不要猜。
+QA 给的名字和平台上对不上时，用下面的命令找出候选让 QA 选，不要猜：
+
+```bash
+python3 $S/case_tool.py modules --search <关键词>                          # 模块 id ｜ 用例数 ｜ 名称
+tutti-ops test-management cases list --brand-id 233749 --search <关键词> --page-size 20
+```
 
 ### 2. 直接阅读 diff、相关 PR 和 commit
 
 ```bash
-P=$(ls baseline/*.pos)
-python3 $S/pos_tool.py baseline get $P                 # 看当前基准
 B=output/$(date +%Y%m%d)-1                             # 当天已有批次就递增序号
-python3 $S/collect_changes.py --pos $P --out $B/changes.json
+python3 $S/case_tool.py baseline get --out $B/baselines.json
+python3 $S/collect_changes.py --baseline $B/baselines.json --out $B/changes.json
 ```
+
+QA 已限定模块时，`baseline get` 加 `--modules <id>...`；默认覆盖全部模块，避免分析前按代码路径猜范围而漏掉旧基准。任一模块缺少仓库基准或 SHA 不在固定 head 的 first-parent 历史时停止；不按日期猜最旧值，也不回退到本地 commits.json。发现快照范围外模块受影响时，重新读取包含它的基准并重新收集，不能沿用可能偏新的起点。
 
 把第 1 步的声明写进 `changes.json.scope`（`{"add": [...], "update": "auto" 或说明, "delete": [...]}`）。脚本把收集时刻的 `origin/main` 固定为 `changes.json.repos.<repo>.head`，后续阅读及基准更新均以这个 SHA 为准。
 
@@ -186,13 +193,19 @@ node src/cli.ts session report --session <id>                               # �
 
 - Web 与 Server 配套 PR 合并为一个变更点，结合两侧实现确定用户可感知的行为，并保留两侧来源。
 - Server 独立变更涉及权限、额度、可见范围、错误码时，按用户可感知的结果写用例；确认只有性能、日志、监控等内部变化时记录无需改用例。
-- 第 2 步的全部条目都有分析结论，且第 5 步 QA 选择更新全部受影响模块、没有延期处理项后，才能按收集时固定的 head 前移基准；分析不完整或需留到下批的条目，记录后续工作并保留原基准。
+- 按模块判断是否完成：该模块从原基准到固定 head 的全部条目都有分析结论，且本批需要处理的用例全部确认、写入并核对通过，才可前移。延期模块保留原基准，不阻塞已完成模块；没有实际用例写入的模块本批也保留原基准。
 
-然后到库里找受影响的用例（`search` 用页面名、tab 名、diff 里新增或删除的文案；`tree --cases` / `cases --full` 读目标子树），给每个变更点定动作：
+然后从平台拉取受影响模块的**快照**，后面对照、写 spec、确认页、写入都以它为准：
 
-- **更新**：找到预期、前置、操作或标题已经和新代码对不上的用例，写出改后的全文。只改受影响的那几行，其余原样保留；被改的「预期」节点整体要符合 A 记法（`n) 维度 ｜ 内容`，用换行不用 `<br>`），原来不是 A 记法的，这次顺带改成 A 记法。备注里加 `【代码变更：<repo>#<PR>】`；缺陷修复写成修正后的正确行为，备注标 `【Bug 回归：<repo>#<PR>】`。
+```bash
+python3 $S/case_tool.py pull <模块id> [<模块id>...] --out $B/snapshot   # 每个模块一份完整 JSON，含每条用例的 revision
+```
+
+在快照里找受影响的用例（按页面名、tab 名、diff 里新增或删除的文案搜 `title` / `expectations` / `note`；需要跨模块定位时先用 `tutti-ops test-management cases list --search`，再 `pull` 对应模块），给每个变更点定动作：
+
+- **更新**：找到预期、前置、操作或标题已经和新代码对不上的用例，写出改后的完整用例。只改受影响的字段，其余原样从快照复制；改后的 `expectations` 整体要符合 A 记法（每条 `n) 维度 ｜ 内容`，序号从 1 连续，不用 `<br>`），原来不是 A 记法的，这次顺带改成 A 记法。`note` 里加 `【代码变更：<repo>#<PR>】`；缺陷修复写成修正后的正确行为，`note` 标 `【Bug 回归：<repo>#<PR>】`。不能改 `moduleId`。
 - **新增**：只在 `scope.add` 范围内，按规范写新用例。
-- **删除**：只在 `scope.delete` 范围内。
+- **删除**：只在 `scope.delete` 范围内，归档对应用例。
 - **超出授权的**：记进「建议新增 / 建议删除（未授权）」。
 - **找不到对应用例、也不在新增范围内的**：记进「覆盖缺口」，问 QA 要不要授权新增。
 
@@ -213,83 +226,93 @@ node src/cli.ts session report --session <id>                               # �
 
 - QA 已指定模块、又没有待确认项时，列完概要直接进入第 6 步，不提问。
 - 本批只处理 QA 选中或指定的模块；新增 / 删除只按答复明确授权的路径扩大 `scope`。
-- QA 选中或指定的模块没覆盖全部受影响模块时，其余模块记为延期处理，本批**不前移基准**，在交付说明里写明。
+- QA 未选中的模块记为延期处理，**仅这些模块保留原基准**；已选模块仍须完整分析、完成确认及写入核对后才能前移。
 - 答复有歧义或产生新的问题时，再问一轮，确认后再写 spec。
 - 仅新增 / 删除、不涉及代码变更的批次，同样提问确认范围与待确认项，不更新基准。
 
 ### 6. 写 spec 并预校验
 
-生成前按 `references/conventions.md` 的「用例复杂度对标」读取用户所给 `.pos` 的相关完整用例，以其链路深度和验证维度为参照，再编写 spec。前置、入口、操作步骤和提示文案对照第 3 步的 `walkthrough.md` 与截图来写。
+生成前按 `references/conventions.md` 的「用例复杂度对标」读取快照里相关的完整用例（用户另给参考用例时一并读），以其链路深度和验证维度为参照，再编写 spec。前置、入口、操作步骤和提示文案对照第 3 步的 `walkthrough.md` 与截图来写。
 
-spec 存到 `$B/spec.json`，格式见 `python3 $S/pos_tool.py -h`。要点：
+spec 存到 `$B/spec.json`，格式见 `python3 $S/case_tool.py -h`。要点：
 
-- `scope` 填第 1 步声明及第 5 步答复明确追加授权的范围。
-- `update` 的 `from` 必须是节点当前标题全文（从 `.pos` 里取原值，不要手抄），`reason` 写 `<repo>#<PR> 变更点`。
-- `baseline` 仅在本批完整分析、第 5 步选择了全部受影响模块且没有延期处理项后填 `changes.json.repos.<repo>.head` 的**完整 SHA**，`baseline_note` 写 `批次 <batch>，已分析 N 条变更，Sun`；没有收集变更、分析不完整或有延期处理项时省略 `baseline` / `baseline_note`，保留原基准。
-- 用例节点用 `{"case","pre","op","expect":[...],"note"}`，定级严格按规范第四节。
+- `brand_id` 填 `233749`；`scope` 填第 1 步声明及第 5 步答复明确追加授权的范围。
+- `create` 每条是完整用例：`id`（新 id，建议 `tq-<批次>-<三位序号>`，如 `tq-20261030-1-001`）、`moduleId`、`title`（不带优先级前缀）、`category`、`group`、`scene`（正常场景 / 异常场景 / 边界场景）、`priority`、`kind`、`precondition`、`steps`、`expectations`、`note`、`references`。`category` 使用平台当前模块名（服务端会按模块名规范化），`group` 沿用目标模块里已有的写法。
+- `update` 每条 `{"id", "reason": "<repo>#<PR> 变更点", "case": {改后的完整用例}}`；`case` 从快照复制再改，不带 `revision` / `archived` / 审计字段，`revision` 由工具从快照取（乐观锁）。
+- `archive` 每条 `{"id", "reason"}`。
+- `baseline` 填 `changes.json.repos.<repo>.head` 的**完整 SHA**；`baseline_modules` 只列本批完整分析且将实际写入用例的模块 ID，延期、分析不完整或无需写入的模块排除；`baseline_note` 写 `批次 <batch>，已分析 N 条变更，Sun`。没有收集变更时省略这些字段。确认页取消模块内任一条目时，确认解析器会从 `baseline_modules` 排除整个模块。
+- 定级严格按规范第四节。
 
-写完先在临时文件上试合并、校验，保证交给 QA 看的内容本身是合规的：
+写完先在本地校验，保证交给 QA 看的内容本身是合规的：
 
 ```bash
-python3 $S/pos_tool.py merge $P $B/spec.json -o /tmp/precheck.pos
-python3 $S/pos_tool.py validate $P /tmp/precheck.pos --ops /tmp/precheck.pos.ops.json
+python3 $S/case_tool.py validate $B/spec.json --snapshot $B/snapshot
 ```
 
-`validate` 退出码非 0 就改 spec 重来，直到通过。它检查：重复 ID、原节点丢失（授权删除的除外）、原节点标题被改（授权更新的除外）、parent 错、新增空标题、新引入重名、新增和被更新节点的 A 记法、新用例缺优先级，以及残留的「按产品定义 / 待确认」字样。预校验产物只用来检查，不交付、不回写。
+退出码非 0 就改 spec 重来，直到通过。它检查：授权范围、必填字段、id 格式及与已有用例重复、更新目标存在且未归档、更新未改模块、同模块同分组同场景下新引入的重名、新增和被更新用例的 A 记法、优先级与场景取值、标题带优先级前缀，以及残留的「按产品定义 / 待确认 / 待补充」字样。本地校验不发请求。
 
-交给 QA 之前，再按规范自查一遍，自查结论写进回复：宿主库四问（有没有已有分组覆盖、和哪些已有用例重叠或冲突、切分维度、断言维度词表）是否都回答了；复杂度对标是否列明参考节点及覆盖维度；多维组合是否先列了矩阵；提示文案是否都取了原文；异常用例是否带了后续步骤。
+交给 QA 之前，再按规范自查一遍，自查结论写进回复：用例库四问（有没有已有分组覆盖、和哪些已有用例重叠或冲突、切分维度、断言维度词表）是否都回答了；复杂度对标是否列明参考节点及覆盖维度；多维组合是否先列了矩阵；提示文案是否都取了原文；异常用例是否带了后续步骤。
 
 ### 7. 用例确认页，等 QA 逐条 check
 
 ```bash
-python3 $S/render_case_titles.py $P $B/spec.json -o $B/cases.html
+python3 $S/render_case_titles.py $B/spec.json --snapshot $B/snapshot -o $B/cases.html
 ```
 
-把 `cases.html` 交给 QA，回复里写清：本批新增 / 更新 / 删除各多少条、P0 / P1 / P2 分布、自查结论、和已有用例的重叠或冲突（要 QA 一并判断的）。页面按「用例标题目录」约定展示，默认全选；QA 取消不要的模块、子模块或用例，点「一键复制」后将整段结果粘回对话。
+把 `cases.html` 交给 QA，回复里写清：本批新增 / 更新 / 归档各多少条、P0 / P1 / P2 分布、自查结论、和已有用例的重叠或冲突（要 QA 一并判断的）。页面按「用例标题目录」约定展示，默认全选；QA 取消不要的模块、子模块或用例，点「一键复制」后将整段结果粘回对话。
 
-只有用户明确要求查看用例详情、改级或备注时，才另外用 `render_cases.py` 生成详细确认页；标题版不自行增加这些内容。
+只有用户明确要求查看用例详情、改级或备注时，才另外用 `python3 $S/render_cases.py $B/spec.json --snapshot $B/snapshot -o $B/cases-detail.html` 生成详细确认页；标题版不自行增加这些内容。两个页面的指纹和确认项 key（新增 `C<n>`、更新 `U<n>`、归档 `R<n>`）相同，任选其一导出。
 
 **到这里停下，等 QA 粘回结果。**
 
-### 8. 按确认结果合并、校验
+### 8. 按确认结果写入平台
 
 ```bash
-python3 $S/apply_case_confirm.py $B/spec.json --text-file $B/cases-confirm.txt
+python3 $S/apply_case_confirm.py $B/spec.json --snapshot $B/snapshot --text-file $B/cases-confirm.txt
 ```
 
 - 指纹对不上会报错：spec 在出页面之后又改过，重新出确认页。
-- 退出码 2 表示有备注：逐条按备注改 `spec.confirmed.json`。改动只是删条目、改优先级、改措辞的，改完直接合并；改动涉及新增条目或改变断言含义的，改 `spec.json` 后回到第 7 步重新出确认页。
-- 合并只用 `spec.confirmed.json`：
+- 退出码 2 表示有备注：逐条按备注改 `spec.confirmed.json`。改动只是删条目、改优先级、改措辞的，改完直接写入；改动涉及新增条目或改变断言含义的，改 `spec.json` 后回到第 7 步重新出确认页。
+- 写入只用 `spec.confirmed.json`，先 dry-run，再写：
 
 ```bash
-OUT=$B/$(basename $P .pos)_$(basename $B).pos
-python3 $S/pos_tool.py merge $P $B/spec.confirmed.json -o $OUT
-python3 $S/pos_tool.py validate $P $OUT --ops $OUT.ops.json
+python3 $S/case_tool.py apply $B/spec.confirmed.json --snapshot $B/snapshot          # 校验 + 每个请求 tutti-ops --dry-run，不发请求
+python3 $S/case_tool.py apply $B/spec.confirmed.json --snapshot $B/snapshot --yes    # 真正写入
 ```
 
-### 9. 回写 baseline 并交付
+写入顺序：新建模块 → 新增（`cases import`，每次 ≤1000 条，原子）→ 更新（`cases update`，带快照里的 `revision`）→ 归档（`cases update`，`archived=true`）。每一步的请求和结果记在 `$B/apply-log.json`。
 
-校验通过后：
+- **出错即停**，不自动重试。revision 冲突说明平台上的用例在快照之后被改过：重新 `pull`，把冲突用例的改动合到最新内容上，回到第 6 步（内容有变化时重新出确认页）。
+- **退出码 6（结果不确定）**：先 `verify` 回读，看哪些已生效，只补未生效的部分，不要整份重跑（新增会因 id 已存在被拒）。
+- 写入需要 `test_management:write`；`tutti-ops auth status` 显示只读时停下告诉 QA，不换凭据。
+
+### 9. 回读核对、前移基准并交付
 
 ```bash
-mv $P baseline/archive/$(basename $P .pos)_至$(date +%Y%m%d%H%M).pos
-cp $OUT baseline/
+python3 $S/case_tool.py verify $B/spec.confirmed.json --snapshot $B/snapshot --out $B/after   # 重新导出受影响模块，逐条核对 → $B/verify.json
+python3 $S/case_tool.py baseline set $B/spec.confirmed.json --verified $B/verify.json         # 读取最新 revision + dry-run
+# QA 已确认本次基准写入后再执行：
+python3 $S/case_tool.py baseline set $B/spec.confirmed.json --verified $B/verify.json --yes
 ```
 
-`baseline/` 下始终只保留一份当前版本。提醒 QA：ProcessOn 里的线上文件要用新 `.pos` 重新导入，否则线上的基准节点还是旧的。
+- `verify` 不通过时不前移基准，按问题清单处理后再核对。
+- `verify.json` 绑定品牌、spec 指纹、实际写入日志和各模块 revision。`baseline set` 只处理 `baseline_modules` 与写入核对记录的交集；核对后模块变化、Git 基准分叉或回退时停止。先读最新元信息，再携带完整 name / description / repos 及当前 revision 写入；CAS 冲突不自动覆盖。
+- 写入结果保存在 `baseline-log.json`，逐模块回读确认；退出码 6 或回读不符时停下，先查询实际状态再决定续跑。已是本批目标的模块直接跳过。
+- 每次真实平台写入都先取得 QA 对具体请求的确认；`--yes` 只是执行开关。`output/` 产物和批次说明一起提 PR；平台用例与基准写入后立即生效，不需要导入文件。
+- 需要撤回本批改动时，用 `tutti-ops test-management versions list --module-id <id>` 找到写入前的版本，经 QA 同意后 `versions restore`（带 `--request-id`，重试沿用同一个）。
 
-交付 `.pos` ＋ `$B/<同名>.md` 说明，说明固定包含：
+交付说明 `$B/<批次>.md` 固定包含：
 
 1. **批次概览**：各仓库的 base → head、变更条目总数 / 已分析数、QA 声明的范围。
    另附浏览器过功能的情况：环境、过了哪些功能、`walkthrough.md` 与 Midscene 回放路径、标为「环境未上线」的变更点。
 2. **两次确认结果**：第 5 步选择的模块、待确认项答复及范围授权；用例确认页上 QA 去掉了哪些、改了哪些优先级、按备注做了哪些修改（逐条）。
-3. **变更点 → 用例改动对照**：每个 PR / commit 对应哪些变更点，每个变更点的动作（更新 / 新增 / 删除 / 未处理）和落点。
-4. **用例更新明细**：逐条列「位置 ｜ 改前 ｜ 改后 ｜ 依据 PR」（取自 `ops.json` 的 `updated`）。
-5. **新增与删除明细**：新增的分组和用例数；删除的子树及节点数（取自 `ops.json`）。
-6. **总量前后对比与校验结果**：节点、用例、图标，P0 / P1 / P2 分布，以及 `validate` 各项结果。
+3. **变更点 → 用例改动对照**：每个 PR / commit 对应哪些变更点，每个变更点的动作（更新 / 新增 / 归档 / 未处理）和落点（模块 / 分组 / 用例 id）。
+4. **用例更新明细**：逐条列「位置 ｜ 改前 ｜ 改后 ｜ 依据 PR」（改前取自快照，改后取自 `spec.confirmed.json`）。
+5. **新增与归档明细**：新增的模块、分组和用例数；归档的用例清单。
+6. **写入与核对结果**：`apply-log.json` 的请求数、`verify.json` 结论，各模块写入前后的版本号和用例数，新增用例的 P0 / P1 / P2 分布。
 7. **建议新增 / 建议删除（未授权）与覆盖缺口**：留给下批决定。
 8. **关键断言与本轮定稿口径**。
 9. **待产品确认清单**：只放用户也答不了的项。
 10. **基准更新**：旧 SHA → 新 SHA（未前移时说明原因）；列出读完实际 diff 后确认无需改用例的条目及理由，以及尚未完成的分析。
 
-重做一批时，开头写明替换哪个批次、旧产物作废；基准已经前移的，从归档里取上一版重新合并，不要在新基准上叠加。
+重做一批时，开头写明替换哪个批次、旧产物作废；上一批已经写入平台的，先经 QA 同意用 `versions restore` 回到写入前的版本并按批次日志经 QA 确认后恢复对应模块的 `syncBaseline`，再重新走流程，不要在已写入的结果上叠加。

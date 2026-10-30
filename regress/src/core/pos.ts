@@ -1,4 +1,4 @@
-// ProcessOn .pos 用例库解析。语义与 .claude/skills/tutti-diff-testcase/scripts/pos_tool.py 保持一致：
+// ProcessOn .pos 用例库解析（迁移到用例管理平台前的冻结版本，见 baseline/）：
 // 用例节点 = 子节点中同时出现「前置」与「预期」的节点。
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";

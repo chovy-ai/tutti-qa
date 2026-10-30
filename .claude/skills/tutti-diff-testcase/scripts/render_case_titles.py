@@ -1,79 +1,58 @@
 #!/usr/bin/env python3
-"""标题树形确认页：模块 → 子模块 → 正常/异常/边界场景 → 用例标题，默认全选，一键复制标题树及兼容的 TUTTI-QA-CASES 确认结果。"""
+"""标题树形确认页：模块 → 子模块 → 正常/异常/边界场景 → 用例标题，默认全选，一键复制标题树及兼容的 TUTTI-QA-CASES 确认结果。
+
+用法：python3 render_case_titles.py <spec.json> --snapshot <快照目录> -o <cases.html> [--batch 名称]
+"""
 import argparse
 import html
 import json
 import pathlib
-import re
 
-import pos_tool as t
-from render_cases import build, spec_hash, walk_add
+from case_tool import all_cases, load_snapshot, module_name
+from render_cases import confirmation_keys, grouped_creates, scene_order, spec_hash
 
 
-def render(pos, spec_path, out, batch=None, layout=None):
+def render(spec_path, snapshot_dir, out, batch=None):
     spec_path = pathlib.Path(spec_path)
     batch = batch or spec_path.resolve().parent.name
     spec = json.loads(spec_path.read_text(encoding='utf-8'))
-    data = build(pos, spec_path, batch)
+    snap = load_snapshot(snapshot_dir)
+    existing = all_cases(snap)
     modules = {}
-    SCENES = ('正常场景', '异常场景', '边界场景')
-    def add(module, group, key, title, scene='用例'):
+    def add(module, group, key, title, scene):
         modules.setdefault(module, {}).setdefault(group, {}).setdefault(scene, []).append((key, title))
-    for key, node, path in walk_add(spec):
-        if 'case' not in node:
-            continue
-        title = t.PRIO_RE.sub('', node['case']).strip()
-        ancestors = [p for p in path if not p.startswith(SCENES)]
-        scene = next((s for p in reversed(path) for s in SCENES if p.startswith(s)), '用例')
-        parent = spec['add'][int(key.split('.')[0][1:])]
-        host = parent.get('parent_path') or data['adds'][int(key.split('.')[0][1:])]['host']
-        module = host + (' / ' + ancestors[0] if ancestors else '')
-        group = ' / '.join(ancestors[1:]) or '用例'
-        if layout:
-            matches = [x for x in layout if key.startswith(x['prefix'])]
-            if len(matches) != 1:
-                raise ValueError(f'用例布局须唯一覆盖 key：{key}')
-            module = matches[0]['title']
-            group = ancestors[-1] if ancestors else '用例'
-        add(module, group, key, title, scene)
-    root = t.root_of(t.load(pos))
-    index = {node['id']: node for node, path in t.iter_nodes(root)}
-    def label(node_id):
-        node = index[node_id]
-        current = node
-        while current is not None:
-            if t.is_case(current):
-                return t.PRIO_RE.sub('', t.strip(current.get('title'))).strip()
-            current = index.get(current.get('parent'))
-        return t.strip(node.get('title'))
-    for i, item in enumerate(data['updates']):
-        add('修改用例', '已有用例标题', item['k'], label(spec['update'][i]['id']))
-    for i, item in enumerate(data['deletes']):
-        add('删除用例', '删除范围标题', item['k'], label(spec['delete'][i]['id']))
+    for mod, groups in grouped_creates(spec, snap).items():
+        for group, scenes in groups.items():
+            for scene, items in scenes.items():
+                for key, c in items:
+                    add(mod, group, key, c['title'], scene)
+    for label, kind, prefix in (('修改用例', 'update', 'U'), ('归档用例', 'archive', 'R')):
+        for i, item in enumerate(spec.get(kind, [])):
+            old = existing.get(item['id']) or {}
+            cur = item.get('case') or old
+            group = ' / '.join(x for x in (module_name(snap, spec, cur.get('moduleId', '')), cur.get('group')) if x)
+            add(label, group or item['id'], f'{prefix}{i}', cur.get('title') or item['id'], cur.get('scene') or '用例')
     esc = lambda x: html.escape(str(x), quote=True)
     blocks = []
-    count = 0
     keys = []
     for module, groups in modules.items():
         blocks.append('<li class="module"><label><input type="checkbox" checked class="module-check"><span class="title">' + esc(module) + '</span></label><ul>')
         for group, scenes in groups.items():
             blocks.append('<li class="group"><label><input type="checkbox" checked class="group-check"><span class="title">' + esc(group) + '</span></label><ul>')
-            order = {name: i for i, name in enumerate(SCENES)}
-            for scene in sorted(scenes, key=lambda x: order.get(x, len(SCENES))):
+            for scene in scene_order(scenes):
                 blocks.append('<li class="scene"><label><input type="checkbox" checked class="scene-check"><span class="title">' + esc(scene) + '</span></label><ul>')
                 for key, title in scenes[scene]:
                     keys.append(key)
-                    count += 1
                     blocks.append('<li class="case"><label><input type="checkbox" checked class="case-check" data-key="' + esc(key) + '"><span class="title">' + esc(title) + '</span></label></li>')
                 blocks.append('</ul></li>')
             blocks.append('</ul></li>')
         blocks.append('</ul></li>')
-    if len(keys) != len(set(keys)):
-        raise ValueError('确认项 key 重复')
+    if sorted(keys) != sorted(confirmation_keys(spec)) or len(keys) != len(set(keys)):
+        raise ValueError('确认项 key 与 spec 不一致')
     payload = json.dumps({'batch': batch, 'hash': spec_hash(spec_path)}, ensure_ascii=False).replace('</', '<\\/')
-    page = TEMPLATE.replace('__TREE__', ''.join(blocks)).replace('__COUNT__', str(count)).replace('__META__', payload)
+    page = TEMPLATE.replace('__TREE__', ''.join(blocks)).replace('__COUNT__', str(len(keys))).replace('__META__', payload)
     pathlib.Path(out).write_text(page, encoding='utf-8')
-    return count
+    return len(keys)
 
 
 TEMPLATE = r'''<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>模块和用例标题 · 勾选确认</title><style>
@@ -92,16 +71,15 @@ document.getElementById('copy').onclick=copySelected;document.getElementById('re
 
 
 def main():
-    parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('pos')
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('spec')
-    parser.add_argument('-o','--out',required=True)
+    parser.add_argument('--snapshot', required=True)
+    parser.add_argument('-o', '--out', required=True)
     parser.add_argument('--batch')
-    parser.add_argument('--layout',help='可选 JSON 数组，每项为 title/prefix，唯一覆盖新增用例 key')
-    args=parser.parse_args()
-    layout=json.loads(pathlib.Path(args.layout).read_text(encoding='utf-8')) if args.layout else None
-    count=render(args.pos,args.spec,args.out,args.batch,layout)
+    args = parser.parse_args()
+    count = render(args.spec, args.snapshot, args.out, args.batch)
     print(f'已生成 {args.out}：{count} 个确认项，默认全选，支持复制确认结果')
 
-if __name__=='__main__':
+
+if __name__ == '__main__':
     main()
