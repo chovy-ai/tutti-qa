@@ -1,0 +1,30 @@
+{
+ "removed": [],
+ "retitled": [
+  "19510076-ba50-4a88-b54e-a18fed82c02c",
+  "074f4f54-c1eb-4180-84ab-ff41fb87993c"
+ ],
+ "updated": [
+  {
+   "id": "19510076-ba50-4a88-b54e-a18fed82c02c",
+   "path": "Computer 与 Agent 管理 / 云端电脑 / 页面入口与创建 / 说明：「我的Agent」→「云端房间配置」页签。新用户（未连接电脑、未创建云端电脑）看到空态「让本地 Agent 与同伴 在云端实时协作」与「连接电脑」，底部是「云端电脑」卡片（「由 Tutti 托管，创建后就能在云端房间里使用。」+「创建云端电脑」）。创建后卡片头部为「云端电脑 ● 在线　云端电脑已是最新版本 / Tutti 托管」，右侧「…」；下方列出 Claude Code 与 Codex。状态取值：正在连接（创建、启动、恢复中）／在线（运行中，或空闲后被自动暂停）／正在重启云端电脑…／正在删除云端 Computer…／需要处理（失败）。已定口径：创建云端电脑不影响上方「连接电脑」的显示；空闲暂停后仍显示「在线」；创建与使用云端电脑本身不单独收费。来源：tutti-lab/tutti main@fddc82e640 的 apps/web modules/cloud-agent、room、computer 与中文文案，cmd/cloud-agent-worker、cmd/computer-daemon 的 cloud 实现；tutti-lab/tutti-server internal/biz/cloud_agent_*；相关 PR：tutti#3392 #3432 #3445 #3458 #3479",
+   "from": "说明：「我的Agent」→「云端房间配置」页签。新用户（未连接电脑、未创建云端电脑）看到空态「让本地 Agent 与同伴 在云端实时协作」与「连接电脑」，底部是「云端电脑」卡片（「由 Tutti 托管，创建后就能在云端房间里使用。」+「创建云端电脑」）。创建后卡片头部为「云端电脑 ● 在线　云端电脑已是最新版本 / Tutti 托管」，右侧「…」；下方列出 Claude Code 与 Codex。状态取值：正在连接（创建、启动、恢复中）／在线（运行中，或空闲后被自动暂停）／正在重启云端电脑…／正在删除云端 Computer…／需要处理（失败）。已定口径：创建云端电脑不影响上方「连接电脑」的显示；空闲暂停后仍显示「在线」；创建与使用云端电脑本身不单独收费。来源：tutti-lab/tutti main@fddc82e640 的 apps/web modules/cloud-agent、room、computer 与中文文案，cmd/cloud-agent-worker、cmd/computer-daemon 的 cloud 实现；tutti-lab/tutti-server internal/biz/cloud_agent_*；相关 PR：tutti#3392 #3432 #3445 #3458 #3479",
+   "to": "说明：「我的Agent」→「云端房间配置」页签。新用户（未连接电脑、未创建云端电脑）看到空态「让本地 Agent 与同伴 在云端实时协作」与「连接电脑」，底部是「云端电脑」卡片（「由 Tutti 托管，创建后就能在云端房间里使用。」+「创建云端电脑」）。创建后卡片头部为「云端电脑 ● 在线　云端电脑已是最新版本 / Tutti 托管」，右侧「…」；下方列出 Claude Code 与 Codex。云端电脑也可以不在这里创建：未创建时在云端房间直接选云端 Agent 发送，首次发送会自动准备，见「首次使用 · 在云端房间直接选云端 Agent」。状态取值：正在连接（创建、启动、恢复中）／在线（运行中，或空闲后被自动暂停）／正在重启云端电脑…／正在删除云端 Computer…／需要处理（失败）。已定口径：创建云端电脑不影响上方「连接电脑」的显示；空闲暂停后仍显示「在线」；创建与使用云端电脑本身不单独收费。来源：tutti-lab/tutti main@fddc82e640 的 apps/web modules/cloud-agent、room、computer 与中文文案，cmd/cloud-agent-worker、cmd/computer-daemon 的 cloud 实现；tutti-lab/tutti-server internal/biz/cloud_agent_*；相关 PR：tutti#3392 #3432 #3445 #3458 #3479",
+   "reason": "QA 口径（2026-10-28）：未创建云端电脑时可在云端房间直接选云端 Agent 首次使用"
+  },
+  {
+   "id": "074f4f54-c1eb-4180-84ab-ff41fb87993c",
+   "path": "Computer 与 Agent 管理 / 云端电脑 / 在云端房间里使用 / 说明：云端电脑上的 Agent 只能在云端房间使用，在 Agent 选择中显示为「我的云端 」。一台云端电脑可同时服务多个云端房间，每个房间使用各自的工作区。已定口径：本地房间不出现云端 Agent；不写并发任务数上限，只验证多房间同时运行互不影响。与本地同名区分、云端电脑不可用时的表现、本机离线执行、文件隔离已由 Agent 接入核心回归集〔A-08〕〔B-32〕覆盖，本组不重复。来源：tutti-lab/tutti main@fddc82e640 的 apps/web modules/cloud-agent、room、computer 与中文文案，cmd/cloud-agent-worker、cmd/computer-daemon 的 cloud 实现；tutti-lab/tutti-server internal/biz/cloud_agent_*；相关 PR：tutti#3392 #3432 #3445 #3458 #3479",
+   "from": "说明：云端电脑上的 Agent 只能在云端房间使用，在 Agent 选择中显示为「我的云端 」。一台云端电脑可同时服务多个云端房间，每个房间使用各自的工作区。已定口径：本地房间不出现云端 Agent；不写并发任务数上限，只验证多房间同时运行互不影响。与本地同名区分、云端电脑不可用时的表现、本机离线执行、文件隔离已由 Agent 接入核心回归集〔A-08〕〔B-32〕覆盖，本组不重复。来源：tutti-lab/tutti main@fddc82e640 的 apps/web modules/cloud-agent、room、computer 与中文文案，cmd/cloud-agent-worker、cmd/computer-daemon 的 cloud 实现；tutti-lab/tutti-server internal/biz/cloud_agent_*；相关 PR：tutti#3392 #3432 #3445 #3458 #3479",
+   "to": "说明：云端电脑上的 Agent 只能在云端房间使用，在 Agent 选择中显示为「我的云端 」。未创建云端电脑时，Agent 选择里仍可选「 · 云端」，首次发送会自动准备云端电脑，见「首次使用 · 在云端房间直接选云端 Agent」。一台云端电脑可同时服务多个云端房间，每个房间使用各自的工作区。已定口径：本地房间不出现云端 Agent；不写并发任务数上限，只验证多房间同时运行互不影响。与本地同名区分、云端电脑不可用时的表现、本机离线执行、文件隔离已由 Agent 接入核心回归集〔A-08〕〔B-32〕覆盖，本组不重复。来源：tutti-lab/tutti main@fddc82e640 的 apps/web modules/cloud-agent、room、computer 与中文文案，cmd/cloud-agent-worker、cmd/computer-daemon 的 cloud 实现；tutti-lab/tutti-server internal/biz/cloud_agent_*；相关 PR：tutti#3392 #3432 #3445 #3458 #3479",
+   "reason": "QA 口径（2026-10-28）：未创建云端电脑时可在云端房间直接选云端 Agent 首次使用"
+  }
+ ],
+ "deleted": [],
+ "added_roots": [
+  {
+   "id": "947ade45-de0a-4610-a2d5-82b377e8e32b",
+   "path": "Computer 与 Agent 管理 / 云端电脑 / 首次使用 · 在云端房间直接选云端 Agent"
+  }
+ ]
+}
