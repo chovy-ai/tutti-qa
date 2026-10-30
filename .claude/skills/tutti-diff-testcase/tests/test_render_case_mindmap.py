@@ -28,16 +28,15 @@ class MindmapRendererTest(unittest.TestCase):
         self.input.write_text(json.dumps({'cases': self.cases}), encoding='utf-8')
         self.spec = self.root / 'spec.json'
         self.spec.write_text(json.dumps({
-            'update': [{'id': 'title'}, {'id': 'pre'}], 'delete': [{'id': 'old-case'}],
-            'add': [{'nodes': [{'title': '正常场景', 'children': [{'case': '新用例'}]},
-                               {'title': '说明：共享说明'}]}],
+            'update': [{'id': 'title'}, {'id': 'pre'}], 'archive': [{'id': 'old-case'}],
+            'create': [{'id': 'new-case'}, {'id': 'other-case'}],
         }), encoding='utf-8')
         self.meta = {
             'batch': 'sample', 'hash': hashlib.sha256(self.spec.read_bytes()).hexdigest()[:16],
             'cases': [{'id': 'case-1', 'keys': ['U0', 'U1']},
-                      {'id': 'case-2', 'keys': ['A0.0.0']}, {'id': 'case-3', 'keys': ['D0']}],
-            'extraKeys': {'A0.1': ['case-1', 'case-2']},
-            'allKeys': ['U0', 'U1', 'A0.0.0', 'D0', 'A0.1'],
+                      {'id': 'case-2', 'keys': ['C0']}, {'id': 'case-3', 'keys': ['R0']}],
+            'extraKeys': {'C1': ['case-1', 'case-2']},
+            'allKeys': ['U0', 'U1', 'C0', 'R0', 'C1'],
         }
         self.mapping = self.root / 'confirmation.json'
         self.mapping.write_text(json.dumps(self.meta), encoding='utf-8')
@@ -80,7 +79,7 @@ class MindmapRendererTest(unittest.TestCase):
                 elif change == 'unmapped-key':
                     meta['cases'][0]['keys'].pop()
                 elif change == 'unknown-owner':
-                    meta['extraKeys']['A0.1'] = ['unknown-case']
+                    meta['extraKeys']['C1'] = ['unknown-case']
                 else:
                     meta['cases'][1]['keys'].append('U0')
                 with self.assertRaises(ValueError):

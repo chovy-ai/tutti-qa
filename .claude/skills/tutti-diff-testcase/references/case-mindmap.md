@@ -29,7 +29,7 @@ python3 "$S/render_case_mindmap.py" "$B/cases.json" \
 }
 ```
 
-`id/title/group/scene/priority` 必填；`scene` 是正常场景、异常场景或边界场景；`kind` 默认为功能回归，也支持专项验证。`category` 可选，缺省使用 `module` 或 `group` 的第一段；它只控制导图分组，不改宿主库路径。前置、步骤、预期和备注来自最终用例，详情面板展示全文。数量与模块从输入生成，不固定游客模式、118 条或本轮批次。
+`id/title/group/scene/priority` 必填；也可以直接用 `case_tool.py pull` 导出的平台模块 JSON（`precondition` / `expectations` 等价于 `pre` / `expect`）；`scene` 是正常场景、异常场景或边界场景；`kind` 默认为功能回归，也支持专项验证。`category` 可选，缺省使用 `module` 或 `group` 的第一段；它只控制导图分组，不改宿主库路径。前置、步骤、预期和备注来自最终用例，详情面板展示全文。数量与模块从输入生成，不固定游客模式、118 条或本轮批次。
 
 ## 勾选与导出
 
@@ -53,15 +53,15 @@ python3 "$S/render_case_mindmap.py" "$B/cases.json" \
 {
   "batch": "本次批次",
   "hash": "原始spec文件字节的SHA256前16位",
-  "cases": [{"id": "原用例稳定ID", "keys": ["U0", "U1"]}],
-  "extraKeys": {"U2": ["原用例稳定ID"]},
-  "allKeys": ["U0", "U1", "U2"]
+  "cases": [{"id": "原用例稳定ID", "keys": ["U0"]}, {"id": "新用例ID", "keys": ["C0"]}],
+  "extraKeys": {},
+  "allKeys": ["U0", "C0"]
 }
 ```
 
-同一用例的标题、前置、操作、预期、备注等修改共用该用例的选择；无改动用例可用空 `keys`。共享说明放 `extraKeys`，列出所有所属用例，只要有一个保留才保留说明。每个 key 只映射一次，`allKeys` 完整覆盖 spec 中的 `U<n>`、`D<n>`、新增用例及独立说明的 `A<n>.<节点序号路径>`，保留原顺序。生成器检查指纹、ID 与 key 覆盖；映射由本批真实 spec 与宿主库推导，不手写猜测。
+每条用例的更新是一个 key，无改动用例可用空 `keys`。需要多条用例共同决定的 key 放 `extraKeys`，只要有一个所属用例保留就保留。每个 key 只映射一次，`allKeys` 完整覆盖 spec 中的新增 `C<n>`、更新 `U<n>`、归档 `R<n>`，保留原顺序。生成器检查指纹、ID 与 key 覆盖；映射由本批真实 spec 与快照推导，不手写猜测。
 
-有映射时复制结果携带 `TUTTI-QA-CASES`、batch/hash 和全部 key/keep，包括未选项。QA 真实粘回后仍按主流程检查并解析；仅生成页面、默认全选、复制或保存均不等于确认，不回写 `.pos` 或 baseline。涉及独立说明时，确认解析器也须保留被选中的说明，避免剪枝丢失。
+有映射时复制结果携带 `TUTTI-QA-CASES`、batch/hash 和全部 key/keep，包括未选项。QA 真实粘回后仍按主流程检查并解析；仅生成页面、默认全选、复制或保存均不等于确认，不写入平台、不改 baseline。
 
 ## 紧凑布局与检查
 

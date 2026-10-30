@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""从 .pos 里的基准 commit 起，收集各仓库 main 上的变更，生成待 QA 确认的 changes.json。
+"""从 baseline/commits.json 里的基准 commit 起，收集各仓库 main 上的变更，生成待分析的 changes.json。
 
 用法：
-  python3 collect_changes.py --pos baseline/X.pos --out output/<batch>/changes.json \
+  python3 collect_changes.py --out output/<batch>/changes.json [--baseline baseline/commits.json] \
       [--repo tutti-lab/tutti ...] [--head tutti-lab/tutti=<sha> ...] [--cache ~/.cache/tutti-qa/repos]
 
-- 基准 commit 从 .pos 的「📌 基准 Commit」节点读（pos_tool.py baseline get）；仓库不在节点里就报错，先 baseline init/set。
+- 基准 commit 从 baseline/commits.json 读（case_tool.py baseline get）；新增仓库先在该文件 repos 里登记一行。
 - head 默认是收集时刻 origin/main 的 SHA，写进 changes.json，后续合并后基准就更新到这个 SHA（不是更新时的最新 main）。
 - 以 main 的 first-parent 为单位列条目：一个 PR 的 merge commit 或 squash commit 算一条。
 - PR 标题、描述、标签走 gh；文件列表与行数走本地 blobless clone（首次自动 clone 到 --cache）。
@@ -21,10 +21,9 @@ import subprocess
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, HERE)
-import pos_tool  # noqa: E402
 
 MAP = os.path.join(HERE, "..", "references", "module-map.json")
+BASELINE = os.path.abspath(os.path.join(HERE, "..", "..", "..", "..", "baseline", "commits.json"))
 PR_RE = re.compile(r"Merge pull request #(\d+)|\(#(\d+)\)\s*$")
 TYPE_RE = re.compile(r"^(\w+)(\([^)]*\))?!?:")
 
@@ -97,26 +96,25 @@ def fetch_prs(repo, since_iso):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--pos", required=True)
+    ap.add_argument("--baseline", default=BASELINE)
     ap.add_argument("--out", required=True)
     ap.add_argument("--repo", action="append", help="只收集指定仓库，默认基准节点里的全部仓库")
     ap.add_argument("--head", action="append", default=[], help="repo=sha，固定 head；默认 origin/main")
     ap.add_argument("--cache", default=os.path.expanduser("~/.cache/tutti-qa/repos"))
     a = ap.parse_args()
 
-    base = pos_tool.baseline_get(pos_tool.root_of(pos_tool.load(a.pos)))
-    if not base:
-        sys.exit("宿主库里没有「📌 基准 Commit」节点，先执行 pos_tool.py baseline init")
+    with open(a.baseline, encoding="utf-8") as f:
+        base = json.load(f)["repos"]
     repos = a.repo or list(base)
     heads = dict(h.split("=", 1) for h in a.head)
     m = load_map()
     result = {"batch": os.path.basename(os.path.dirname(os.path.abspath(a.out))),
               "generated_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
-              "pos": a.pos, "repos": {}, "items": [], "scope": {"add": [], "update": "auto", "delete": []}}
+              "baseline": a.baseline, "repos": {}, "items": [], "scope": {"add": [], "update": "auto", "delete": []}}
 
     for repo in repos:
         if repo not in base:
-            sys.exit(f"基准节点里没有 {repo}，先 pos_tool.py baseline set")
+            sys.exit(f"{a.baseline} 里没有 {repo}，先在 repos 里登记")
         path = ensure_clone(repo, a.cache)
         b = base[repo]["sha"]
         h = heads.get(repo) or sh("git", "rev-parse", "origin/main", cwd=path).strip()

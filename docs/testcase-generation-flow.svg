@@ -1,0 +1,197 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1420" role="img" aria-labelledby="t d" font-family="PingFang SC, Microsoft YaHei, Helvetica, sans-serif">
+  <title id="t">tutti-qa 测试用例生成工作流程（tutti-ops 用例管理平台版）</title>
+  <desc id="d">用例库从 ProcessOn .pos 迁到用例管理平台后的九步流程：QA 声明范围、阅读 diff、浏览器走查、导出平台模块对照已有用例、QA 确认模块、写变更集并预校验、用例确认页、经 tutti-ops 写入平台、回读核对并交付。</desc>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#475569"/></marker>
+    <marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#dc2626"/></marker>
+    <style>
+      .step{fill:#eff6ff;stroke:#3b82f6;stroke-width:1.5}
+      .gate{fill:#fff7ed;stroke:#f97316;stroke-width:2.5}
+      .ops{fill:#f5f3ff;stroke:#7c3aed;stroke-width:2}
+      .note{fill:#f8fafc;stroke:#cbd5e1;stroke-width:1}
+      .warn{fill:#fef2f2;stroke:#f87171;stroke-width:1;stroke-dasharray:4 3}
+      .pill{fill:#1e293b}
+      .dia{fill:#f0fdf4;stroke:#22c55e;stroke-width:1.5}
+      .h{font-size:16px;font-weight:700;fill:#0f172a}
+      .s{font-size:12.5px;fill:#334155}
+      .n{font-size:12px;fill:#475569}
+      .c{font-family:Menlo,Consolas,monospace;font-size:11px;fill:#1d4ed8}
+      .cv{font-family:Menlo,Consolas,monospace;font-size:11px;fill:#6d28d9}
+      .num{font-size:14px;font-weight:700;fill:#fff}
+      .flow{stroke:#475569;stroke-width:1.6;fill:none;marker-end:url(#a)}
+      .back{stroke:#dc2626;stroke-width:1.4;fill:none;stroke-dasharray:5 4;marker-end:url(#r)}
+      .link{stroke:#cbd5e1;stroke-width:1;stroke-dasharray:3 3}
+      .lb{font-size:11.5px;fill:#dc2626}
+      .lg{font-size:11.5px;fill:#15803d}
+    </style>
+  </defs>
+
+  <rect width="1000" height="1420" fill="#ffffff"/>
+  <text x="40" y="40" font-size="22" font-weight="700" fill="#0f172a">tutti-qa 测试用例生成工作流程 · 用例管理平台版</text>
+  <text x="40" y="64" class="n">用例库：tutti.sh 用例管理平台（brand 233749，按模块存储、每次写入自动生成模块版本）· 操作入口：tutti-ops test-management</text>
+  <text x="40" y="82" class="n">代码来源：tutti-lab/tutti、tsh-web、tutti-server 的 main（first-parent）· 基准 commit：baseline/commits.json · baseline/*.pos 已冻结</text>
+
+  <g transform="translate(560,100)">
+    <rect width="18" height="12" class="step"/><text x="24" y="11" class="n">本地步骤</text>
+    <rect x="86" width="18" height="12" class="ops"/><text x="110" y="11" class="n">读写平台</text>
+    <rect x="172" width="18" height="12" class="gate"/><text x="196" y="11" class="n">QA 确认关卡</text>
+    <line x1="282" y1="6" x2="312" y2="6" class="back"/><text x="318" y="11" class="n">回退路径</text>
+  </g>
+
+  <g transform="translate(0,72)">
+  <rect x="220" y="50" width="300" height="38" rx="19" class="pill"/>
+  <text x="370" y="74" text-anchor="middle" font-size="14" fill="#fff">QA 发起：「同步最新代码到用例库」</text>
+  <line x1="370" y1="88" x2="370" y2="118" class="flow"/>
+
+  <!-- 1 -->
+  <rect x="170" y="120" width="400" height="76" rx="10" class="step"/>
+  <circle cx="196" cy="146" r="14" fill="#3b82f6"/><text x="196" y="151" text-anchor="middle" class="num">1</text>
+  <text x="220" y="151" class="h">QA 声明范围</text>
+  <text x="220" y="178" class="s">新增 / 删除：QA 指定平台模块或分组；更新：diff 自动识别</text>
+
+  <line x1="370" y1="196" x2="370" y2="218" class="flow"/>
+  <polygon points="370,220 520,255 370,290 220,255" class="dia"/>
+  <text x="370" y="260" text-anchor="middle" class="s" font-weight="700">本批涉及代码变更？</text>
+  <line x1="370" y1="290" x2="370" y2="328" class="flow"/>
+  <text x="378" y="314" class="lg">是</text>
+  <polyline points="220,255 110,255 110,484 168,484" class="flow"/>
+  <text x="116" y="248" class="lg">否：仅新增/删除</text>
+  <text x="116" y="270" class="lg">跳过收集，不动基准</text>
+
+  <!-- 2 -->
+  <rect x="170" y="330" width="400" height="76" rx="10" class="step"/>
+  <circle cx="196" cy="356" r="14" fill="#3b82f6"/><text x="196" y="361" text-anchor="middle" class="num">2</text>
+  <text x="220" y="361" class="h">收集并直接阅读 diff / PR / commit</text>
+  <text x="220" y="388" class="s">从基准 commit 读到固定的 head；全部条目都读，不预筛</text>
+  <line x1="370" y1="406" x2="370" y2="444" class="flow"/>
+
+  <!-- 3 -->
+  <rect x="170" y="446" width="400" height="76" rx="10" class="step"/>
+  <circle cx="196" cy="472" r="14" fill="#3b82f6"/><text x="196" y="477" text-anchor="middle" class="num">3</text>
+  <text x="220" y="477" class="h">浏览器走查受影响功能并截图</text>
+  <text x="220" y="504" class="s">入口→主流程→异常/边界；界面与代码不符列为待确认</text>
+  <line x1="370" y1="522" x2="370" y2="560" class="flow"/>
+
+  <!-- 4 -->
+  <rect x="170" y="562" width="400" height="76" rx="10" class="ops"/>
+  <circle cx="196" cy="588" r="14" fill="#7c3aed"/><text x="196" y="593" text-anchor="middle" class="num">4</text>
+  <text x="220" y="593" class="h">从平台拉取模块，对照已有用例</text>
+  <text x="220" y="620" class="s">定动作：更新 / 新增 / 归档 / 未授权建议 / 覆盖缺口</text>
+  <line x1="370" y1="638" x2="370" y2="676" class="flow"/>
+
+  <!-- 5 -->
+  <rect x="170" y="678" width="400" height="84" rx="10" class="gate"/>
+  <circle cx="196" cy="704" r="14" fill="#f97316"/><text x="196" y="709" text-anchor="middle" class="num">5</text>
+  <text x="220" y="709" class="h">QA 确认 ①：本批更新哪些模块</text>
+  <text x="220" y="734" class="s">交互式提问一次问完：模块多选 + 待确认项单选</text>
+  <text x="220" y="752" class="s">等 QA 真实回答；有歧义再问一轮</text>
+  <line x1="370" y1="762" x2="370" y2="800" class="flow"/>
+
+  <!-- 6 -->
+  <rect x="170" y="802" width="400" height="76" rx="10" class="step"/>
+  <circle cx="196" cy="828" r="14" fill="#3b82f6"/><text x="196" y="833" text-anchor="middle" class="num">6</text>
+  <text x="220" y="833" class="h">写变更集 spec.json 并预校验</text>
+  <text x="220" y="860" class="s">按平台用例字段编写，本地校验范围、格式、重名</text>
+  <polyline points="570,830 604,830 604,856 572,856" class="back"/>
+  <text x="577" y="823" class="lb">失败</text>
+  <line x1="370" y1="878" x2="370" y2="916" class="flow"/>
+
+  <!-- 7 -->
+  <rect x="170" y="918" width="400" height="84" rx="10" class="gate"/>
+  <circle cx="196" cy="944" r="14" fill="#f97316"/><text x="196" y="949" text-anchor="middle" class="num">7</text>
+  <text x="220" y="949" class="h">QA 确认 ②：用例确认页逐条勾选</text>
+  <text x="220" y="974" class="s">QA 一键复制结果粘回对话 —— 到这里停下等待</text>
+  <text x="220" y="992" class="s" font-weight="700" fill="#c2410c">未经页面导出确认，不写入平台、不前移基准</text>
+  <line x1="370" y1="1002" x2="370" y2="1040" class="flow"/>
+
+  <!-- 8 -->
+  <rect x="170" y="1042" width="400" height="76" rx="10" class="ops"/>
+  <circle cx="196" cy="1068" r="14" fill="#7c3aed"/><text x="196" y="1073" text-anchor="middle" class="num">8</text>
+  <text x="220" y="1073" class="h">按确认结果写入平台</text>
+  <text x="220" y="1100" class="s">只写 spec.confirmed.json；先 --dry-run 再 --yes</text>
+  <polyline points="170,1070 132,1070 132,960 168,960" class="back"/>
+  <text x="20" y="1012" class="lb">指纹不符</text>
+  <text x="20" y="1028" class="lb">→重出确认页</text>
+  <polyline points="170,1100 92,1100 92,840 168,840" class="back"/>
+  <text x="10" y="1132" class="lb">revision 冲突 / 备注</text>
+  <text x="10" y="1148" class="lb">改断言 → 重读改 spec</text>
+  <line x1="370" y1="1118" x2="370" y2="1156" class="flow"/>
+
+  <!-- 9 -->
+  <rect x="170" y="1158" width="400" height="76" rx="10" class="ops"/>
+  <circle cx="196" cy="1184" r="14" fill="#7c3aed"/><text x="196" y="1189" text-anchor="middle" class="num">9</text>
+  <text x="220" y="1189" class="h">回读核对、前移基准并交付</text>
+  <text x="220" y="1216" class="s">逐条回读确认已生效；交付说明 .md</text>
+  <line x1="370" y1="1234" x2="370" y2="1264" class="flow"/>
+
+  <rect x="220" y="1266" width="300" height="38" rx="19" class="pill"/>
+  <text x="370" y="1290" text-anchor="middle" font-size="14" fill="#fff">平台即最新用例库，无需再导入</text>
+
+  <!-- annotations -->
+  <line x1="570" y1="158" x2="640" y2="158" class="link"/>
+  <rect x="640" y="118" width="340" height="80" rx="8" class="note"/>
+  <text x="652" y="138" class="cv">case_tool.py modules --search &lt;名称&gt;</text>
+  <text x="652" y="156" class="cv">tutti-ops … cases list --search &lt;名称&gt;</text>
+  <text x="652" y="176" class="n">名称对不上时列候选让 QA 选，不猜</text>
+  <text x="652" y="192" class="n">新增 / 删除只在授权模块 / 分组内</text>
+
+  <line x1="570" y1="368" x2="640" y2="368" class="link"/>
+  <rect x="640" y="318" width="340" height="100" rx="8" class="note"/>
+  <text x="652" y="338" class="c">collect_changes.py → $B/changes.json</text>
+  <text x="652" y="356" class="n">固定收集时刻 origin/main 为 head SHA</text>
+  <text x="652" y="374" class="n">git diff base..head · gh pr view · diff_digest.py</text>
+  <text x="652" y="392" class="n">必要时补读实现、测试、i18n（sparse worktree）</text>
+  <text x="652" y="410" class="n">基准：baseline/commits.json（baseline get）</text>
+
+  <line x1="570" y1="484" x2="640" y2="484" class="link"/>
+  <rect x="640" y="440" width="340" height="88" rx="8" class="note"/>
+  <text x="652" y="460" class="c">regress: identity create · session start</text>
+  <text x="652" y="478" class="c">act · screenshot · query · session report</text>
+  <text x="652" y="498" class="n">产物：walkthrough.md + walkthrough/*.jpg</text>
+  <text x="652" y="516" class="n">默认 prod；未上线的标「环境未上线」</text>
+
+  <line x1="570" y1="600" x2="640" y2="600" class="link"/>
+  <rect x="640" y="548" width="340" height="104" rx="8" class="note"/>
+  <text x="652" y="568" class="cv">case_tool.py pull &lt;模块id&gt; --out $B/snapshot</text>
+  <text x="652" y="586" class="n">快照含每条用例的 revision，后续都以它为准</text>
+  <text x="652" y="606" class="n">用例层级：模块 → category / group → scene</text>
+  <text x="652" y="624" class="n">更新保留 id、记下当前 revision（乐观锁）</text>
+  <text x="652" y="642" class="n">预期 A 记法：n) 维度 ｜ 内容</text>
+
+  <line x1="570" y1="720" x2="640" y2="720" class="link"/>
+  <rect x="640" y="680" width="340" height="80" rx="8" class="note"/>
+  <text x="652" y="700" class="n">先写回 changes.json：impact / modules / checked</text>
+  <text x="652" y="718" class="n">选项首项「全部模块（推荐）」</text>
+  <text x="652" y="738" class="n">未覆盖全部受影响模块 → 延期，不前移基准</text>
+
+  <line x1="604" y1="843" x2="640" y2="843" class="link"/>
+  <rect x="640" y="790" width="340" height="104" rx="8" class="note"/>
+  <text x="652" y="810" class="n">新增：id、moduleId、title、priority、steps、</text>
+  <text x="652" y="826" class="n">　　　expectations、category/group/scene、note</text>
+  <text x="652" y="846" class="n">更新：全量字段 + 当前 revision</text>
+  <text x="652" y="864" class="n">删除：archived=true（平台软删除）</text>
+  <text x="652" y="884" class="cv">case_tool.py validate spec.json --snapshot</text>
+
+  <line x1="570" y1="960" x2="640" y2="960" class="link"/>
+  <rect x="640" y="918" width="340" height="84" rx="8" class="note"/>
+  <text x="652" y="938" class="c">render_case_titles.py → $B/cases.html</text>
+  <text x="652" y="956" class="n">模块→子模块→正常/异常/边界→标题，默认全选</text>
+  <text x="652" y="974" class="n">复制末尾附 TUTTI-QA-CASES 指纹 JSON</text>
+  <text x="652" y="992" class="c">apply_case_confirm.py → spec.confirmed.json</text>
+
+  <line x1="570" y1="1080" x2="640" y2="1080" class="link"/>
+  <rect x="640" y="1026" width="340" height="108" rx="8" class="note"/>
+  <text x="652" y="1046" class="cv">case_tool.py apply … [--yes]  # 默认 dry-run</text>
+  <text x="652" y="1064" class="n">新增 cases import → 更新/归档 cases update</text>
+  <text x="652" y="1084" class="n">写入需 test_management:write 权限</text>
+  <text x="652" y="1102" class="n">退出码 6 = 结果不确定：先回读，再决定重试</text>
+  <text x="652" y="1120" class="n">出错即停，请求与结果记入 apply-log.json</text>
+
+  <line x1="570" y1="1196" x2="640" y2="1196" class="link"/>
+  <rect x="640" y="1150" width="340" height="92" rx="8" class="note"/>
+  <text x="652" y="1170" class="cv">case_tool.py verify  # 回读 → verify.json</text>
+  <text x="652" y="1188" class="cv">case_tool.py baseline set  # 核对通过才前移</text>
+  <text x="652" y="1208" class="n">回滚：versions list / restore（取代 .pos 归档）</text>
+  <text x="652" y="1228" class="n">commits.json 与 output/ 产物一起提 PR</text>
+  </g>
+</svg>

@@ -29,13 +29,14 @@ def normalize_cases(raw):
         if case['scene'] not in SCENES or case['priority'] not in ('P0', 'P1', 'P2'):
             raise ValueError(f"场景或优先级无效：{case['id']}")
         for key, default in (('kind', '功能回归'), ('pre', ''), ('note', '')):
-            case[key] = record.get(key, default)
+            # 平台导出的用例字段是 precondition / expectations，与 pre / expect 等价
+            case[key] = record.get(key, record.get('precondition', default) if key == 'pre' else default) or default
             if not isinstance(case[key], str):
                 raise ValueError(f'{key} 必须是字符串')
         if case['kind'] not in ('功能回归', '专项验证'):
             raise ValueError('kind 必须是功能回归或专项验证')
         for key in ('steps', 'expect'):
-            case[key] = record.get(key, [])
+            case[key] = record.get(key, record.get('expectations', []) if key == 'expect' else [])
             if not isinstance(case[key], list) or any(not isinstance(x, str) for x in case[key]):
                 raise ValueError(f'{key} 必须是字符串数组')
         category = record.get('category') or record.get('module') or case['group'].split(' / ')[0]
@@ -60,19 +61,10 @@ def normalize_cases(raw):
 
 
 def confirmation_keys(spec):
-    keys = {f'U{i}' for i, _ in enumerate(spec.get('update', []))}
-    keys.update(f'D{i}' for i, _ in enumerate(spec.get('delete', [])))
-
-    def walk(nodes, prefix):
-        for i, node in enumerate(nodes):
-            key = f'{prefix}.{i}'
-            if 'case' in node or not node.get('children'):
-                keys.add(key)
-            else:
-                walk(node['children'], key)
-    for i, item in enumerate(spec.get('add', [])):
-        walk(item['nodes'], f'A{i}')
-    return keys
+    """与 render_cases.confirmation_keys 一致：新增 C<n>、更新 U<n>、归档 R<n>。"""
+    return ({f'C{i}' for i, _ in enumerate(spec.get('create', []))}
+            | {f'U{i}' for i, _ in enumerate(spec.get('update', []))}
+            | {f'R{i}' for i, _ in enumerate(spec.get('archive', []))})
 
 
 def validate_confirmation(meta, spec_path, cases):
@@ -95,7 +87,7 @@ def validate_confirmation(meta, spec_path, cases):
             set(mapped) != set(all_keys)):
         raise ValueError('确认 key 重复、遗漏或未映射，不能导出可合并确认。')
     if set(all_keys) != confirmation_keys(json.loads(spec_path.read_text(encoding='utf-8'))):
-        raise ValueError('确认 key 没有完整覆盖 spec 的新增用例 / 说明、更新和删除。')
+        raise ValueError('确认 key 没有完整覆盖 spec 的新增、更新和归档。')
 
 
 def render(cases_path, out, title='测试用例', confirmation=None, spec=None):
