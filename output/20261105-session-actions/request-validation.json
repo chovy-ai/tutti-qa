@@ -1,0 +1,10 @@
+{
+  "file": "output/20261105-session-actions/walkthrough-request.json",
+  "sha256": "06d006cf6b8cd1ac23125c318582cb8fc3f822e4cc6884c7ad84ff319e2e3ced",
+  "cli_parser": "passed",
+  "service_parser": "passed",
+  "expectations": 8,
+  "constraints": 17,
+  "submitted": false,
+  "browser_started": false
+}
