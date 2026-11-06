@@ -1,0 +1,137 @@
+房间 Agent GUI / 官方账号 / 异常与恢复（补充）
+    用例
+        用例
+            上游请求失败时不重复计费
+            流式输出中途网络断开
+            上游限流或超时
+            账号授权过期且刷新失败
+房间 Agent GUI / 官方账号
+    模型失效后的会话
+        异常场景
+            正在使用的唯一账号被移除
+            取消勾选该 Agent 自己的订阅
+    续聊他人会话
+        正常场景
+            续聊他人会话完整链路
+            续聊时在所属人的来源之间切换
+        异常场景
+            所属人的账号额度用完
+            所属人让会话正在用的来源失效
+房间 Agent GUI / 官方多账号 / 异常与恢复（补充）
+    用例
+        用例
+            上游请求失败时不重复计费
+            流式输出中途网络断开
+房间 Agent GUI / 官方多账号
+    模型失效后的会话
+        异常场景
+            所有账号都被移除
+            取消勾选该 Agent 自己的订阅
+    续聊他人会话
+        正常场景
+            续聊他人会话完整链路
+            续聊时在所属人的来源之间切换
+        异常场景
+            续聊中所属人的首选账号用完
+            所属人让会话正在用的来源失效
+房间 Agent GUI / 其他 Agent 订阅 / 异常与恢复（补充）
+    用例
+        用例
+            上游请求失败时不重复计费
+            流式输出中途网络断开
+            上游限流或超时
+            订阅 X 额度用完
+房间 Agent GUI / 其他 Agent 订阅
+    模型失效后的会话
+        异常场景
+            取消勾选正在使用的订阅 X
+            订阅 X 的账号全部被移除
+            关闭模型路由后会话里的订阅 X
+    续聊他人会话
+        正常场景
+            续聊他人会话完整链路
+            续聊时在所属人的来源之间切换
+        异常场景
+            所属人的订阅 X 额度用完
+            所属人让会话正在用的来源失效
+房间 Agent GUI / Tutti API / 异常与恢复（补充）
+    用例
+        用例
+            上游请求失败时不重复计费
+            流式输出中途网络断开
+            上游限流或超时
+            积分为 0 时发送被拦截
+房间 Agent GUI / Tutti API
+    模型失效后的会话
+        异常场景
+            停用正在使用的 Tutti API
+            正在使用的 Tutti API 模型下线
+    续聊他人会话
+        正常场景
+            续聊他人会话完整链路
+            续聊时在所属人的来源之间切换
+        异常场景
+            会话所属人积分为 0
+            所属人让会话正在用的来源失效
+房间 Agent GUI / API Key / 异常与恢复（补充）
+    用例
+        用例
+            上游请求失败时不重复计费
+            流式输出中途网络断开
+            上游限流或超时
+            Key 失效或服务商余额不足
+            手动填写的模型 ID 不存在
+房间 Agent GUI / API Key
+    模型失效后的会话
+        异常场景
+            正在使用的配置被解绑
+            正在使用的配置被删除
+            配置里正在用的模型被去掉
+    续聊他人会话
+        正常场景
+            续聊他人会话完整链路
+            续聊时在所属人的来源之间切换
+        异常场景
+            所属人的 Key 失效
+            所属人让会话正在用的来源失效
+房间 Agent GUI / 运行位置差异（云端首次使用）
+    用例
+        异常场景
+            首次准备中停止后可重新发起
+            首次准备失败后重试
+        用例
+            首次在云端房间直接选云端 Agent 发送 · 全链路
+            云端电脑准备好后再选云端 Agent 不再准备
+房间 Agent GUI / 共享 Agent
+    共享 Agent
+        正常场景
+            B 使用 A 共享的 Agent，下拉列出 A 的五类来源 · 全链路
+            官方账号的等价性抽检（共享）
+            官方多账号的等价性抽检（共享）
+            其他 Agent 订阅的等价性抽检（共享）
+            Tutti API的等价性抽检（共享）
+            API Key的等价性抽检（共享）
+            A 修改来源配置后 B 这边同步
+            额度保护触发后只有 A 的官方账号不能用
+        异常场景
+            B 不能管理 A 的账号与 Key
+            A 的订阅账号全部用完时不切到付费来源
+            运行中 A 关闭共享或 B 退出房间
+            A 的电脑离线时 B 侧不可用
+            A 关闭模型路由后 B 使用
+        边界场景
+            B 自己的同类 Agent 与 A 共享的不串
+            A 共享的云端 Agent
+修改用例
+    已有用例标题
+        用例
+            三个运行位置的 Agent 列表与模型来源数
+            三个运行位置的来源配置互相独立
+            说明：房间会话输入框与模型下拉。通用用例，不指定 Agent，三个运行位置（本地房间配置 › 当前电脑、云端房间配置 › 云端电脑、云端房间配置 › 本机隔离虚拟机）都要测。「官方账号」「官方多账号」「其他 Agent 订阅」「Tutti API」「API Key」按来源分模块，每个来源下的子模块结构相同；运行位置与 Agent 的差异放在最后两组。
+            /status 与 /compact 后继续对话
+            /status 与 /compact 后继续对话
+            /status 与 /compact 后继续对话
+            /status 与 /compact 后继续对话
+            /status 与 /compact 后继续对话
+
+TUTTI-QA-CASES {"batch":"20261028-1","hash":"e756b491c6b33e5b","decisions":[{"key":"A0.0","keep":true},{"key":"A0.1","keep":true},{"key":"A0.2","keep":true},{"key":"A0.3","keep":true},{"key":"A1.0.1.0","keep":true},{"key":"A1.0.1.1","keep":true},{"key":"A1.1.1.0","keep":true},{"key":"A1.1.1.1","keep":true},{"key":"A1.1.2.0","keep":true},{"key":"A1.1.2.1","keep":true},{"key":"A2.0","keep":true},{"key":"A2.1","keep":true},{"key":"A3.0.1.0","keep":true},{"key":"A3.0.1.1","keep":true},{"key":"A3.1.1.0","keep":true},{"key":"A3.1.1.1","keep":true},{"key":"A3.1.2.0","keep":true},{"key":"A3.1.2.1","keep":true},{"key":"A4.0","keep":true},{"key":"A4.1","keep":true},{"key":"A4.2","keep":true},{"key":"A4.3","keep":true},{"key":"A5.0.1.0","keep":true},{"key":"A5.0.1.1","keep":true},{"key":"A5.0.1.2","keep":true},{"key":"A5.1.1.0","keep":true},{"key":"A5.1.1.1","keep":true},{"key":"A5.1.2.0","keep":true},{"key":"A5.1.2.1","keep":true},{"key":"A6.0","keep":true},{"key":"A6.1","keep":true},{"key":"A6.2","keep":true},{"key":"A6.3","keep":true},{"key":"A7.0.1.0","keep":true},{"key":"A7.0.1.1","keep":true},{"key":"A7.1.1.0","keep":true},{"key":"A7.1.1.1","keep":true},{"key":"A7.1.2.0","keep":true},{"key":"A7.1.2.1","keep":true},{"key":"A8.0","keep":true},{"key":"A8.1","keep":true},{"key":"A8.2","keep":true},{"key":"A8.3","keep":true},{"key":"A8.4","keep":true},{"key":"A9.0.1.0","keep":true},{"key":"A9.0.1.1","keep":true},{"key":"A9.0.1.2","keep":true},{"key":"A9.1.1.0","keep":true},{"key":"A9.1.1.1","keep":true},{"key":"A9.1.2.0","keep":true},{"key":"A9.1.2.1","keep":true},{"key":"A11.0.0","keep":true},{"key":"A11.0.1","keep":true},{"key":"A10.0","keep":true},{"key":"A10.1","keep":true},{"key":"A12.0.1.0","keep":true},{"key":"A12.0.1.1","keep":true},{"key":"A12.0.1.2","keep":true},{"key":"A12.0.1.3","keep":true},{"key":"A12.0.1.4","keep":true},{"key":"A12.0.1.5","keep":true},{"key":"A12.0.1.6","keep":true},{"key":"A12.0.1.7","keep":true},{"key":"A12.0.2.0","keep":true},{"key":"A12.0.2.1","keep":true},{"key":"A12.0.2.2","keep":true},{"key":"A12.0.2.3","keep":true},{"key":"A12.0.2.4","keep":true},{"key":"A12.0.3.0","keep":true},{"key":"A12.0.3.1","keep":true},{"key":"U0","keep":true},{"key":"U1","keep":true},{"key":"U2","keep":true},{"key":"U3","keep":true},{"key":"U4","keep":true},{"key":"U5","keep":true},{"key":"U6","keep":true},{"key":"U7","keep":true},{"key":"D0","keep":false},{"key":"D1","keep":false}]}
