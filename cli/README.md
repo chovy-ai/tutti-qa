@@ -75,7 +75,7 @@ tutti-qa test "验证普通成员不能删除房间" \
 
 `--expect`、`--constraints` 可以重复。账号可使用 `--account auto-test-account-1` 精确指定，或通过 `--roles`、`--env`、`--capabilities`、`--tags` 筛选；省略时服务从原有允许使用的账号中选择，不新建用户。
 
-默认任务限时 600 秒，操作预算为 1000 步；可用 `--timeout-seconds`（最大 3600）和 `--max-steps`（1–1000）设置预算。预算是上限，达到目标即可结束，无需用满。走查的 `maxSteps` 是交给 Codex 的操作预算，不是主机逐动作强制计数；Codex 在同一会话中使用 Ego 原生工具完成走查。测试步骤仍是 Midscene 生成的 action，底层键鼠动作也有有限预算。两种计数不等于模型调用次数；服务端超时限制始终强制执行。
+默认任务限时 43200 秒（12 小时），最长也是 12 小时，操作预算为 1000 步；可用 `--timeout-seconds`（1–43200 秒）和 `--max-steps`（1–1000）设置时限和操作预算。预算是上限，达到目标即可结束，无需用满。走查的 `maxSteps` 是交给 Codex 的操作预算，不是主机逐动作强制计数；Codex 在同一会话中使用 Ego 原生工具完成走查。测试步骤仍是 Midscene 生成的 action，底层键鼠动作也有有限预算。两种计数不等于模型调用次数；服务端超时限制始终强制执行。
 
 允许执行目标所需的真实业务数据变更，例如发送消息或修改公告；调用方给出的 `--constraints` 仍须遵守。CLI 和服务不自动附加只读约束，业务操作不会因任务失败而自动回滚。
 
@@ -129,7 +129,7 @@ stdout 只输出 JSON；命令错误在 stderr 输出 JSON。执行结果包含 
 
 CLI 自动重试短暂网络错误时复用同一个 POST `Idempotency-Key` 和原请求体。最终响应未确认会返回 `REQUEST_UNCONFIRMED`、`operationState: unknown` 及 requestId；自动化建议显式提供 `--request-id`，重试同一意图时沿用 ID 和原输入。改变目标或主动重跑必须使用新 ID。幂等缓存以服务器当前进程生命周期为界，重启后不能依靠旧 ID 自动重放。
 
-`--wait-seconds` 仅控制客户端等待（默认 900 秒），`--http-timeout-seconds` 仅控制单次 HTTP 请求（默认 30 秒）。停止等待、断网或 Ctrl+C 不会自动创建新任务，也不会隐式取消服务器任务；从错误中的 runId 继续查询或显式取消。若提交响应丢失，没有 runId，使用原 requestId 重试提交获取回执。
+`--wait-seconds` 仅控制客户端等待（默认 43500 秒，即 12 小时加 5 分钟收尾时间），`--http-timeout-seconds` 仅控制单次 HTTP 请求（默认 30 秒）。停止等待、断网或 Ctrl+C 不会自动创建新任务，也不会隐式取消服务器任务；从错误中的 runId 继续查询或显式取消。若提交响应丢失，没有 runId，使用原 requestId 重试提交获取回执。
 
 服务端负责续租和回收账号，CLI 不直接管理浏览器会话。当前工作流在服务端串行运行；重启后任务句柄不恢复，不自动重放模型动作。完整服务边界见 [SERVICE.md](../regress/SERVICE.md)。
 

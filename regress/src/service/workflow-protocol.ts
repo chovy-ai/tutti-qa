@@ -1,5 +1,7 @@
 import { integer, object, parseSession, requireValue, strings, text, type CreateSession } from "./protocol.ts";
 
+export const MAX_GOAL_TIMEOUT_SECONDS = 43_200;
+
 export interface GoalInput {
   mode: "walkthrough" | "test";
   goal: string;
@@ -27,7 +29,7 @@ export function parseGoal(raw: unknown): GoalInput {
     expectations: body.expectations === undefined ? [] : longStrings(body.expectations),
     constraints: body.constraints === undefined ? [] : longStrings(body.constraints),
     maxSteps: integer(body.maxSteps, 1000, 1000, "maxSteps"),
-    timeoutSeconds: integer(body.timeoutSeconds, 600, 3600, "timeoutSeconds")
+    timeoutSeconds: integer(body.timeoutSeconds, MAX_GOAL_TIMEOUT_SECONDS, MAX_GOAL_TIMEOUT_SECONDS, "timeoutSeconds")
   };
 }
 
