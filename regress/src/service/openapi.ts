@@ -1,4 +1,5 @@
 import { stepKeys } from "./protocol.ts";
+import { MAX_GOAL_TIMEOUT_SECONDS } from "./workflow-protocol.ts";
 
 const ref = (name: string) => ({ $ref: `#/components/schemas/${name}` });
 const envelope = (schema: object) => ({ type: "object", required: ["data"], properties: { data: schema } });
@@ -55,7 +56,7 @@ export const OPENAPI = {
           selector: { $ref: "#/components/schemas/CreateSession/properties/selector" },
           ...Object.fromEntries(["expectations", "constraints"].map((key) => [key, { type: "array", maxItems: 20, items: { type: "string", minLength: 1, maxLength: 2000 } }])),
           maxSteps: { type: "integer", minimum: 1, maximum: 1000, default: 1000, description: "walkthrough: requested native-browser operation budget (model-guided); test: host-enforced plan step limit" },
-          timeoutSeconds: { type: "integer", minimum: 1, maximum: 3600, default: 600 }
+          timeoutSeconds: { type: "integer", minimum: 1, maximum: MAX_GOAL_TIMEOUT_SECONDS, default: MAX_GOAL_TIMEOUT_SECONDS }
         }
       },
       GoalRun: {

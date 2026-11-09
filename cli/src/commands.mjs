@@ -4,6 +4,9 @@ import { resolve, join } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import { ClientError } from "./client.mjs";
 
+const MAX_GOAL_TIMEOUT_SECONDS = 43_200;
+const DEFAULT_WAIT_SECONDS = MAX_GOAL_TIMEOUT_SECONDS + 300;
+
 export const HELP = `tutti-qa — submit browser goals to workflows on the execution host
 
 Connection: --server URL (or BROWSER_TEST_SERVER); no authentication token required
@@ -19,8 +22,8 @@ Node.js >=22; no local browser/model dependencies. Results are JSON.
   artifact get ID --out FILE
 
 Goals: --constraints TEXT (repeatable), --env NAME, --capabilities a,b, --tags a,b
-Budgets: --max-steps N (1000; maximum 1000), --timeout-seconds N (600)
-Client: --wait-seconds N (900), --poll-ms N (1000), --http-timeout-seconds N (30)
+Budgets: --max-steps N (1000; maximum 1000), --timeout-seconds N (${MAX_GOAL_TIMEOUT_SECONDS}; maximum ${MAX_GOAL_TIMEOUT_SECONDS})
+Client: --wait-seconds N (${DEFAULT_WAIT_SECONDS}), --poll-ms N (1000), --http-timeout-seconds N (30)
 Output: --out-dir DIR (download evidence), --request-id ID (reuse unchanged on retries)
 
 walkthrough = Codex + ego lite; test = Midscene + ego lite; both use existing host accounts.
@@ -98,7 +101,7 @@ export async function goalBody(values, alias, positionalGoal, stdin) {
   if (values.expect) body.expectations = values.expect;
   if (values.constraints) body.constraints = values.constraints;
   if (values["max-steps"] !== undefined) body.maxSteps = number(values["max-steps"], undefined, "--max-steps", 1000);
-  if (values["timeout-seconds"] !== undefined) body.timeoutSeconds = number(values["timeout-seconds"], undefined, "--timeout-seconds", 3600);
+  if (values["timeout-seconds"] !== undefined) body.timeoutSeconds = number(values["timeout-seconds"], undefined, "--timeout-seconds", MAX_GOAL_TIMEOUT_SECONDS);
   if (!["walkthrough", "test"].includes(body.mode)) fail("Choose mode walkthrough or test");
   required(body.goal, "goal");
   return body;
@@ -111,7 +114,7 @@ export function runExit(run) {
   return 2;
 }
 
-export async function waitForRun(client, runId, { signal, waitSeconds = 900, pollMs = 1000 } = {}) {
+export async function waitForRun(client, runId, { signal, waitSeconds = DEFAULT_WAIT_SECONDS, pollMs = 1000 } = {}) {
   const deadline = Date.now() + waitSeconds * 1000;
   const waitLimit = AbortSignal.timeout(waitSeconds * 1000);
   const waiting = signal ? AbortSignal.any([signal, waitLimit]) : waitLimit;
@@ -147,7 +150,7 @@ export async function executeCommand(client, positionals, values, { signal, stdi
   const [command, sub, ...rest] = positionals;
   const requestId = values["request-id"] ?? randomUUID();
   if (!/^[\x21-\x7e]{1,96}$/u.test(requestId)) fail("--request-id must be 1–96 printable ASCII characters");
-  const waitOptions = { signal, waitSeconds: number(values["wait-seconds"], 900, "--wait-seconds"), pollMs: number(values["poll-ms"], 1000, "--poll-ms", 10_000) };
+  const waitOptions = { signal, waitSeconds: number(values["wait-seconds"], DEFAULT_WAIT_SECONDS, "--wait-seconds"), pollMs: number(values["poll-ms"], 1000, "--poll-ms", 10_000) };
   const get = (path) => client.request("GET", path, { signal });
   const post = (path, body) => client.request("POST", path, { body, requestId, signal });
   const wrap = (data, extra = {}, exitCode = 0) => ({ output: { data, ...extra }, exitCode });

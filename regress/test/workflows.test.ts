@@ -10,6 +10,7 @@ import type { Account } from "../src/service/accounts.ts";
 import { loadConfig } from "../src/service/config.ts";
 import type { EgoPage } from "../src/service/ego.ts";
 import { createHttpServer } from "../src/service/http.ts";
+import { OPENAPI } from "../src/service/openapi.ts";
 import { ServiceError, type Client } from "../src/service/protocol.ts";
 import type { BrowserProvider } from "../src/service/provider.ts";
 import { BrowserService } from "../src/service/service.ts";
@@ -77,7 +78,7 @@ test("两种工作流默认预算为 1000，接受边界并保留调用方的数
     const defaults = parseGoal({ mode, goal: "Update a chat announcement" });
     assert.equal(defaults.maxSteps, 1000);
     assert.deepEqual(defaults.constraints, []);
-    assert.equal(defaults.timeoutSeconds, 600);
+    assert.equal(defaults.timeoutSeconds, 43_200);
     const constraints = ["Only modify the announcement in the specified room"];
     const explicit = parseGoal({ mode, goal: defaults.goal, maxSteps: 1000, constraints });
     assert.equal(explicit.maxSteps, 1000);
@@ -85,6 +86,36 @@ test("两种工作流默认预算为 1000，接受边界并保留调用方的数
     assert.equal(parseGoal({ mode, goal: defaults.goal, maxSteps: 1 }).maxSteps, 1);
     for (const maxSteps of [0, -1, 1.5, 1001]) assert.throws(() => parseGoal({ mode, goal: defaults.goal, maxSteps }));
   }
+});
+
+test("工作流时限默认和上限为 12 小时，允许更短时限并与 OpenAPI 一致", () => {
+  const schema = OPENAPI.components.schemas.GoalInput.properties.timeoutSeconds;
+  assert.equal(schema.default, 43_200);
+  assert.equal(schema.maximum, 43_200);
+  for (const mode of ["walkthrough", "test"]) {
+    for (const timeoutSeconds of [1, 600, 3601, 43_200]) {
+      assert.equal(parseGoal({ mode, goal: "Observe", timeoutSeconds }).timeoutSeconds, timeoutSeconds);
+    }
+    for (const timeoutSeconds of [0, -1, 1.5, 43_201]) {
+      assert.throws(() => parseGoal({ mode, goal: "Observe", timeoutSeconds }));
+    }
+  }
+});
+
+test("显式短时限仍会中断走查并回收账号，晚到结果不覆盖超时状态", async (t) => {
+  let release: (value: WalkthroughResult) => void = () => {};
+  const f = await fixture(t, { walkthrough: () => ({
+    run: () => new Promise<WalkthroughResult>((resolve) => { release = resolve; }),
+    async close() { assert.equal(f.closed(), 1); }
+  }) });
+  const run = f.goals.submit(alice, parseGoal({ mode: "walkthrough", goal: "Observe", timeoutSeconds: 1 }));
+  const result = await finished(f.goals, alice.id, run.id);
+  assert.equal(result.status, "timed_out");
+  assert.equal(result.error?.code, "WORKFLOW_TIMEOUT");
+  assert.equal(result.cleanup?.status, "closed");
+  assert.equal(f.browsers.listAccounts(alice)[0]?.status, "available");
+  release(walkthroughResult()); await delay(20);
+  assert.deepEqual(f.goals.get(alice.id, run.id), result);
 });
 
 test("走查将整个目标交给同一执行会话，宿主只保存首尾状态与最终报告", async (t) => {

@@ -97,6 +97,37 @@ test("CLI accepts a 1000-step budget and preserves explicit data constraints", a
   }
 });
 
+test("CLI accepts goal timeouts up to 12 hours and rejects larger budgets", async () => {
+  for (const mode of ["walkthrough", "test"]) {
+    for (const value of ["1", "600", "3601", "43200"]) {
+      assert.equal((await goalBody({ "timeout-seconds": value }, mode, "Observe")).timeoutSeconds, Number(value));
+    }
+    for (const value of ["0", "-1", "1.5", "43201"]) {
+      await assert.rejects(goalBody({ "timeout-seconds": value }, mode, "Observe"), (e) => e.code === "INVALID_ARGUMENT");
+    }
+  }
+});
+
+test("default CLI waiting covers a 12-hour workflow; shorter waits remain explicit", async (t) => {
+  let now = Date.now();
+  t.mock.method(Date, "now", () => now);
+  const terminal = { id: "run-1", status: "completed", finishedAt: "2026-11-09T00:00:00Z", artifacts: [] };
+  for (const direct of [true, false]) {
+    let polls = 0;
+    const client = { timeoutMs: 1000, async request(method) {
+      if (method === "POST") return { id: "run-1", status: "queued" };
+      if (++polls === 1) { now += 43_201_000; return { id: "run-1", status: "running" }; }
+      return terminal;
+    } };
+    const result = direct
+      ? await waitForRun(client, "run-1", { pollMs: 1 })
+      : (await executeCommand(client, ["walkthrough", "Observe"], { "poll-ms": "1" })).output.data;
+    assert.equal(result.status, "completed"); assert.equal(polls, 2);
+  }
+  const client = { timeoutMs: 1000, async request() { now += 2000; return { id: "run-short", status: "running" }; } };
+  await assert.rejects(waitForRun(client, "run-short", { waitSeconds: 1, pollMs: 1 }), (e) => e.code === "WAIT_TIMEOUT" && e.details.runId === "run-short");
+});
+
 test("waiting requires finishedAt, returns assertion failure as exit 1 and preserves evidence", async (t) => {
   const dir = await temp(t);
   let polls = 0;
