@@ -56,6 +56,7 @@ async function receive(line) {
   let report = { answer: "Native tool work completed", round };
   if (params.outputSchema?.properties?.status) {
     const screenshots = join(params.cwd ?? workdirs.get(threadId), "screenshots");
+    const filename = mode === "unicode-filename" ? "001_入口与目录_初始页.png" : "observed.png";
     await mkdir(screenshots, { recursive: true });
     if (mode === "parent-symlink") {
       const outside = join(screenshots, "..", "outside"); await mkdir(outside);
@@ -64,9 +65,11 @@ async function receive(line) {
     if (mode !== "missing-evidence") {
       const bytes = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a/ngAAAAASUVORK5CYII=", "base64");
       if (mode === "symlink") { const outside = join(screenshots, "..", "outside.png"); await writeFile(outside, bytes); await symlink(outside, join(screenshots, "observed.png")); }
-      else await writeFile(join(screenshots, "observed.png"), bytes);
+      else await writeFile(join(screenshots, filename), bytes);
     }
-    report = { status: mode === "blocked" ? "blocked" : "completed", summary: "Observed the goal using native Ego operations", uncovered: mode === "blocked" ? ["Login is required"] : [], observations: mode === "empty-evidence" ? [] : [{ summary: "Observed the requested state", url: mode === "wrong-origin" ? "https://outside.test" : "https://example.org", title: "Fixture", screenshot: mode === "traversal" ? "../observed.png" : "observed.png" }] };
+    const reference = mode === "traversal" ? "../observed.png"
+      : mode === "windows-path" ? "screenshots\\observed.png" : filename;
+    report = { status: mode === "blocked" ? "blocked" : "completed", summary: "Observed the goal using native Ego operations", uncovered: mode === "blocked" ? ["Login is required"] : [], observations: mode === "empty-evidence" ? [] : [{ summary: "Observed the requested state", url: mode === "wrong-origin" ? "https://outside.test" : "https://example.org", title: "Fixture", screenshot: reference }] };
   }
   const text = mode === "invalid-report" ? "Not a report" : JSON.stringify(report);
   send({ method: "item/completed", params: { threadId, turnId, item: { id: "native-command", type: "commandExecution", command: "ego-browser nodejs", status: "completed", exitCode: 0 } } });

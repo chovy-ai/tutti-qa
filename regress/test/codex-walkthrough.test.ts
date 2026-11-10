@@ -69,13 +69,24 @@ test("走查提交完整目标与 Ego skill，不再传下一步动作 schema，
   assert.ok(messages.some((v) => v.method === "thread/unsubscribe"));
 });
 
+test("中文截图文件名保留原图并导入标准 artifact，无需重新走查", async (t) => {
+  const f = await fixture(t, "unicode-filename");
+  const result = await f.agent.run(f.page, parseGoal({ mode: "walkthrough", goal: "Observe" }), () => {});
+  assert.equal(result.status, "completed");
+  assert.equal(result.artifacts.length, 1);
+  assert.equal(result.artifacts[0]!.id, "run-1-codex-1.png");
+  const source = await readFile(join(f.dir, "workflows", "run-1", "screenshots", "001_入口与目录_初始页.png"));
+  assert.deepEqual(await readFile(join(f.dir, "artifacts", result.artifacts[0]!.id)), source);
+  assert.equal((await f.messages()).filter((v) => v.method === "turn/start").length, 1);
+});
+
 test("缺少 Ego skill 时明确阻塞，不开启无浏览器能力的模型 turn", async (t) => {
   const f = await fixture(t, "missing-skill");
   await assert.rejects(f.agent.run(f.page, parseGoal({ mode: "walkthrough", goal: "Observe" }), () => {}), (e: ServiceError) => e.code === "EGO_SKILL_UNAVAILABLE");
   assert.equal((await f.messages()).some((v) => v.method === "turn/start"), false);
 });
 
-for (const [mode, code] of [["invalid-report", "CODEX_REPORT_INVALID"], ["empty-evidence", "WALKTHROUGH_INCOMPLETE"], ["missing-evidence", "WALKTHROUGH_EVIDENCE_INVALID"], ["traversal", "WALKTHROUGH_EVIDENCE_INVALID"], ["symlink", "WALKTHROUGH_EVIDENCE_INVALID"], ["parent-symlink", "WALKTHROUGH_EVIDENCE_INVALID"]]) {
+for (const [mode, code] of [["invalid-report", "CODEX_REPORT_INVALID"], ["empty-evidence", "WALKTHROUGH_INCOMPLETE"], ["missing-evidence", "WALKTHROUGH_EVIDENCE_INVALID"], ["traversal", "WALKTHROUGH_EVIDENCE_INVALID"], ["windows-path", "WALKTHROUGH_EVIDENCE_INVALID"], ["symlink", "WALKTHROUGH_EVIDENCE_INVALID"], ["parent-symlink", "WALKTHROUGH_EVIDENCE_INVALID"]]) {
   test(`拒绝缺失或无效证据：${mode}`, async (t) => {
     const f = await fixture(t, mode);
     await assert.rejects(f.agent.run(f.page, parseGoal({ mode: "walkthrough", goal: "Observe" }), () => {}), (e: ServiceError) => e.code === code);
