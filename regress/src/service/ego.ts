@@ -34,7 +34,10 @@ try {
     const spaces = await listTaskSpaces();
     const current = spaces.find((s) => s.id === input.spaceId);
     if (!current && input.operation === "finish") { emit({ ok: true, value: null }); }
-    else {
+    else if (input.operation === "finish" && (current.name !== input.spaceName || current.ownership !== "agent")) {
+      // No finish was dispatched. Recheck after the user returns control or closes the space.
+      emit({ ok: true, value: "deferred" });
+    } else {
       if (!current || current.ownership !== "agent") throw { code: "EGO_CONTROL_UNAVAILABLE" };
       const task = await taskSpace(input.spaceId);
       const page = task.page(input.label);
@@ -102,9 +105,12 @@ export class EgoPage {
   private closed = false;
   private closing = false;
   private finishAttempted = false;
+  private readonly spaceName: string;
   private actions = 0;
   private maxActions = 100;
-  constructor(spaceId: number, config: ServiceConfig, account: Account) { this.spaceId = spaceId; this.config = config; this.account = account; }
+  constructor(spaceId: number, config: ServiceConfig, account: Account, spaceName: string) {
+    this.spaceId = spaceId; this.config = config; this.account = account; this.spaceName = spaceName;
+  }
   budget(max: number) { this.maxActions = max; }
   private async call<T>(operation: string, data: Record<string, unknown> = {}): Promise<T> {
     if (this.closed || this.closing && operation !== "finish") throw new ServiceError(409, "SESSION_CLOSED", "Ego workflow page is closed");
@@ -144,7 +150,12 @@ export class EgoPage {
     this.closing = true;
     if (!this.finishAttempted) {
       this.finishAttempted = true;
-      await this.call("finish");
+      // An uncertain receipt may already have closed the space. Only replay a confirmed no-op.
+      const result = await this.call<"deferred" | null>("finish", { spaceName: this.spaceName });
+      if (result === "deferred") {
+        this.finishAttempted = false;
+        throw new ServiceError(503, "CLEANUP_FAILED", "Ego space is outside workflow control");
+      }
     }
     const spaces = await egoCall<Space[]>({ operation: "spaces" });
     if (spaces.some((s) => s.id === this.spaceId)) throw new ServiceError(503, "CLEANUP_FAILED", "Ego space remains open or under user control");
@@ -231,7 +242,7 @@ export class EgoBrowserProvider implements BrowserProvider {
     let page: EgoPage | undefined;
     try {
       const opened = await egoCall<{ spaceId: number }>({ operation: "open", name, profileId });
-      page = new EgoPage(opened.spaceId, this.config, account);
+      page = new EgoPage(opened.spaceId, this.config, account, name);
       this.pages.set(id, page);
       const target = url ?? account.url;
       if (target) await page.action({ type: "navigate", url: target });
@@ -246,7 +257,7 @@ export class EgoBrowserProvider implements BrowserProvider {
       try {
         if (!page) {
           const created = (await egoCall<Space[]>({ operation: "spaces" })).find((s) => s.name === name);
-          if (created) page = new EgoPage(created.id, this.config, account);
+          if (created) page = new EgoPage(created.id, this.config, account, name);
         }
         if (page) await page.close();
         this.pages.delete(id);

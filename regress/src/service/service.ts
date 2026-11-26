@@ -22,6 +22,7 @@ interface Session extends SessionRecord {
   opening?: Promise<BrowserHandle>;
   closing?: Promise<void>;
   leaseHeld?: boolean;
+  retryCloseAt?: number;
 }
 
 export interface JobRecord {
@@ -59,7 +60,9 @@ export class BrowserService {
     this.provider = provider;
     this.timer = setInterval(() => {
       for (const session of this.sessions.values()) {
-        if (["ready", "creating"].includes(session.status) && Date.parse(session.expiresAt) <= Date.now()) {
+        const expired = ["ready", "creating"].includes(session.status) && Date.parse(session.expiresAt) <= Date.now();
+        const retryClose = session.status === "quarantined" && session.retryCloseAt !== undefined && session.retryCloseAt <= Date.now();
+        if (expired || retryClose) {
           void this.close(session.owner, session.id).catch(() => {});
         }
       }
@@ -174,6 +177,8 @@ export class BrowserService {
       } catch {
         // 关闭结果不确定时保留租约，不能把账号重新分给别人。
         session.status = "quarantined";
+        // Retry only sessions with a known browser handle. A timer alone never releases a lease.
+        if (session.handle) session.retryCloseAt = Date.now() + 30_000;
         throw new ServiceError(503, "CLEANUP_FAILED", "Browser cleanup is uncertain; account remains reserved");
       } finally {
         await Promise.all(cancelled.map((job) => this.persist(job)));

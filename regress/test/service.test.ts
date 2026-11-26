@@ -140,6 +140,30 @@ test("清理结果不确定时隔离账号，重试清理成功后才解锁", as
   assert.equal(service.listAccounts(alice)[0]?.status, "available");
 });
 
+test("隔离会话会自动复查，确认关闭前一直保留独占租约", async (t) => {
+  t.mock.timers.enable({ apis: ["setInterval", "Date"] });
+  let spaceOpen = true;
+  let attempts = 0;
+  const { service } = await fixture(t, { async open() { return {
+    async execute() { return { type: "snapshot", pass: true }; },
+    async close() {
+      attempts++;
+      if (spaceOpen) throw new Error("Space still in use");
+    }
+  }; } }, [account("one")]);
+  const session = await service.create(alice, { ...sessionInput, accountId: "one" });
+  await assert.rejects(service.close(alice.id, session.id), { code: "CLEANUP_FAILED" });
+  t.mock.timers.tick(60_000);
+  await delay(0);
+  assert.equal(attempts, 2);
+  assert.equal(service.listAccounts(alice)[0]?.status, "busy");
+  spaceOpen = false;
+  t.mock.timers.tick(60_000);
+  for (let n = 0; n < 100 && service.listAccounts(alice)[0]?.status === "busy"; n++) await delay(5);
+  assert.equal(service.getSession(alice.id, session.id).status, "closed");
+  assert.equal((await service.create(bob, { ...sessionInput, accountId: "one" })).status, "ready");
+});
+
 test("同会话串行，不同会话可并发；断言失败停止剩余步骤", async (t) => {
   let inFlight = 0;
   let max = 0;
