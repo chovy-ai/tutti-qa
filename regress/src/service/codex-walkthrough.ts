@@ -92,7 +92,7 @@ export class CodexWalkthroughAgent implements WalkthroughAgent {
     const instructions = [
       "You are the browser walkthrough executor for tutti-qa. Use the ego-browser skill and its native CLI/API to complete the user's entire walkthrough.",
       `The host has already reserved the QA account and opened TaskSpace ${page.spaceId}, page p1. Resume exactly this TaskSpace. Account/profile selection and TaskSpace creation are owned by the host.`,
-      "Keep the assigned TaskSpace open for the host to close, including when you finish, are blocked, or need human control. Do not switch profiles or use other spaces.",
+      "The host owns TaskSpace cleanup. Return your report with the assigned space open and under agent control. When blocked or human input is needed, stop browser actions and report what is needed. Do not call handOff() or finish() yourself, or take back control if a person intervenes. Do not switch profiles or use other spaces.",
       "Use Ego's native observation, navigation, reload, wait, pointer and keyboard capabilities as needed. Choose actions yourself and observe their actual results.",
       "Respect the user's operationBudget as the maximum number of browser operations and report any goal that does not fit as uncovered. Finish when the goal is covered; do not use the entire budget unnecessarily.",
       "Application data changes needed for the caller's goal are allowed unless the caller's constraints prohibit them. Do not add an implicit read-only restriction.",
